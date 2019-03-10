@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "822376070853",
+    "firebase_url": "https://green-pass-d637d.firebaseio.com",
+    "project_id": "green-pass-d637d",
+    "storage_bucket": "green-pass-d637d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:822376070853:android:1724d95c86f461ad",
+        "android_client_info": {
+          "package_name": "com.alopexinteractiondesign.greenpass"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "822376070853-cdd7e87ogkcta9lnskagpm0sd3a839fm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcct8IKuEkTF6lMeekcQwpx0g_XIon64w"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -65,3 +65,6 @@ buck-out/
 # RNFirebaseStarter
 yarn.lock
 package-lock.json
+
+# Editor config
+.eslintrc.json
