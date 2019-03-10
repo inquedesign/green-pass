@@ -14,7 +14,6 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios --simulator=\"iPhone X\"",
     "apk": "cd android && ./gradlew assembleRelease",
-    "rename": "node ./bin/rename.js",
     "start": "react-native start",
     "test": "jest"
   },
