@@ -106,7 +106,6 @@ android {
     javaMaxHeapSize "4g"
   }
   compileSdkVersion rootProject.ext.compileSdkVersion
-  buildToolsVersion rootProject.ext.buildToolsVersion
 
   defaultConfig {
     applicationId "com.alopexinteractiondesign.greenpass"
