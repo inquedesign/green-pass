@@ -4,6 +4,7 @@ package com.alopexinteractiondesign.greenpass;
 //import android.app.Application;
 
 //import com.facebook.react.ReactApplication;
+import org.devio.rn.splashscreen.SplashScreenReactPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 //import com.facebook.react.shell.MainReactPackage;
@@ -55,8 +56,8 @@ public class MainApplication extends NavigationApplication {
     protected List<ReactPackage> getPackages() {
         // Add additional packages you require here
         // No need to add RnnPackage and MainReactPackage
-        return Arrays.<ReactPackage>asList(
-            // eg. new VectorIconsPackage()
+        return Arrays.asList(
+            new SplashScreenReactPackage(),
             new RNFirebasePackage(),
             // add/remove these packages as appropriate
             new RNFirebaseAdMobPackage(),
