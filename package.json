@@ -1,18 +1,10 @@
 {
   "name": "GreenPass",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "devDependencies": {
-    "babel-jest": "23.6.0",
-    "fs-extra": "^6.0.1",
-    "jest": "23.6.0",
-    "metro-react-native-babel-preset": "0.49.2",
-    "react-test-renderer": "16.7.0",
-    "replace-in-file": "^3.4.2"
-  },
   "scripts": {
     "android": "cd android && ./gradlew app:assembleDebug && ./gradlew installDebug",
-    "ios": "react-native run-ios --simulator=\"iPhone X\"",
+    "ios": "react-native run-ios",
     "apk": "cd android && ./gradlew assembleRelease",
     "start": "react-native start",
     "test": "jest"
@@ -26,5 +18,13 @@
     "react-native-firebase": "^5.2.0",
     "react-native-navigation": "^2.13.1",
     "react-native-splash-screen": "^3.2.0"
+  },
+  "devDependencies": {
+    "babel-jest": "23.6.0",
+    "fs-extra": "^6.0.1",
+    "jest": "23.6.0",
+    "metro-react-native-babel-preset": "0.49.2",
+    "react-test-renderer": "16.7.0",
+    "replace-in-file": "^3.4.2"
   }
 }
