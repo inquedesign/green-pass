@@ -2,7 +2,7 @@ import StartScreen from './screens/start.screen'
 
 import { Navigation } from "react-native-navigation"
 
-Navigation.registerComponent(`StartScreen`, () => StartScreen)
+Navigation.registerComponent( `StartScreen`, () => StartScreen )
 
 Navigation.events().registerAppLaunchedListener(() => {
     Navigation.setDefaultOptions({
@@ -17,8 +17,8 @@ Navigation.events().registerAppLaunchedListener(() => {
         root: {
             stack: initialStack
         }
-    });
-});
+    })
+})
 
 const initialStack = {
     children: [

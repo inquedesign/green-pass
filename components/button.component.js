@@ -1,19 +1,12 @@
-/***
-* This source code is licensed under the MIT license found in the
-* LICENSE file in the root directory of the react-native source tree.
-*/
-
 'use strict';
 
 import React from 'react'
 
-import { Platform,
-         StyleSheet,
+import { StyleSheet,
          Dimensions,
          Text,
          View,
-         TouchableNativeFeedback,
-         TouchableOpacity        } from 'react-native'
+         TouchableOpacity } from 'react-native'
 
 import { REM } from '../styles'
 
@@ -132,12 +125,8 @@ export class Button extends React.Component<ButtonProps> {
             textStyles.push( styles.textDisabled );
             accessibilityStates.push( 'disabled' );
         }
-        const Touchable = Platform.select({
-            android: TouchableNativeFeedback,
-            ios    : TouchableOpacity
-        })
         return (
-            <Touchable style={styles.touchable}
+            <TouchableOpacity style={styles.touchable}
                 accessibilityLabel={accessibilityLabel}
                 accessibilityRole="button"
                 accessibilityStates={accessibilityStates}
@@ -155,7 +144,7 @@ export class Button extends React.Component<ButtonProps> {
                         {label}
                     </Text>
                 </View>
-            </Touchable>
+            </TouchableOpacity>
         )
     }
 }
@@ -166,7 +155,6 @@ const styles = StyleSheet.create({
         maxWidth: .3429 * Dimensions.get('window').height
     },
     button: {
-        elevation: 4,
         width: '100%',
         backgroundColor: COLORS.BACKGROUND,
         borderWidth: 1,
