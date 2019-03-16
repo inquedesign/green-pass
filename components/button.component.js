@@ -8,9 +8,10 @@ import { StyleSheet,
          View,
          TouchableOpacity } from 'react-native'
 
-import { REM } from '../styles'
-
-import COLORS from '../config/colors'
+import { REM,
+         COLORS,
+         FONT_SIZES,
+         COMPONENT_HEIGHT } from '../styles'
 
 import type {PressEvent} from 'react-native'
 
@@ -100,48 +101,53 @@ type ButtonProps = $ReadOnly<{|
 export class Button extends React.Component<ButtonProps> {
     render() {
         const {
-            accessibilityLabel,
-            color,
-            onPress,
             label,
+            accessibilityLabel,
+            aspectRatio,
+            color,
+            disabled,
+            onPress,
             hasTVPreferredFocus,
             nextFocusDown,
             nextFocusForward,
             nextFocusLeft,
             nextFocusRight,
             nextFocusUp,
-            disabled,
             testID,
-        } = this.props;
-        const buttonStyles = [ styles.button, this.props.style ];
-        const textStyles = [ styles.text ];
+        } = this.props
+        const buttonStyles = [ defaults.button ]
+        const textStyles   = [ defaults.text ]
+        const parentStyles = [ defaults.touchable, this.props.style ]
         if ( color ) {
-            textStyles.push({ color: color });
-            buttonStyles.push({ borderColor: color });
+            textStyles.push({ color: color })
+            buttonStyles.push({ borderColor: color })
         }
-        const accessibilityStates = [];
+        if ( aspectRatio ) {
+            parentStyles.push({ aspectRatio: aspectRatio })
+        }
+        const accessibilityStates = []
         if ( disabled ) {
-            buttonStyles.push( styles.buttonDisabled );
-            textStyles.push( styles.textDisabled );
-            accessibilityStates.push( 'disabled' );
+            buttonStyles.push( styles.buttonDisabled )
+            textStyles.push( styles.textDisabled )
+            accessibilityStates.push( 'disabled' )
         }
         return (
-            <TouchableOpacity style={styles.touchable}
-                accessibilityLabel={accessibilityLabel}
+            <TouchableOpacity style={ parentStyles }
+                accessibilityLabel={ accessibilityLabel }
                 accessibilityRole="button"
-                accessibilityStates={accessibilityStates}
-                hasTVPreferredFocus={hasTVPreferredFocus}
-                nextFocusDown={nextFocusDown}
-                nextFocusForward={nextFocusForward}
-                nextFocusLeft={nextFocusLeft}
-                nextFocusRight={nextFocusRight}
-                nextFocusUp={nextFocusUp}
-                testID={testID}
-                disabled={disabled}
-                onPress={onPress}>
-                <View style={buttonStyles}>
-                    <Text style={textStyles} disabled={disabled}>
-                        {label}
+                accessibilityStates={ accessibilityStates }
+                hasTVPreferredFocus={ hasTVPreferredFocus }
+                nextFocusDown={ nextFocusDown }
+                nextFocusForward={ nextFocusForward }
+                nextFocusLeft={ nextFocusLeft }
+                nextFocusRight={ nextFocusRight }
+                nextFocusUp={ nextFocusUp }
+                testID={ testID }
+                disabled={ disabled }
+                onPress={ onPress }>
+                <View style={ buttonStyles }>
+                    <Text style={ textStyles } disabled={ disabled }>
+                        { label }
                     </Text>
                 </View>
             </TouchableOpacity>
@@ -149,24 +155,28 @@ export class Button extends React.Component<ButtonProps> {
     }
 }
 
-const styles = StyleSheet.create({
+const FONT_SIZE = FONT_SIZES.MEDIUM
+
+const defaults = StyleSheet.create({
     touchable: {
-        width: '80%',
-        maxWidth: .3429 * Dimensions.get('window').height
+        height: COMPONENT_HEIGHT,
+        width: '100%',
     },
     button: {
+        flex: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
         width: '100%',
-        backgroundColor: COLORS.BACKGROUND,
+        height: '100%',
+        backgroundColor: 'transparent',
         borderWidth: 1,
         borderRadius: 16 * REM,
         borderColor: COLORS.PRIMARY
     },
     text: {
         textAlign: 'center',
-        paddingTop: 10 * REM,
-        paddingBottom: 10 * REM,
         color: COLORS.PRIMARY,
-        fontSize: 12 * REM,
+        fontSize: FONT_SIZE,
         fontWeight: '200'
     },
     buttonDisabled: {

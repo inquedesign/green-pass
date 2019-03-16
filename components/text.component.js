@@ -2,18 +2,20 @@ import React from 'react';
 import { StyleSheet,
          Text as ReactText } from 'react-native';
 
-import COLORS from '../config/colors.json'
+import { COLORS } from '../styles'
 
 export class Text extends React.Component {
     render() {
         return (
-            <ReactText {...this.props} style={[styles.defaults, this.props.style]}> {this.props.children} </ReactText>
+            <ReactText { ...this.props } style={[ defaults.text, this.props.style ]}>
+                { this.props.children }
+            </ReactText>
         )
     }
 }
 
-const styles = StyleSheet.create({
-    defaults: {
+const defaults = StyleSheet.create({
+    text: {
         fontWeight: '200',
         color: COLORS.PRIMARY,
         textAlign: 'center'

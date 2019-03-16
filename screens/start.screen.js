@@ -1,13 +1,15 @@
 import React from 'react'
 
+import { Navigation  } from 'react-native-navigation'
 import { StyleSheet,
          View        } from 'react-native'
 import { Text        } from '../components/text.component'
 import { Button      } from '../components/button.component'
-import { STYLES, REM } from '../styles'
+import { STYLES,
+         FONT_SIZES,
+         REM         } from '../styles'
 
 import SplashScreen from 'react-native-splash-screen'
-import Navigation   from 'react-native-navigation'
 //import firebase     from 'react-native-firebase'
 
 //const instructions = Platform.select({
@@ -30,7 +32,12 @@ export default class StartScreen extends React.Component {
         SplashScreen.hide()
     }
 
-    goToCreateAccount() {}
+    goToCreateAccount() {
+        Navigation.push(this.props.componentId, {
+            component: { name: 'AccountCreationScreen' }
+        })
+    }
+
     goToLogin() {}
 
     render() {
@@ -46,11 +53,11 @@ export default class StartScreen extends React.Component {
                     <Button style={LOCAL_STYLES.createAccount}
                         label="Create an Account"
                         accessibilityLabel="Create an account"
-                        onPress={this.goToCreateAccount} />
+                        onPress={ this.goToCreateAccount.bind(this) } />
                     <Button
                         label="Login"
                         accessibilityLabel="Login"
-                        onPress={this.goToLogin} />
+                        onPress={ this.goToLogin.bind(this) } />
                 </View>
             </View>
             //      {firebase.admob.nativeModuleExists && <Text style={styles.module}>admob()</Text>}
@@ -74,11 +81,11 @@ export default class StartScreen extends React.Component {
 
 const LOCAL_STYLES = StyleSheet.create({
     header: {
-        fontSize: 18 * REM,
+        fontSize: FONT_SIZES.LARGE,
         marginBottom: 18 * REM
     },
     body: {
-        fontSize: 12 * REM,
+        fontSize: FONT_SIZES.MEDIUM,
         marginBottom: 42 * REM
     },
     createAccount: {
