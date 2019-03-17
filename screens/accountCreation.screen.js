@@ -1,4 +1,6 @@
-import React from 'react'
+import React    from 'react'
+import firebase from 'react-native-firebase'
+import splash   from 'react-native-splash-screen'
 
 import { Navigation  } from 'react-native-navigation'
 import { StyleSheet,
@@ -13,7 +15,6 @@ import { STYLES,
          REM,
          COMPONENT_HEIGHT } from '../styles'
 
-import SplashScreen from 'react-native-splash-screen'
 
 export default class AccountCreationScreen extends React.Component {
     constructor( props ) {
@@ -28,11 +29,11 @@ export default class AccountCreationScreen extends React.Component {
     }
 
     componentDidMount() {
-        SplashScreen.hide()
+        splash.hide()
     }
 
     validateEmail() {
-        if ( /^.+@.+(\..+)+$/.test( this.state.email ) ) {
+        if ( this.emailIsValid() ) {
             this.setState({ emailColor: COLORS.PRIMARY })
         }
         else {
@@ -49,7 +50,7 @@ export default class AccountCreationScreen extends React.Component {
     }
 
     confirmPassword() {
-        if ( this.state.password === this.state.pconfirm ) {
+        if ( this.passwordIsValid() ) {
             this.setState({ confirmColor: COLORS.PRIMARY })
         }
         else {
@@ -57,7 +58,28 @@ export default class AccountCreationScreen extends React.Component {
         }
     }
 
-    createAccount() {}
+    emailIsValid() {
+        return /^.+@.+(\..+)+$/.test( this.state.email )
+    }
+
+    passwordIsValid() {
+        return ((this.state.password === this.state.pconfirm) && (this.state.password.length > 5))
+    }
+
+    onSubmit() {
+        if ( this.emailIsValid() && this.passwordIsValid() ) {
+            firebase.auth()
+            .createUserWithEmailAndPassword(this.state.email, this.state.password)
+            .then( credentials => {
+                // Navigate to next screen
+                // credentials.additionalUserInfo.profile? .username?
+                // credentials.user.displayName? .email? .metadata? .photoURL?
+            })
+            .catch( error => {
+                alert( "Error: " + error.message )
+            })
+        }
+    }
 
     render() {
         return (
@@ -69,29 +91,31 @@ export default class AccountCreationScreen extends React.Component {
                     <TextInput style={[ LOCAL_STYLES.input, {color: this.state.emailColor} ]}
                         accessibilityLabel="Enter your email"
                         placeholder='E-mail'
-                        value={ this.state.email }
                         autoComplete='email'
+                        value={ this.state.email }
                         onChangeText={ (text) => this.setState({ email: text }) }
                         onBlur={ this.validateEmail.bind(this) }
                     />
                     <TextInput style={ LOCAL_STYLES.input }
                         accessibilityLabel="Enter your password"
                         placeholder='Password'
-                        value={ '*'.repeat( this.state.password.length ) }
                         autoComplete='password'
+                        secureTextEntry={ true }
+                        value={ this.state.password }
                         onChangeText={ this.onChangePassword.bind(this) }
                     />
                     <TextInput style={[ LOCAL_STYLES.input, {color: this.state.confirmColor} ]}
                         accessibilityLabel="Enter your password again"
                         placeholder='Confirm Password'
-                        value={ '*'.repeat( this.state.pconfirm.length ) }
                         autoComplete='password'
+                        secureTextEntry={ true }
+                        value={ this.state.pconfirm }
                         onChangeText={ this.onChangePasswordConfirmation.bind(this) }
                     />
                     <Button style={ LOCAL_STYLES.submit }
                         label="Submit"
                         accessibilityLabel="Submit e-mail and password"
-                        onPress={ this.createAccount } />
+                        onPress={ this.onSubmit.bind(this) } />
                     <Text style={ LOCAL_STYLES.header }>
                         Or, use your social
                     </Text>
@@ -130,7 +154,7 @@ const LOCAL_STYLES = StyleSheet.create({
         flex: 0,
         width: '100%',
         flexDirection: 'row',
-        justifyContent: 'space-evenly'
+        justifyContent: 'space-around'
     },
     socialButton: {
         width: COMPONENT_HEIGHT

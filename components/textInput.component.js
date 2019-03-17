@@ -15,6 +15,7 @@ export class TextInput extends React.Component {
                 style={[ defaults.input, this.props.style ]}
                 placeholderColor={ COLORS.DISABLED }
                 underlineColorAndroid='transparent'
+                autoCapitalize='none'
             />
         )
     }

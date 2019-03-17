@@ -2,6 +2,7 @@ import { StyleSheet,
          Dimensions } from 'react-native'
 
 export const SCREEN_HEIGHT = Dimensions.get('window').height
+export const SCREEN_WIDTH  = Dimensions.get('window').width
 
 export const REM = SCREEN_HEIGHT / 480
 
@@ -23,10 +24,11 @@ export const COLORS = {
 export const STYLES = StyleSheet.create({
     container: {
         flex: 0,
-        width: '100%',
-        height: '100%',
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        backgroundColor: COLORS.BACKGROUND
     },
     content: {
         width: '80%',

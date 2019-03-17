@@ -12,8 +12,7 @@ Navigation.events().registerAppLaunchedListener(() => {
             visible: false,
             drawBehind: true,
             animate: false
-        },
-        //popGesture: true
+        }
     })
 
     Navigation.setRoot({
@@ -25,6 +24,6 @@ Navigation.events().registerAppLaunchedListener(() => {
 
 const initialStack = {
     children: [
-        { component: { name: 'AccountCreationScreen' } }
+        { component: { name: 'StartScreen' } }
     ]
 }

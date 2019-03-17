@@ -1,12 +1,13 @@
 {
   "name": "GreenPass",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "scripts": {
     "android": "cd android && ./gradlew app:assembleDebug && ./gradlew installDebug",
     "ios": "react-native run-ios",
     "apk": "cd android && ./gradlew assembleRelease",
     "start": "react-native start",
+    "emulator:android": "~/Library/Android/sdk/emulator/emulator -avd Nexus_5X_API_28_x86 &",
     "test": "jest"
   },
   "jest": {
@@ -14,7 +15,7 @@
   },
   "dependencies": {
     "react": "16.6.3",
-    "react-native": "0.58.0-rc.2",
+    "react-native": "^0.58.6",
     "react-native-firebase": "^5.2.0",
     "react-native-navigation": "^2.13.1",
     "react-native-splash-screen": "^3.2.0"
