@@ -4,7 +4,6 @@ import splash   from 'react-native-splash-screen'
 
 import { Navigation  } from 'react-native-navigation'
 import { StyleSheet,
-         ScrollView,
          View        } from 'react-native'
 import { Text        } from '../components/text.component'
 import { TextInput   } from '../components/textInput.component'
@@ -50,6 +49,7 @@ export default class AccountCreationScreen extends React.Component {
     }
 
     confirmPassword() {
+        // TODO: get update to fix color change not rendering or remove feedback
         if ( this.passwordIsValid() ) {
             this.setState({ confirmColor: COLORS.PRIMARY })
         }
@@ -71,7 +71,9 @@ export default class AccountCreationScreen extends React.Component {
             firebase.auth()
             .createUserWithEmailAndPassword(this.state.email, this.state.password)
             .then( credentials => {
-                // Navigate to next screen
+                Navigation.push(this.props.componentId, {
+                    component: { name: 'GenderScreen' }
+                })
                 // credentials.additionalUserInfo.profile? .username?
                 // credentials.user.displayName? .email? .metadata? .photoURL?
             })
@@ -85,10 +87,10 @@ export default class AccountCreationScreen extends React.Component {
         return (
             <View style={ STYLES.container }>
                 <View style={ STYLES.content }>
-                    <Text style={ LOCAL_STYLES.header }>
+                    <Text style={ STYLES.header }>
                         Account Creation
                     </Text>
-                    <TextInput style={[ LOCAL_STYLES.input, {color: this.state.emailColor} ]}
+                    <TextInput style={[ STYLES.spaceAfter, {color: this.state.emailColor} ]}
                         accessibilityLabel="Enter your email"
                         placeholder='E-mail'
                         autoComplete='email'
@@ -96,7 +98,7 @@ export default class AccountCreationScreen extends React.Component {
                         onChangeText={ (text) => this.setState({ email: text }) }
                         onBlur={ this.validateEmail.bind(this) }
                     />
-                    <TextInput style={ LOCAL_STYLES.input }
+                    <TextInput style={ STYLES.spaceAfter }
                         accessibilityLabel="Enter your password"
                         placeholder='Password'
                         autoComplete='password'
@@ -104,7 +106,7 @@ export default class AccountCreationScreen extends React.Component {
                         value={ this.state.password }
                         onChangeText={ this.onChangePassword.bind(this) }
                     />
-                    <TextInput style={[ LOCAL_STYLES.input, {color: this.state.confirmColor} ]}
+                    <TextInput style={[ STYLES.spaceAfter, {color: this.state.confirmColor} ]}
                         accessibilityLabel="Enter your password again"
                         placeholder='Confirm Password'
                         autoComplete='password'
@@ -116,7 +118,7 @@ export default class AccountCreationScreen extends React.Component {
                         label="Submit"
                         accessibilityLabel="Submit e-mail and password"
                         onPress={ this.onSubmit.bind(this) } />
-                    <Text style={ LOCAL_STYLES.header }>
+                    <Text style={ STYLES.header }>
                         Or, use your social
                     </Text>
                     <View style={ LOCAL_STYLES.socialContainer }>
@@ -140,15 +142,8 @@ export default class AccountCreationScreen extends React.Component {
 }
 
 const LOCAL_STYLES = StyleSheet.create({
-    header: {
-        fontSize: FONT_SIZES.LARGE,
-        marginBottom: 18 * REM
-    },
     submit: {
         marginBottom: 36 * REM
-    },
-    input: {
-        marginBottom: 12 * REM
     },
     socialContainer: {
         flex: 0,

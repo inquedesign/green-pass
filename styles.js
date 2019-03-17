@@ -36,4 +36,11 @@ export const STYLES = StyleSheet.create({
         backgroundColor: COLORS.BACKGROUND,
         alignItems: 'center'
     },
+    header: {
+        fontSize: FONT_SIZES.LARGE,
+        marginBottom: 18 * REM
+    },
+    spaceAfter: {
+        marginBottom: 12 * REM
+    }
 });

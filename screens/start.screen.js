@@ -42,15 +42,15 @@ export default class StartScreen extends React.Component {
 
     render() {
         return (
-            <View style={STYLES.container}>
-                <View style={STYLES.content}>
-                    <Text style={LOCAL_STYLES.header}>
+            <View style={ STYLES.container }>
+                <View style={ STYLES.content }>
+                    <Text style={ LOCAL_STYLES.header }>
                         GreenPass connects {'\n'} Cannabis enthusiasts
                     </Text>
-                    <Text style={LOCAL_STYLES.body}>
+                    <Text style={ LOCAL_STYLES.body }>
                         To get started, we need to {'\n'} make your profile
                     </Text>
-                    <Button style={LOCAL_STYLES.createAccount}
+                    <Button style={ STYLES.spaceAfter }
                         label="Create an Account"
                         accessibilityLabel="Create an account"
                         onPress={ this.goToCreateAccount.bind(this) } />
@@ -85,10 +85,6 @@ const LOCAL_STYLES = StyleSheet.create({
         marginBottom: 18 * REM
     },
     body: {
-        fontSize: FONT_SIZES.MEDIUM,
         marginBottom: 42 * REM
-    },
-    createAccount: {
-        marginBottom: 12 * REM
     }
 });
