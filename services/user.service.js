@@ -8,6 +8,14 @@ const AUTH      = firebase.auth()
 
 export default class UserService {
 
+    static createAccount( email, password ) {
+        return firebase.auth()
+        .createUserWithEmailAndPassword(
+            email,
+            password
+        )
+    }
+
     static update( dataToUpdate ) {
         if ( AUTH.currentUser ) {
             FIRESTORE

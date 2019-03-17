@@ -1,6 +1,7 @@
-import React    from 'react'
-import firebase from 'react-native-firebase'
-import splash   from 'react-native-splash-screen'
+import React       from 'react'
+//import firebase from 'react-native-firebase'
+import splash      from 'react-native-splash-screen'
+import UserService from '../services/user.service'
 
 import { Navigation  } from 'react-native-navigation'
 import { StyleSheet,
@@ -68,8 +69,7 @@ export default class AccountCreationScreen extends React.Component {
 
     onSubmit() {
         if ( this.emailIsValid() && this.passwordIsValid() ) {
-            firebase.auth()
-            .createUserWithEmailAndPassword(this.state.email, this.state.password)
+            UserService.createAccount(this.state.email, this.state.password)
             .then( credentials => {
                 Navigation.push(this.props.componentId, {
                     component: { name: 'GenderScreen' }
