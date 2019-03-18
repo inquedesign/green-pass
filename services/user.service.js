@@ -3,14 +3,13 @@ import firebase from 'react-native-firebase'
 
 import { Navigation  } from 'react-native-navigation'
 
-const FIRESTORE = firebase.firestore()
+const FIRESTORE = firebase.firestore().collection('Users')
 const AUTH      = firebase.auth()
 
 export default class UserService {
 
     static createAccount( email, password ) {
-        return firebase.auth()
-        .createUserWithEmailAndPassword(
+        return AUTH.createUserWithEmailAndPassword(
             email,
             password
         )
@@ -19,14 +18,13 @@ export default class UserService {
     static update( dataToUpdate ) {
         if ( AUTH.currentUser ) {
             FIRESTORE
-            .collection('Users')
             .doc( AUTH.currentUser.email )
             .set( dataToUpdate, { merge: true } )
         }
-        //else {
+        else {
         //    Navigation.push(this.props.componentId, {
         //        component: { name: 'LoginScreen' }
         //    })
-        //}
+        }
     }
 }

@@ -87,18 +87,8 @@ type ButtonProps = $ReadOnly<{|
     testID?: ?string,
 |}>;
 
-/**
-* Example usage:
-*
-* <Button
-*   onPress={onPressLearnMore}
-*   label="Learn More"
-*   color="#841584"
-*   accessibilityLabel="Learn more about this purple button"
-* />
-*/
 
-export class Button extends React.Component<ButtonProps> {
+export class Button extends React.PureComponent<ButtonProps> {
     render() {
         const {
             label,
@@ -156,10 +146,11 @@ export class Button extends React.Component<ButtonProps> {
 }
 
 const FONT_SIZE = FONT_SIZES.MEDIUM
+const HEIGHT    = COMPONENT_HEIGHT
 
 const defaults = StyleSheet.create({
     touchable: {
-        height: COMPONENT_HEIGHT,
+        height: HEIGHT,
         width: '100%',
     },
     button: {
@@ -170,7 +161,7 @@ const defaults = StyleSheet.create({
         height: '100%',
         backgroundColor: 'transparent',
         borderWidth: 1,
-        borderRadius: 16 * REM,
+        borderRadius: .5 * HEIGHT,
         borderColor: COLORS.PRIMARY
     },
     text: {

@@ -5,7 +5,7 @@ import { StyleSheet,
 import { COLORS,
          FONT_SIZES } from '../styles'
 
-export class Text extends React.Component {
+export class Text extends React.PureComponent {
     render() {
         return (
             <ReactText { ...this.props } style={[ defaults.text, this.props.style ]}>

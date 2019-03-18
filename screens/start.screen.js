@@ -17,7 +17,7 @@ import SplashScreen from 'react-native-splash-screen'
 //    ios    : 'Press Cmd+R to reload,\nCmd+D or shake for dev menu'
 //})
 
-export default class StartScreen extends React.Component {
+export default class StartScreen extends React.PureComponent {
     constructor() {
         super()
         this.state = {}

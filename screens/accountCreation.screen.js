@@ -16,7 +16,7 @@ import { STYLES,
          COMPONENT_HEIGHT } from '../styles'
 
 
-export default class AccountCreationScreen extends React.Component {
+export default class AccountCreationScreen extends React.PureComponent {
     constructor( props ) {
         super( props )
         this.state = {

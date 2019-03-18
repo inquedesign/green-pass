@@ -10,7 +10,7 @@ import { Button      } from '../components/button.component'
 import { STYLES      } from '../styles'
 
 
-export default class GenderScreen extends React.Component {
+export default class GenderScreen extends React.PureComponent {
     componentDidMount() {
         splash.hide()
     }
