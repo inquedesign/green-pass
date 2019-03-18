@@ -23,9 +23,9 @@ export default class AgeScren extends React.PureComponent {
         if ( !this.state.year ) return
         
         UserService.update({ birthYear: this.state.year })
-        //    Navigation.push(this.props.componentId, {
-        //        component: { name: 'LoginScreen' }
-        //    })
+        Navigation.push(this.props.componentId, {
+            component: { name: 'UsernameScreen' }
+        })
     }
 
     render() {

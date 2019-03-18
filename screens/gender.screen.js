@@ -1,13 +1,12 @@
-import React    from 'react'
-import splash   from 'react-native-splash-screen'
-
+import React       from 'react'
+import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
-import { Navigation  } from 'react-native-navigation'
-import { View        } from 'react-native'
-import { Text        } from '../components/text.component'
-import { Button      } from '../components/button.component'
-import { STYLES      } from '../styles'
+import { Navigation } from 'react-native-navigation'
+import { View       } from 'react-native'
+import { Text       } from '../components/text.component'
+import { Button     } from '../components/button.component'
+import { STYLES     } from '../styles'
 
 
 export default class GenderScreen extends React.PureComponent {

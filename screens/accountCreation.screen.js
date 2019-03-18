@@ -94,6 +94,7 @@ export default class AccountCreationScreen extends React.PureComponent {
                         accessibilityLabel="Enter your email"
                         placeholder='E-mail'
                         autoComplete='email'
+                        textContentType='emailAddress'
                         value={ this.state.email }
                         onChangeText={ (text) => this.setState({ email: text }) }
                         onBlur={ this.validateEmail.bind(this) }
@@ -102,6 +103,7 @@ export default class AccountCreationScreen extends React.PureComponent {
                         accessibilityLabel="Enter your password"
                         placeholder='Password'
                         autoComplete='password'
+                        textContentType='newPassword'
                         secureTextEntry={ true }
                         value={ this.state.password }
                         onChangeText={ this.onChangePassword.bind(this) }

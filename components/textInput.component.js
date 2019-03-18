@@ -14,6 +14,7 @@ export class TextInput extends React.Component {
                 placeholderColor={ COLORS.DISABLED }
                 underlineColorAndroid='transparent'
                 autoCapitalize='none'
+                autoCorrect={ false }
             />
         )
     }
@@ -32,6 +33,7 @@ const defaults = StyleSheet.create({
         borderWidth    : 1,
         borderRadius   : .5 * HEIGHT,
         borderColor    : COLORS.PRIMARY,
-        backgroundColor: COLORS.BACKGROUND
+        backgroundColor: COLORS.BACKGROUND,
+        textDecorationLine: 'none'
     }
 })
