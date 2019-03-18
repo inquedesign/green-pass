@@ -1,10 +1,8 @@
 import React from 'react';
 import { StyleSheet,
-         Dimensions,
          TextInput as ReactInput } from 'react-native';
 
-import { REM,
-         COLORS,
+import { COLORS,
          FONT_SIZES,
          COMPONENT_HEIGHT } from '../styles'
 
@@ -21,16 +19,18 @@ export class TextInput extends React.Component {
     }
 }
 
+const HEIGHT = COMPONENT_HEIGHT
+
 const defaults = StyleSheet.create({
     input: {
         width          : '100%',
-        height         : COMPONENT_HEIGHT,
+        height         : HEIGHT,
         color          : COLORS.PRIMARY,
         textAlign      : 'center',
         fontWeight     : '200',
         fontSize       : FONT_SIZES.MEDIUM,
         borderWidth    : 1,
-        borderRadius   : .5 * COMPONENT_HEIGHT,
+        borderRadius   : .5 * HEIGHT,
         borderColor    : COLORS.PRIMARY,
         backgroundColor: COLORS.BACKGROUND
     }

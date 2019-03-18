@@ -110,7 +110,6 @@ export class Button extends React.PureComponent<ButtonProps> {
         const parentStyles = [ defaults.touchable, this.props.style ]
         if ( color ) {
             textStyles.push({ color: color })
-            buttonStyles.push({ borderColor: color })
         }
         if ( aspectRatio ) {
             parentStyles.push({ aspectRatio: aspectRatio })
