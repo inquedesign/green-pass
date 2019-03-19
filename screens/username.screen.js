@@ -17,6 +17,7 @@ export default class UsernameScreen extends React.PureComponent {
             username: ''
         }
     }
+
     componentDidMount() {
         splash.hide()
     }
@@ -26,9 +27,9 @@ export default class UsernameScreen extends React.PureComponent {
         alert( this.state.username )
 
         UserService.update({ username: this.state.username })
-        //Navigation.push(this.props.componentId, {
-        //    component: { name: 'AgeScreen' }
-        //})
+        Navigation.push(this.props.componentId, {
+            component: { name: 'AvatarScreen' }
+        })
     }
 
     render() {

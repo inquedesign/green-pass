@@ -15,8 +15,8 @@ export const FONT_SIZES = {
 }
 
 export const COLORS = {
-    PRIMARY   : "#669900",
-    DISABLED  : "#AAAAAA",
+    PRIMARY   : "#558800",
+    DISABLED  : "#999999",
     ERROR     : "#AA0000",
     BACKGROUND: "#FFFFFF"
 }
