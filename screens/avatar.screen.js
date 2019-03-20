@@ -22,9 +22,9 @@ export default class AvatarScreen extends React.PureComponent {
     }
 
     onSubmit() {
-        //Navigation.push(this.props.componentId, {
-        //    component: { name: 'AgeScreen' }
-        //})
+        Navigation.push(this.props.componentId, {
+            component: { name: 'ContactInfoScreen' }
+        })
     }
 
     render() {

@@ -57,9 +57,8 @@ export class YearPicker extends React.PureComponent {
                     supportedOrientations={[ 'portrait' ]}
                     onRequestClose={()=>{}}
                     transparent={ false }
-                    animationType='slide'
-                    presentationStyle='formSheet'
-                    >
+                    animationType='fade'
+                    presentationStyle='formSheet'>
 
                     <FlatList
                         data={ this.yearRange }

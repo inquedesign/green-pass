@@ -4,6 +4,7 @@ import GenderScreen from './screens/gender.screen'
 import AgeScreen from './screens/age.screen'
 import UsernameScreen from './screens/username.screen'
 import AvatarScreen from './screens/avatar.screen'
+import ContactInfoScreen from './screens/contactInfo.screen'
 
 import { Navigation } from "react-native-navigation"
 
@@ -13,6 +14,7 @@ Navigation.registerComponent( 'GenderScreen', () => GenderScreen )
 Navigation.registerComponent( 'AgeScreen', () => AgeScreen )
 Navigation.registerComponent( 'UsernameScreen', () => UsernameScreen )
 Navigation.registerComponent( 'AvatarScreen', () => AvatarScreen )
+Navigation.registerComponent( 'ContactInfoScreen', () => ContactInfoScreen )
 
 Navigation.events().registerAppLaunchedListener(() => {
     Navigation.setDefaultOptions({

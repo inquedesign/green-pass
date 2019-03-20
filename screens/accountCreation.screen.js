@@ -95,7 +95,6 @@ export default class AccountCreationScreen extends React.PureComponent {
                         placeholder='E-mail'
                         autoComplete='email'
                         textContentType='emailAddress'
-                        value={ this.state.email }
                         onChangeText={ (text) => this.setState({ email: text }) }
                         onBlur={ this.validateEmail.bind(this) }
                     />
@@ -105,7 +104,6 @@ export default class AccountCreationScreen extends React.PureComponent {
                         autoComplete='password'
                         textContentType='newPassword'
                         secureTextEntry={ true }
-                        value={ this.state.password }
                         onChangeText={ this.onChangePassword.bind(this) }
                     />
                     <TextInput style={[ STYLES.spaceAfter, {color: this.state.confirmColor} ]}
@@ -113,7 +111,6 @@ export default class AccountCreationScreen extends React.PureComponent {
                         placeholder='Confirm Password'
                         autoComplete='password'
                         secureTextEntry={ true }
-                        value={ this.state.pconfirm }
                         onChangeText={ this.onChangePasswordConfirmation.bind(this) }
                     />
                     <Button style={ LOCAL_STYLES.submit }

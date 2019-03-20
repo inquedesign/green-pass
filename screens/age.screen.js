@@ -1,6 +1,5 @@
-import React    from 'react'
-import splash   from 'react-native-splash-screen'
-
+import React       from 'react'
+import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
 import { Navigation } from 'react-native-navigation'
@@ -21,7 +20,7 @@ export default class AgeScren extends React.PureComponent {
 
     onSubmit() {
         if ( !this.state.year ) return
-        
+
         UserService.update({ birthYear: this.state.year })
         Navigation.push(this.props.componentId, {
             component: { name: 'UsernameScreen' }
