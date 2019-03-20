@@ -13,6 +13,7 @@ import { TextInput  } from '../components/textInput.component'
 import { Button     } from '../components/button.component'
 import { STYLES,
          COLORS     } from '../styles'
+import { SCREENS    } from '../util/constants'
 
 
 export default class ContactInfoScreen extends React.PureComponent {

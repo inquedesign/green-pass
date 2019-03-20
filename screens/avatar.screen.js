@@ -9,6 +9,7 @@ import { Text       } from '../components/text.component'
 import { Button     } from '../components/button.component'
 import { STYLES,
          COLORS     } from '../styles'
+import { SCREENS    } from '../util/constants'
 
 
 export default class AvatarScreen extends React.PureComponent {
@@ -23,7 +24,7 @@ export default class AvatarScreen extends React.PureComponent {
 
     onSubmit() {
         Navigation.push(this.props.componentId, {
-            component: { name: 'ContactInfoScreen' }
+            component: { name: SCREENS.CONTACT_INFO_SCREEN }
         })
     }
 

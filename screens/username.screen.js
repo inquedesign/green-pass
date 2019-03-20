@@ -8,6 +8,7 @@ import { Text       } from '../components/text.component'
 import { TextInput  } from '../components/textInput.component'
 import { Button     } from '../components/button.component'
 import { STYLES     } from '../styles'
+import { SCREENS    } from '../util/constants'
 
 
 export default class UsernameScreen extends React.PureComponent {
@@ -24,11 +25,10 @@ export default class UsernameScreen extends React.PureComponent {
 
     onSubmit() {
         if ( this.state.username.length === 0 ) return
-        alert( this.state.username )
 
         UserService.update({ username: this.state.username })
         Navigation.push(this.props.componentId, {
-            component: { name: 'AvatarScreen' }
+            component: { name: SCREENS.AVATAR_SCREEN }
         })
     }
 

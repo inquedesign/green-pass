@@ -14,6 +14,7 @@ import { STYLES,
          FONT_SIZES,
          REM,
          COMPONENT_HEIGHT } from '../styles'
+import { SCREENS          } from '../util/constants'
 
 
 export default class AccountCreationScreen extends React.PureComponent {
@@ -72,7 +73,7 @@ export default class AccountCreationScreen extends React.PureComponent {
             UserService.createAccount(this.state.email, this.state.password)
             .then( credentials => {
                 Navigation.push(this.props.componentId, {
-                    component: { name: 'GenderScreen' }
+                    component: { name: SCREENS.GENDER_SCREEN }
                 })
                 // credentials.additionalUserInfo.profile? .username?
                 // credentials.user.displayName? .email? .metadata? .photoURL?

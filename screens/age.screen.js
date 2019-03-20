@@ -8,6 +8,7 @@ import { Text       } from '../components/text.component'
 import { Button     } from '../components/button.component'
 import { YearPicker } from '../components/yearPicker.component'
 import { STYLES     } from '../styles'
+import { SCREENS    } from '../util/constants'
 
 
 export default class AgeScren extends React.PureComponent {
@@ -23,7 +24,7 @@ export default class AgeScren extends React.PureComponent {
 
         UserService.update({ birthYear: this.state.year })
         Navigation.push(this.props.componentId, {
-            component: { name: 'UsernameScreen' }
+            component: { name: SCREENS.USERNAME_SCREEN }
         })
     }
 

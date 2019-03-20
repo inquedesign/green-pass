@@ -8,9 +8,10 @@ import { Button      } from '../components/button.component'
 import { STYLES,
          FONT_SIZES,
          REM         } from '../styles'
+import { SCREENS     } from '../util/constants'
 
 import SplashScreen from 'react-native-splash-screen'
-//import firebase     from 'react-native-firebase'
+
 
 //const instructions = Platform.select({
 //    android: 'Double tap R on your keyboard to reload,\nCmd+M or shake for dev menu',
@@ -34,7 +35,7 @@ export default class StartScreen extends React.PureComponent {
 
     goToCreateAccount() {
         Navigation.push(this.props.componentId, {
-            component: { name: 'AccountCreationScreen' }
+            component: { name: SCREENS.ACCOUNT_CREATION_SCREEN }
         })
     }
 

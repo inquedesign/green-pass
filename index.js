@@ -8,13 +8,15 @@ import ContactInfoScreen from './screens/contactInfo.screen'
 
 import { Navigation } from "react-native-navigation"
 
-Navigation.registerComponent( 'StartScreen', () => StartScreen )
-Navigation.registerComponent( 'AccountCreationScreen', () => AccountCreationScreen )
-Navigation.registerComponent( 'GenderScreen', () => GenderScreen )
-Navigation.registerComponent( 'AgeScreen', () => AgeScreen )
-Navigation.registerComponent( 'UsernameScreen', () => UsernameScreen )
-Navigation.registerComponent( 'AvatarScreen', () => AvatarScreen )
-Navigation.registerComponent( 'ContactInfoScreen', () => ContactInfoScreen )
+import { SCREENS } from "./util/constants"
+
+Navigation.registerComponent( SCREENS.START_SCREEN, () => StartScreen )
+Navigation.registerComponent( SCREENS.ACCOUNT_CREATION_SCREEN, () => AccountCreationScreen )
+Navigation.registerComponent( SCREENS.GENDER_SCREEN, () => GenderScreen )
+Navigation.registerComponent( SCREENS.AGE_SCREEN, () => AgeScreen )
+Navigation.registerComponent( SCREENS.USERNAME_SCREEN, () => UsernameScreen )
+Navigation.registerComponent( SCREENS.AVATAR_SCREEN, () => AvatarScreen )
+Navigation.registerComponent( SCREENS.CONTACT_INFO_SCREEN, () => ContactInfoScreen )
 
 Navigation.events().registerAppLaunchedListener(() => {
     Navigation.setDefaultOptions({
@@ -34,6 +36,6 @@ Navigation.events().registerAppLaunchedListener(() => {
 
 const initialStack = {
     children: [
-        { component: { name: 'StartScreen' } }
+        { component: { name: SCREENS.START_SCREEN } }
     ]
 }

@@ -7,6 +7,7 @@ import { View       } from 'react-native'
 import { Text       } from '../components/text.component'
 import { Button     } from '../components/button.component'
 import { STYLES     } from '../styles'
+import { SCREENS    } from '../util/constants'
 
 
 export default class GenderScreen extends React.PureComponent {
@@ -17,7 +18,7 @@ export default class GenderScreen extends React.PureComponent {
     setGender( gender ) {
         UserService.update({ gender: gender })
         Navigation.push(this.props.componentId, {
-            component: { name: 'AgeScreen' }
+            component: { name: SCREENS.AGE_SCREEN }
         })
     }
 
