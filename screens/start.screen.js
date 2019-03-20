@@ -6,7 +6,6 @@ import { StyleSheet,
 import { Text        } from '../components/text.component'
 import { Button      } from '../components/button.component'
 import { STYLES,
-         FONT_SIZES,
          REM         } from '../styles'
 import { SCREENS     } from '../util/constants'
 
@@ -33,9 +32,9 @@ export default class StartScreen extends React.PureComponent {
         SplashScreen.hide()
     }
 
-    goToCreateAccount() {
+    goToTermsOfService() {
         Navigation.push(this.props.componentId, {
-            component: { name: SCREENS.ACCOUNT_CREATION_SCREEN }
+            component: { name: SCREENS.TERMS_OF_SERVICE_SCREEN }
         })
     }
 
@@ -45,7 +44,7 @@ export default class StartScreen extends React.PureComponent {
         return (
             <View style={ STYLES.container }>
                 <View style={ STYLES.content }>
-                    <Text style={ LOCAL_STYLES.header }>
+                    <Text style={ STYLES.header }>
                         GreenPass connects {'\n'} Cannabis enthusiasts
                     </Text>
                     <Text style={ LOCAL_STYLES.body }>
@@ -54,7 +53,7 @@ export default class StartScreen extends React.PureComponent {
                     <Button style={ STYLES.spaceAfter }
                         label="Create an Account"
                         accessibilityLabel="Create an account"
-                        onPress={ this.goToCreateAccount.bind(this) } />
+                        onPress={ this.goToTermsOfService.bind(this) } />
                     <Button
                         label="Login"
                         accessibilityLabel="Login"
@@ -81,10 +80,6 @@ export default class StartScreen extends React.PureComponent {
 }
 
 const LOCAL_STYLES = StyleSheet.create({
-    header: {
-        fontSize: FONT_SIZES.LARGE,
-        marginBottom: 18 * REM
-    },
     body: {
         marginBottom: 42 * REM
     }
