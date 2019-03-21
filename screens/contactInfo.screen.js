@@ -2,18 +2,19 @@ import React       from 'react'
 import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
-import { Navigation } from 'react-native-navigation'
+import { Navigation  } from 'react-native-navigation'
 import { StyleSheet,
          FlatList,
          Animated,
          Modal,
-         View       } from 'react-native'
-import { Text       } from '../components/text.component'
-import { TextInput  } from '../components/textInput.component'
-import { Button     } from '../components/button.component'
+         View        } from 'react-native'
+import { Text        } from '../components/text.component'
+import { TextInput   } from '../components/textInput.component'
+import { Button      } from '../components/button.component'
 import { STYLES,
-         COLORS     } from '../styles'
-import { SCREENS    } from '../util/constants'
+         COLORS      } from '../styles'
+import { SCREENS     } from '../util/constants'
+import { MAIN_LAYOUT } from '../index'
 
 
 export default class ContactInfoScreen extends React.PureComponent {
@@ -43,9 +44,9 @@ export default class ContactInfoScreen extends React.PureComponent {
     onSubmit() {
         UserService.update({ contactMethods: this.state.contactMethods })
 
-        //Navigation.push(this.props.componentId, {
-        //    component: { name: 'AgeScreen' }
-        //})
+        Navigation.setRoot({
+            root: MAIN_LAYOUT
+        })
     }
 
     renderService({ item }) {

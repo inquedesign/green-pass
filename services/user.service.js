@@ -18,7 +18,7 @@ export default class UserService {
     static update( dataToUpdate ) {
         if ( AUTH.currentUser ) {
             FIRESTORE
-            .doc( AUTH.currentUser.email )
+            .doc( AUTH.currentUser.uid )
             .set( dataToUpdate, { merge: true } )
         }
         else {
@@ -26,5 +26,15 @@ export default class UserService {
         //        component: { name: 'LoginScreen' }
         //    })
         }
+    }
+    
+    static getById( uid ) {
+        if ( !AUTH.currentUser ) {
+            return Promise.reject('UserService.getById: User is not logged in.')
+        }
+        
+        if ( !uid ) uid = AUTH.currentUser.uid
+    
+        return FIRESTORE.doc( uid ).get()
     }
 }

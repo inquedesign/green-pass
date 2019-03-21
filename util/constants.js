@@ -7,4 +7,7 @@ export const SCREENS = {
     AVATAR_SCREEN           : 'AvatarScreen',
     CONTACT_INFO_SCREEN     : 'ContactInfoScreen',
     TERMS_OF_SERVICE_SCREEN : 'TermsOfServiceScreen',
+    PROFILE_SCREEN          : 'ProfileScreen',
+    BUDS_SCREEN             : 'BudsScreen',
+    EXPLORE_SCREEN          : 'ExploreScreen'
 }

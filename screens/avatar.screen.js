@@ -3,8 +3,7 @@ import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
 import { Navigation } from 'react-native-navigation'
-import { StyleSheet,
-         View       } from 'react-native'
+import { View       } from 'react-native'
 import { Text       } from '../components/text.component'
 import { Button     } from '../components/button.component'
 import { STYLES,
@@ -38,7 +37,7 @@ export default class AvatarScreen extends React.PureComponent {
                     <Text style={ STYLES.spaceAfter }>
                         Pick an avatar:
                     </Text>
-                    <View style={[ LOCAL_STYLES.avatar, STYLES.spaceAfter ]}/>
+                    <View style={[ STYLES.avatar, STYLES.spaceAfter ]}/>
                     <Button
                         label="Submit"
                         accessibilityLabel="Submit your avatar"
@@ -48,12 +47,3 @@ export default class AvatarScreen extends React.PureComponent {
         )
     }
 }
-
-const LOCAL_STYLES = StyleSheet.create({
-    avatar: {
-        width: '100%',
-        aspectRatio: 3/4,
-        borderWidth: 1,
-        borderColor: COLORS.PRIMARY
-    }
-})
