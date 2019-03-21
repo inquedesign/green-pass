@@ -1,5 +1,6 @@
 import StartScreen           from './screens/start.screen'
 import AccountCreationScreen from './screens/accountCreation.screen'
+import LoginScreen           from './screens/login.screen'
 import GenderScreen          from './screens/gender.screen'
 import AgeScreen             from './screens/age.screen'
 import UsernameScreen        from './screens/username.screen'
@@ -16,6 +17,7 @@ import { SCREENS        } from "./util/constants"
 
 Navigation.registerComponent( SCREENS.START_SCREEN, () => StartScreen )
 Navigation.registerComponent( SCREENS.ACCOUNT_CREATION_SCREEN, () => AccountCreationScreen )
+Navigation.registerComponent( SCREENS.LOGIN_SCREEN, () => LoginScreen )
 Navigation.registerComponent( SCREENS.GENDER_SCREEN, () => GenderScreen )
 Navigation.registerComponent( SCREENS.AGE_SCREEN, () => AgeScreen )
 Navigation.registerComponent( SCREENS.USERNAME_SCREEN, () => UsernameScreen )

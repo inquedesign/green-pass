@@ -1,6 +1,7 @@
 export const SCREENS = {
     START_SCREEN            : 'StartScreen',
     ACCOUNT_CREATION_SCREEN : 'AccountCreationScreen',
+    LOGIN_SCREEN            : 'LoginScreen',
     GENDER_SCREEN           : 'GenderScreen',
     AGE_SCREEN              : 'AgeScreen',
     USERNAME_SCREEN         : 'UsernameScreen',
