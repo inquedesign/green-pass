@@ -88,7 +88,7 @@ type ButtonProps = $ReadOnly<{|
 |}>;
 
 
-export class Button extends React.PureComponent<ButtonProps> {
+export default class Button extends React.PureComponent<ButtonProps> {
     render() {
         const {
             label,

@@ -5,8 +5,8 @@ import { StyleSheet,
          Modal,
          FlatList,
          TouchableHighlight } from 'react-native';
-import { Text       } from './text.component'
-import { Button     } from './button.component'
+import { Text,
+         Button     } from './'
 import { COLORS,
          FONT_SIZES } from '../styles'
 

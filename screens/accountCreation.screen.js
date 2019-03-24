@@ -5,10 +5,10 @@ import UserService from '../services/user.service'
 import { Navigation  } from 'react-native-navigation'
 import { StyleSheet,
          View        } from 'react-native'
-import { Text        } from '../components/text.component'
-import { TextInput   } from '../components/textInput.component'
-import { Button      } from '../components/button.component'
-import { Container   } from '../components/container.component'
+import { Text,
+         TextInput,
+         Button,
+         Container   } from '../components'
 import { STYLES,
          COLORS,
          FONT_SIZES,

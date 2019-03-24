@@ -2,9 +2,9 @@ import React from 'react'
 
 import { Navigation  } from 'react-native-navigation'
 import { View        } from 'react-native'
-import { Text        } from '../components/text.component'
-import { Button      } from '../components/button.component'
-import { Container  } from '../components/container.component'
+import { Text,
+         Button,
+         Container  } from '../components'
 import { STYLES      } from '../styles'
 import { SCREENS     } from '../util/constants'
 

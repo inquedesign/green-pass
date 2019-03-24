@@ -11,7 +11,7 @@ import { SCREEN_WIDTH,
          COLORS,
          REM             } from '../styles'
 
-export class Container extends React.PureComponent {
+export default class Container extends React.PureComponent {
     constructor() {
         super()
 

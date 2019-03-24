@@ -7,14 +7,14 @@ import { StyleSheet,
          TouchableOpacity,
          FlatList,
          Image       } from 'react-native'
-import { Text        } from '../components/text.component'
-import { TextInput   } from '../components/textInput.component'
-import { Button      } from '../components/button.component'
-import { Container   } from '../components/container.component'
+import { Text,
+         TextInput,
+         Button,
+         Container   } from '../components'
 import { STYLES,
          COLORS,
          FONT_SIZES,
-         SCREEN_HEIGHT,
+         //SCREEN_HEIGHT,
          REM         } from '../styles'
 import { SCREENS     } from '../util/constants'
 

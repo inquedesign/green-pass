@@ -6,7 +6,7 @@ import { COLORS,
          FONT_SIZES,
          COMPONENT_HEIGHT } from '../styles'
 
-export class TextInput extends React.Component {    
+export default class TextInput extends React.Component {    
     render() {
         return (
             <ReactInput 

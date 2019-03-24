@@ -7,11 +7,11 @@ import { StyleSheet,
          FlatList,
          Animated,
          View        } from 'react-native'
-import { Text        } from '../components/text.component'
-import { TextInput   } from '../components/textInput.component'
-import { Button      } from '../components/button.component'
-import { Container   } from '../components/container.component'
-import { Modal       } from '../components/modal.component'
+import { Text,
+         TextInput,
+         Button,
+         Container,
+         Modal       } from '../components'
 import { STYLES,
          COLORS,
          REM         } from '../styles'
