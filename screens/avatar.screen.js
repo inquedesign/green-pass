@@ -6,6 +6,7 @@ import { Navigation } from 'react-native-navigation'
 import { View       } from 'react-native'
 import { Text       } from '../components/text.component'
 import { Button     } from '../components/button.component'
+import { Container  } from '../components/container.component'
 import { STYLES,
          COLORS     } from '../styles'
 import { SCREENS    } from '../util/constants'
@@ -29,8 +30,7 @@ export default class AvatarScreen extends React.PureComponent {
 
     render() {
         return (
-            <View style={ STYLES.container }>
-                <View style={ STYLES.content }>
+            <Container>
                     <Text style={ STYLES.header }>
                         My Avatar
                     </Text>
@@ -42,8 +42,7 @@ export default class AvatarScreen extends React.PureComponent {
                         label="Submit"
                         accessibilityLabel="Submit your avatar"
                         onPress={ this.onSubmit.bind(this) }/>
-                </View>
-            </View>
+            </Container>
         )
     }
 }

@@ -7,6 +7,7 @@ import { StyleSheet,
 import { Text             } from '../components/text.component'
 import { TextInput        } from '../components/textInput.component'
 import { Button           } from '../components/button.component'
+import { Container        } from '../components/container.component'
 import { STYLES,
          REM,
          COMPONENT_HEIGHT } from '../styles'
@@ -51,54 +52,52 @@ export default class LoginScreen extends React.PureComponent {
 
     render() {
         return (
-            <View style={ STYLES.container }>
-                <View style={ STYLES.content }>
-                    <Text style={ STYLES.header }>
-                        Login
-                    </Text>
+            <Container>
+                <Text style={ STYLES.header }>
+                    Login
+                </Text>
 
-                    <TextInput style={ STYLES.spaceAfter }
-                        accessibilityLabel="Enter your email"
-                        placeholder='E-mail'
-                        autoComplete='email'
-                        textContentType='emailAddress'
-                        onChangeText={ (text) => this.setState({ email: text }) }/>
+                <TextInput style={ STYLES.spaceAfter }
+                    accessibilityLabel="Enter your email"
+                    placeholder='E-mail'
+                    autoComplete='email'
+                    textContentType='emailAddress'
+                    onChangeText={ (text) => this.setState({ email: text }) }/>
 
-                    <TextInput style={ STYLES.spaceAfter }
-                        accessibilityLabel="Enter your password"
-                        placeholder='Password'
-                        autoComplete='password'
-                        textContentType='newPassword'
-                        secureTextEntry={ true }
-                        onChangeText={ (text) => this.setState({ password: text }) }/>
+                <TextInput style={ STYLES.spaceAfter }
+                    accessibilityLabel="Enter your password"
+                    placeholder='Password'
+                    autoComplete='password'
+                    textContentType='newPassword'
+                    secureTextEntry={ true }
+                    onChangeText={ (text) => this.setState({ password: text }) }/>
 
-                    <Button style={ LOCAL_STYLES.submit }
-                        label="Go"
-                        accessibilityLabel="Submit e-mail and password"
-                        onPress={ this.onSubmit.bind(this) } />
+                <Button style={ LOCAL_STYLES.submit }
+                    label="Go"
+                    accessibilityLabel="Submit e-mail and password"
+                    onPress={ this.onSubmit.bind(this) } />
 
-                    <Text style={ STYLES.header }>
-                        Or, use your social
-                    </Text>
+                <Text style={ STYLES.header }>
+                    Or, use your social
+                </Text>
 
-                    <View style={ LOCAL_STYLES.socialContainer }>
-                        <Button style={ LOCAL_STYLES.socialButton }
-                            label=""
-                            accessibilityLabel="Social Media Placeholder"
-                            onPress={ () => {} } />
+                <View style={ LOCAL_STYLES.socialContainer }>
+                    <Button style={ LOCAL_STYLES.socialButton }
+                        label=""
+                        accessibilityLabel="Social Media Placeholder"
+                        onPress={ () => {} } />
 
-                        <Button style={ LOCAL_STYLES.socialButton }
-                            label=""
-                            accessibilityLabel="Social Media Placeholder"
-                            onPress={ () => {} } />
+                    <Button style={ LOCAL_STYLES.socialButton }
+                        label=""
+                        accessibilityLabel="Social Media Placeholder"
+                        onPress={ () => {} } />
 
-                        <Button style={ LOCAL_STYLES.socialButton }
-                            label=""
-                            accessibilityLabel="Social Media Placeholder"
-                            onPress={ () => {} } />
-                    </View>
+                    <Button style={ LOCAL_STYLES.socialButton }
+                        label=""
+                        accessibilityLabel="Social Media Placeholder"
+                        onPress={ () => {} } />
                 </View>
-            </View>
+            </Container>
         )
     }
 }

@@ -5,6 +5,7 @@ import { StyleSheet,
          View        } from 'react-native'
 import { Text        } from '../components/text.component'
 import { Button      } from '../components/button.component'
+import { Container   } from '../components/container.component'
 import { STYLES,
          REM         } from '../styles'
 import { SCREENS     } from '../util/constants'
@@ -36,24 +37,22 @@ export default class StartScreen extends React.PureComponent {
 
     render() {
         return (
-            <View style={ STYLES.container }>
-                <View style={ STYLES.content }>
-                    <Text style={ STYLES.header }>
-                        GreenPass connects {'\n'} Cannabis enthusiasts
-                    </Text>
-                    <Text style={ LOCAL_STYLES.body }>
-                        To get started, we need to {'\n'} make your profile
-                    </Text>
-                    <Button style={ STYLES.spaceAfter }
-                        label="Create an Account"
-                        accessibilityLabel="Create an account"
-                        onPress={ this.goToTermsOfService.bind(this) } />
-                    <Button
-                        label="Login"
-                        accessibilityLabel="Login"
-                        onPress={ this.goToLogin.bind(this) } />
-                </View>
-            </View>
+            <Container>
+                <Text style={ STYLES.header }>
+                    GreenPass connects {'\n'} Cannabis enthusiasts
+                </Text>
+                <Text style={ LOCAL_STYLES.body }>
+                    To get started, we need to {'\n'} make your profile
+                </Text>
+                <Button style={ STYLES.spaceAfter }
+                    label="Create an Account"
+                    accessibilityLabel="Create an account"
+                    onPress={ this.goToTermsOfService.bind(this) } />
+                <Button
+                    label="Login"
+                    accessibilityLabel="Login"
+                    onPress={ this.goToLogin.bind(this) } />
+            </Container>
         )
     }
 }

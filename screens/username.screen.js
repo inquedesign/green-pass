@@ -7,6 +7,7 @@ import { View       } from 'react-native'
 import { Text       } from '../components/text.component'
 import { TextInput  } from '../components/textInput.component'
 import { Button     } from '../components/button.component'
+import { Container  } from '../components/container.component'
 import { STYLES     } from '../styles'
 import { SCREENS    } from '../util/constants'
 
@@ -34,26 +35,24 @@ export default class UsernameScreen extends React.PureComponent {
 
     render() {
         return (
-            <View style={ STYLES.container }>
-                <View style={ STYLES.content }>
-                    <Text style={ STYLES.header }>
-                        Username
-                    </Text>
-                    <Text style={ STYLES.spaceAfter }>
-                        I want my username to be:
-                    </Text>
-                    <TextInput style={ STYLES.spaceAfter }
-                        accessibilityLabel="Enter a username to show others"
-                        placeholder='Username'
-                        autoComplete='username'
-                        textContentType='username'
-                        onChangeText={ (text) => this.setState({ username: text }) }/>
-                    <Button
-                        label="Submit"
-                        accessibilityLabel="Submit your username"
-                        onPress={ this.onSubmit.bind(this) }/>
-                </View>
-            </View>
+            <Container>
+                <Text style={ STYLES.header }>
+                    Username
+                </Text>
+                <Text style={ STYLES.spaceAfter }>
+                    I want my username to be:
+                </Text>
+                <TextInput style={ STYLES.spaceAfter }
+                    accessibilityLabel="Enter a username to show others"
+                    placeholder='Username'
+                    autoComplete='username'
+                    textContentType='username'
+                    onChangeText={ (text) => this.setState({ username: text }) }/>
+                <Button
+                    label="Submit"
+                    accessibilityLabel="Submit your username"
+                    onPress={ this.onSubmit.bind(this) }/>
+            </Container>
         )
     }
 }

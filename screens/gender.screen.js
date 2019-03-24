@@ -6,6 +6,7 @@ import { Navigation } from 'react-native-navigation'
 import { View       } from 'react-native'
 import { Text       } from '../components/text.component'
 import { Button     } from '../components/button.component'
+import { Container  } from '../components/container.component'
 import { STYLES     } from '../styles'
 import { SCREENS    } from '../util/constants'
 
@@ -24,28 +25,26 @@ export default class GenderScreen extends React.PureComponent {
 
     render() {
         return (
-            <View style={ STYLES.container }>
-                <View style={ STYLES.content }>
-                    <Text style={ STYLES.header }>
-                        The Basics
-                    </Text>
-                    <Text style={ STYLES.spaceAfter }>
-                        I am a:
-                    </Text>
-                    <Button style={ STYLES.spaceAfter }
-                        label="Male"
-                        accessibilityLabel="Select if male"
-                        onPress={ () => { this.setGender( 'male' ) } } />
-                    <Button style={ STYLES.spaceAfter }
-                        label="Female"
-                        accessibilityLabel="Select if female"
-                        onPress={ () => { this.setGender( 'female' ) } } />
-                    <Button
-                        label="Prefer Not to Say"
-                        accessibilityLabel="Select if you identify with some other gender"
-                        onPress={ () => { this.setGender( 'person' ) } } />
-                </View>
-            </View>
+            <Container>
+                <Text style={ STYLES.header }>
+                    The Basics
+                </Text>
+                <Text style={ STYLES.spaceAfter }>
+                    I am a:
+                </Text>
+                <Button style={ STYLES.spaceAfter }
+                    label="Male"
+                    accessibilityLabel="Select if male"
+                    onPress={ () => { this.setGender( 'male' ) } } />
+                <Button style={ STYLES.spaceAfter }
+                    label="Female"
+                    accessibilityLabel="Select if female"
+                    onPress={ () => { this.setGender( 'female' ) } } />
+                <Button
+                    label="Prefer Not to Say"
+                    accessibilityLabel="Select if you identify with some other gender"
+                    onPress={ () => { this.setGender( 'person' ) } } />
+            </Container>
         )
     }
 }

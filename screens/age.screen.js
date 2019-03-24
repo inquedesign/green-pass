@@ -6,6 +6,7 @@ import { Navigation } from 'react-native-navigation'
 import { View       } from 'react-native'
 import { Text       } from '../components/text.component'
 import { Button     } from '../components/button.component'
+import { Container  } from '../components/container.component'
 import { YearPicker } from '../components/yearPicker.component'
 import { STYLES     } from '../styles'
 import { SCREENS    } from '../util/constants'
@@ -30,22 +31,20 @@ export default class AgeScren extends React.PureComponent {
 
     render() {
         return (
-            <View style={ STYLES.container }>
-                <View style={ STYLES.content }>
-                    <Text style={ STYLES.header }>
-                        Age Verification
-                    </Text>
-                    <Text style={ STYLES.spaceAfter }>
-                        I was born in:
-                    </Text>
-                    <YearPicker style={ STYLES.spaceAfter }
-                        onValueChange={( year ) => { this.setState({ year: year }) }}/>
-                    <Button
-                        label="Submit"
-                        accessibilityLabel="Submit your birth year"
-                        onPress={ this.onSubmit.bind(this) } />
-                </View>
-            </View>
+            <Container>
+                <Text style={ STYLES.header }>
+                    Age Verification
+                </Text>
+                <Text style={ STYLES.spaceAfter }>
+                    I was born in:
+                </Text>
+                <YearPicker style={ STYLES.spaceAfter }
+                    onValueChange={( year ) => { this.setState({ year: year }) }}/>
+                <Button
+                    label="Submit"
+                    accessibilityLabel="Submit your birth year"
+                    onPress={ this.onSubmit.bind(this) } />
+            </Container>
         )
     }
 }

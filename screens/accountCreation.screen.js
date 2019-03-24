@@ -1,5 +1,4 @@
 import React       from 'react'
-//import firebase from 'react-native-firebase'
 import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
@@ -9,6 +8,7 @@ import { StyleSheet,
 import { Text        } from '../components/text.component'
 import { TextInput   } from '../components/textInput.component'
 import { Button      } from '../components/button.component'
+import { Container   } from '../components/container.component'
 import { STYLES,
          COLORS,
          FONT_SIZES,
@@ -86,57 +86,55 @@ export default class AccountCreationScreen extends React.PureComponent {
 
     render() {
         return (
-            <View style={ STYLES.container }>
-                <View style={ STYLES.content }>
-                    <Text style={ STYLES.header }>
-                        Account Creation
-                    </Text>
-                    <TextInput style={[ STYLES.spaceAfter, {color: this.state.emailColor} ]}
-                        accessibilityLabel="Enter your email"
-                        placeholder='E-mail'
-                        autoComplete='email'
-                        textContentType='emailAddress'
-                        onChangeText={ (text) => this.setState({ email: text }) }
-                        onBlur={ this.validateEmail.bind(this) }
-                    />
-                    <TextInput style={ STYLES.spaceAfter }
-                        accessibilityLabel="Enter your password"
-                        placeholder='Password'
-                        autoComplete='password'
-                        textContentType='newPassword'
-                        secureTextEntry={ true }
-                        onChangeText={ this.onChangePassword.bind(this) }
-                    />
-                    <TextInput style={[ STYLES.spaceAfter, {color: this.state.confirmColor} ]}
-                        accessibilityLabel="Enter your password again"
-                        placeholder='Confirm Password'
-                        autoComplete='password'
-                        secureTextEntry={ true }
-                        onChangeText={ this.onChangePasswordConfirmation.bind(this) }
-                    />
-                    <Button style={ LOCAL_STYLES.submit }
-                        label="Submit"
-                        accessibilityLabel="Submit e-mail and password"
-                        onPress={ this.onSubmit.bind(this) } />
-                    <Text style={ STYLES.header }>
-                        Or, use your social
-                    </Text>
-                    <View style={ LOCAL_STYLES.socialContainer }>
-                        <Button style={ LOCAL_STYLES.socialButton }
-                            label=""
-                            accessibilityLabel="Social Media Placeholder"
-                            onPress={ () => {} } />
-                        <Button style={ LOCAL_STYLES.socialButton }
-                            label=""
-                            accessibilityLabel="Social Media Placeholder"
-                            onPress={ () => {} } />
-                        <Button style={ LOCAL_STYLES.socialButton }
-                            label=""
-                            accessibilityLabel="Social Media Placeholder"
-                            onPress={ () => {} } />
-                    </View>
+            <Container>
+                <Text style={ STYLES.header }>
+                    Account Creation
+                </Text>
+                <TextInput style={[ STYLES.spaceAfter, {color: this.state.emailColor} ]}
+                    accessibilityLabel="Enter your email"
+                    placeholder='E-mail'
+                    autoComplete='email'
+                    textContentType='emailAddress'
+                    onChangeText={ (text) => this.setState({ email: text }) }
+                    onBlur={ this.validateEmail.bind(this) }
+                />
+                <TextInput style={ STYLES.spaceAfter }
+                    accessibilityLabel="Enter your password"
+                    placeholder='Password'
+                    autoComplete='password'
+                    textContentType='newPassword'
+                    secureTextEntry={ true }
+                    onChangeText={ this.onChangePassword.bind(this) }
+                />
+                <TextInput style={[ STYLES.spaceAfter, {color: this.state.confirmColor} ]}
+                    accessibilityLabel="Enter your password again"
+                    placeholder='Confirm Password'
+                    autoComplete='password'
+                    secureTextEntry={ true }
+                    onChangeText={ this.onChangePasswordConfirmation.bind(this) }
+                />
+                <Button style={ LOCAL_STYLES.submit }
+                    label="Submit"
+                    accessibilityLabel="Submit e-mail and password"
+                    onPress={ this.onSubmit.bind(this) } />
+                <Text style={ STYLES.header }>
+                    Or, use your social
+                </Text>
+                <View style={ LOCAL_STYLES.socialContainer }>
+                    <Button style={ LOCAL_STYLES.socialButton }
+                        label=""
+                        accessibilityLabel="Social Media Placeholder"
+                        onPress={ () => {} } />
+                    <Button style={ LOCAL_STYLES.socialButton }
+                        label=""
+                        accessibilityLabel="Social Media Placeholder"
+                        onPress={ () => {} } />
+                    <Button style={ LOCAL_STYLES.socialButton }
+                        label=""
+                        accessibilityLabel="Social Media Placeholder"
+                        onPress={ () => {} } />
                 </View>
-            </View>
+            </Container>
         )
     }
 }

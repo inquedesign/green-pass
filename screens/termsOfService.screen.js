@@ -4,6 +4,7 @@ import { Navigation  } from 'react-native-navigation'
 import { View        } from 'react-native'
 import { Text        } from '../components/text.component'
 import { Button      } from '../components/button.component'
+import { Container  } from '../components/container.component'
 import { STYLES      } from '../styles'
 import { SCREENS     } from '../util/constants'
 
@@ -28,24 +29,22 @@ export default class TermsOfServiceScreen extends React.PureComponent {
 
     render() {
         return (
-            <View style={ STYLES.container }>
-                <View style={ STYLES.content }>
-                    <Text style={ STYLES.header }>
-                        Terms of Service
-                    </Text>
-                    <Text style={ STYLES.spaceAfter }>
-                        Terms of service
-                    </Text>
-                    <Button style={ STYLES.spaceAfter }
-                        label="Accept"
-                        accessibilityLabel="Accept the terms of serice"
-                        onPress={ this.goToCreateAccount.bind(this) } />
-                    <Button
-                        label="Decline"
-                        accessibilityLabel="Decline the terms of service"
-                        onPress={ this.goToStart.bind(this) } />
-                </View>
-            </View>
+            <Container>
+                <Text style={ STYLES.header }>
+                    Terms of Service
+                </Text>
+                <Text style={ STYLES.spaceAfter }>
+                    Terms of service
+                </Text>
+                <Button style={ STYLES.spaceAfter }
+                    label="Accept"
+                    accessibilityLabel="Accept the terms of serice"
+                    onPress={ this.goToCreateAccount.bind(this) } />
+                <Button
+                    label="Decline"
+                    accessibilityLabel="Decline the terms of service"
+                    onPress={ this.goToStart.bind(this) } />
+            </Container>
         )
     }
 }

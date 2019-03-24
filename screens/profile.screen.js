@@ -7,7 +7,8 @@ import { StyleSheet,
          Image       } from 'react-native'
 import { Text        } from '../components/text.component'
 import { Button      } from '../components/button.component'
-import { STYLES, REM      } from '../styles'
+import { Container   } from '../components/container.component'
+import { STYLES, REM } from '../styles'
 import { SCREENS     } from '../util/constants'
 
 import SplashScreen from 'react-native-splash-screen'
@@ -54,40 +55,39 @@ export default class ProfileScreen extends React.PureComponent {
 
     render() {
         return (
-            <View style={[ STYLES.container, LOCAL_STYLES.container ]}>
-                <View style={ STYLES.content }>
-                    <Image style={[ STYLES.avatar, STYLES.spaceAfter ]}>
-                    </Image>
-                    <Text style={ STYLES.spaceAfter }>
-                    {
-                        this.state.id &&
-                        `${this.state.username} is a ${this.state.age} year old ${this.state.gender} from Palmer, AK.`
-                    }
-                    </Text>
+            <Container style={ LOCAL_STYLES.container }>
+                <Image style={[ STYLES.avatar, STYLES.spaceAfter ]}>
+                </Image>
+                <Text style={ STYLES.spaceAfter }>
+                {
+                    this.state.id &&
+                    `${this.state.username} is a ${this.state.age} year old ${this.state.gender} from Palmer, AK.`
+                }
+                </Text>
 
-                    {
-                        false &&
-                        <Button style={ STYLES.spaceAfter }
-                            label="Accept"
-                            accessibilityLabel="Accept the terms of serice"
-                            onPress={ () => {} } />
-                    }
-                    {
-                        this.props.profile &&
-                        <Button
-                            label="Become Buds"
-                            accessibilityLabel="Ask this user to be your bud"
-                            onPress={ () => {} } />
-                    }
-                </View>
-            </View>
+                {
+                    false &&
+                    <Button style={ STYLES.spaceAfter }
+                        label="Accept"
+                        accessibilityLabel="Accept the terms of serice"
+                        onPress={ () => {} } />
+                }
+                {
+                    this.props.profile &&
+                    <Button
+                        label="Become Buds"
+                        accessibilityLabel="Ask this user to be your bud"
+                        onPress={ () => {} } />
+                }
+            </Container>
         )
     }
 }
 
 const LOCAL_STYLES = {
     container: {
+        flex: 1,
         justifyContent: 'flex-start',
-        marginTop: 40 * REM
+        marginVertical: 20 * REM
     }
 }

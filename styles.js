@@ -23,20 +23,20 @@ export const COLORS = {
 }
 
 export const STYLES = StyleSheet.create({
-    container: {
-        flex: 0,
-        width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: COLORS.BACKGROUND
-    },
-    content: {
-        width: '80%',
-        maxWidth: .45 * SCREEN_HEIGHT,
-        backgroundColor: 'transparent',
-        alignItems: 'center'
-    },
+    //container: {
+    //    flex: 0,
+    //    width: SCREEN_WIDTH,
+    //    height: SCREEN_HEIGHT,
+    //    alignItems: 'center',
+    //    justifyContent: 'center',
+    //    backgroundColor: COLORS.BACKGROUND
+    //},
+    //content: {
+    //    width: '80%',
+    //    maxWidth: .45 * SCREEN_HEIGHT,
+    //    backgroundColor: 'transparent',
+    //    alignItems: 'center'
+    //},
     header: {
         fontSize: FONT_SIZES.LARGE,
         marginBottom: 18 * REM

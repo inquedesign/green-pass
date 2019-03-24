@@ -28,10 +28,12 @@ Navigation.registerComponent( SCREENS.PROFILE_SCREEN, () => ProfileScreen )
 Navigation.registerComponent( SCREENS.BUDS_SCREEN, () => BudsScreen )
 
 import UserService from './services/user.service'
+import firebase from 'react-native-firebase'
 
 Navigation.events().registerAppLaunchedListener(() => {
     // TODO: remove autologin and UserService
-    //UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
+    //if (firebase.auth().currentUser) firebase.auth().signOut()
+    UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
 
     Navigation.setDefaultOptions({
         topBar: {
@@ -58,13 +60,13 @@ Navigation.events().registerAppLaunchedListener(() => {
         root: INITIAL_LAYOUT
     })
         
-    //})
+    })
 })
 
 const INITIAL_LAYOUT = {
     stack: {
         children: [
-            { component: { name: SCREENS.START_SCREEN } }
+            { component: { name: SCREENS.CONTACT_INFO_SCREEN } }
         ]
     }
 }

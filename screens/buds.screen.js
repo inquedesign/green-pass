@@ -10,6 +10,7 @@ import { StyleSheet,
 import { Text        } from '../components/text.component'
 import { TextInput   } from '../components/textInput.component'
 import { Button      } from '../components/button.component'
+import { Container   } from '../components/container.component'
 import { STYLES,
          COLORS,
          FONT_SIZES,
@@ -86,13 +87,16 @@ export default class BudsScreen extends React.PureComponent {
     // TODO: Loading placeholder while data is fetched
     render() {
         return (
-            <View style={[
-                    STYLES.container,
-                    { justifyContent: 'flex-start',
-                      backgroundColor: this.state.searchMode ? COLORS.DISABLED : COLORS.BACKGROUND }
-            ]}>
-                <View style={ LOCAL_STYLES.content }>
-                    <TextInput style={ LOCAL_STYLES.searchField }
+            <Container style={[ LOCAL_STYLES.content, {
+                flex: 1,
+                padding: 0,
+                justifyContent: 'flex-start',
+                marginVertical: 20 * REM,
+                backgroundColor: this.state.searchMode ? COLORS.DISABLED : COLORS.BACKGROUND
+            }]}>
+
+                <View style={ LOCAL_STYLES.searchField }>
+                    <TextInput
                         accessibilityLabel="Find a bud to add"
                         placeholder='+ Add Bud'
                         autoComplete='username'
@@ -101,28 +105,28 @@ export default class BudsScreen extends React.PureComponent {
                             if (text.length === 0) this.setState({ searchMode: false })
                         }}
                         onSubmitEditing={ (event) => { this.search( event.nativeEvent.text ) } }/>
-
-                    <FlatList style={{ width: '100%' }}
-                        data={ this.state.searchMode ? this.state.searchResults : this.state.buds }
-                        keyExtractor={ (item, index) => item.id }
-                        renderItem={ this.renderListItem.bind(this) }/>
-
                 </View>
-            </View>
+
+                <FlatList style={{ width: '100%' }}
+                    data={ this.state.searchMode ? this.state.searchResults : this.state.buds }
+                    keyExtractor={ (item, index) => item.id }
+                    renderItem={ this.renderListItem.bind(this) }/>
+
+            </Container>
         )
     }
 }
 
 const LOCAL_STYLES = {
     content: {
-        width          : '100%',
-        maxWidth       : .5625 * SCREEN_HEIGHT,
-        alignItems     : 'center',
-        backgroundColor: 'transparent'
+        //width       : .5625 * SCREEN_HEIGHT,
+        //maxWidth          : '100%',
+        //alignItems     : 'center',
+        //backgroundColor: 'transparent'
     },
     searchField: {
-        width         : '80%',
-        marginVertical: 36 * REM
+        width         : '100%',
+        padding: 20 * REM
     },
     row: {
         flexDirection  : 'row',
