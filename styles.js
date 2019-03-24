@@ -33,8 +33,8 @@ export const STYLES = StyleSheet.create({
     },
     content: {
         width: '80%',
-        maxWidth: .4 * SCREEN_HEIGHT,
-        backgroundColor: COLORS.BACKGROUND,
+        maxWidth: .45 * SCREEN_HEIGHT,
+        backgroundColor: 'transparent',
         alignItems: 'center'
     },
     header: {

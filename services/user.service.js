@@ -3,7 +3,7 @@ import firebase from 'react-native-firebase'
 
 import { Navigation  } from 'react-native-navigation'
 
-const FIRESTORE = firebase.firestore().collection('Users')
+const FIRESTORE = firebase.firestore().collection( 'Users' )
 const AUTH      = firebase.auth()
 
 export default class UserService {
@@ -14,7 +14,7 @@ export default class UserService {
             password
         )
     }
-    
+
     static login( email, password ) {
         return AUTH.signInWithEmailAndPassword(
             email,
@@ -34,15 +34,44 @@ export default class UserService {
         //    })
         }
     }
-    
+
     static getById( uid ) {
         if ( !AUTH.currentUser ) {
-            return Promise.reject('UserService.getById: User is not logged in.')
+            return Promise.reject( 'UserService.getById: User is not logged in.' )
         }
         
         if ( !uid ) uid = AUTH.currentUser.uid
     
         return FIRESTORE.doc( uid ).get()
+        .then(( docref ) => {
+            const age = new Date().getFullYear() - docref.data().birthYear
+            return { id: docref.id, age: age, ...docref.data() }
+        })
+    }
+
+    static getByUsername( searchString ) {
+        if ( !AUTH.currentUser ) {
+            return Promise.reject( 'UserService.getByUsername: User is not logged in.' )
+        }
+
+        return FIRESTORE.where( 'username', '==', searchString )
+        .get()
+        .then(( results ) => {
+            return results.docs.map( (docref) => {
+                const age = new Date().getFullYear() - docref.data().birthYear
+                return { id: docref.id, age: age, ...docref.data() }
+            })
+        })
+    }
+
+    static getBuds() {
+        if ( !AUTH.currentUser ) {
+            return Promise.reject( 'UserService.getBuds(): User is not logged in.' )
+        }
+
+        return FIRESTORE.doc( AUTH.currentUser.uid ).collection( 'ContactList' )
+        .get()
+        .then(( results ) => results.docs )
     }
 }
 

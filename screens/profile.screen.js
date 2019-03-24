@@ -18,27 +18,27 @@ export default class ProfileScreen extends React.PureComponent {
         super( props )
         
         this.state = {
-            username: '',
-            age: 0,
-            gender: ''
-        }
-
-        if ( this.props.profile ) {
-            // Get user profile info for user uid in props.profile
-        }
-        else {
-            // Get this user's profile info
-            UserService.getById()
-            .then(( userData ) => {
-                data = userData.data()
-                const age = new Date().getFullYear() - data.birthYear
-                this.setState({ username: data.username, age: age, gender: data.gender })
-            })
+            id: null,
+            username: null,
+            age: null,
+            gender: null
         }
     }
 
     // TODO: Loading placeholder while data is fetched
     componentDidMount() {
+        if ( this.props.profile ) {
+            const data = this.props.profile
+            this.setState({ id: data.id, username: data.username, age: data.age, gender: data.gender })
+        }
+        else {
+            // Get this user's profile info
+            // TODO: add listener for changes
+            UserService.getById()
+            .then(( data ) => {
+                this.setState({ id: data.id, username: data.username, age: data.age, gender: data.gender })
+            })
+        }
         SplashScreen.hide()
     }
 
@@ -59,10 +59,14 @@ export default class ProfileScreen extends React.PureComponent {
                     <Image style={[ STYLES.avatar, STYLES.spaceAfter ]}>
                     </Image>
                     <Text style={ STYLES.spaceAfter }>
-                        { this.state.username } is a { this.state.age } year old { this.state.gender } from Palmer, AK.
-                    </Text>
                     {
-                        this.props.profile &&
+                        this.state.id &&
+                        `${this.state.username} is a ${this.state.age} year old ${this.state.gender} from Palmer, AK.`
+                    }
+                    </Text>
+
+                    {
+                        false &&
                         <Button style={ STYLES.spaceAfter }
                             label="Accept"
                             accessibilityLabel="Accept the terms of serice"
@@ -71,8 +75,8 @@ export default class ProfileScreen extends React.PureComponent {
                     {
                         this.props.profile &&
                         <Button
-                            label="Decline"
-                            accessibilityLabel="Decline the terms of service"
+                            label="Become Buds"
+                            accessibilityLabel="Ask this user to be your bud"
                             onPress={ () => {} } />
                     }
                 </View>

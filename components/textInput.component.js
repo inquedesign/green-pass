@@ -9,12 +9,13 @@ import { COLORS,
 export class TextInput extends React.Component {    
     render() {
         return (
-            <ReactInput { ...this.props }
-                style={[ defaults.input, this.props.style ]}
+            <ReactInput 
+                { ...this.props }
                 placeholderColor={ COLORS.DISABLED }
                 underlineColorAndroid='transparent'
                 autoCapitalize='none'
                 autoCorrect={ false }
+                style={[ defaults.input, this.props.style ]}
             />
         )
     }

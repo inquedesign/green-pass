@@ -8,9 +8,9 @@ import AvatarScreen          from './screens/avatar.screen'
 import ContactInfoScreen     from './screens/contactInfo.screen'
 import TermsOfServiceScreen  from './screens/termsOfService.screen'
 import ProfileScreen         from './screens/profile.screen' 
+import BudsScreen            from './screens/buds.screen'
 
 import { Navigation } from "react-native-navigation"
-
 import { COLORS,
          FONT_SIZES } from "./styles"
 import { SCREENS        } from "./util/constants"
@@ -25,8 +25,14 @@ Navigation.registerComponent( SCREENS.AVATAR_SCREEN, () => AvatarScreen )
 Navigation.registerComponent( SCREENS.CONTACT_INFO_SCREEN, () => ContactInfoScreen )
 Navigation.registerComponent( SCREENS.TERMS_OF_SERVICE_SCREEN, () => TermsOfServiceScreen )
 Navigation.registerComponent( SCREENS.PROFILE_SCREEN, () => ProfileScreen )
+Navigation.registerComponent( SCREENS.BUDS_SCREEN, () => BudsScreen )
+
+import UserService from './services/user.service'
 
 Navigation.events().registerAppLaunchedListener(() => {
+    // TODO: remove autologin and UserService
+    //UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
+
     Navigation.setDefaultOptions({
         topBar: {
             visible: false,
@@ -51,6 +57,8 @@ Navigation.events().registerAppLaunchedListener(() => {
     Navigation.setRoot({
         root: INITIAL_LAYOUT
     })
+        
+    //})
 })
 
 const INITIAL_LAYOUT = {
@@ -63,29 +71,34 @@ const INITIAL_LAYOUT = {
 
 export const MAIN_LAYOUT = {
     bottomTabs: {
-        children: [{
-            component: {
-                id: SCREENS.PROFILE_SCREEN,
-                name: SCREENS.PROFILE_SCREEN,
-                options: {
-                    bottomTab: {
-                        icon: require('./assets/973-user-toolbar.png'),
-                        text: 'PROFILE'
+        children: [
+            {
+                component: {
+                    id: SCREENS.PROFILE_SCREEN,
+                    name: SCREENS.PROFILE_SCREEN,
+                    options: {
+                        bottomTab: {
+                            icon: require('./assets/973-user-toolbar.png'),
+                            text: 'PROFILE'
+                        }
                     }
                 }
             },
-            //stack: {
-            //    children: [{
-            //        component: {
-            //            name: SCREENS.BUDS_SCREEN
-            //        }
-            //    }],
-            //    options: {
-            //        bottomTab: {
-            //            icon: require('image')
-            //        }
-            //    }
-            //},
+            {
+                stack: {
+                    children: [{
+                        component: {
+                            name: SCREENS.BUDS_SCREEN
+                        }
+                    }],
+                    options: {
+                        bottomTab: {
+                            icon: require('./assets/973-user-toolbar.png'),
+                            text: 'BUDS'
+                        }
+                    }
+                }
+            },
             //component: {
             //    name: SCREENS.EXPLORE_SCREEN,
             //    passProps: {
@@ -97,7 +110,7 @@ export const MAIN_LAYOUT = {
             //        }
             //    }
             //}
-        }],
+        ],
         options: {
             bottomTabs: {
                 currentTabId: SCREENS.PROFILE_SCREEN
