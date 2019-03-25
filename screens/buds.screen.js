@@ -77,7 +77,7 @@ export default class BudsScreen extends React.PureComponent {
                     </Text>
 
                     <Text style={{ fontSize: FONT_SIZES.SMALL, textAlign: 'left' }}>
-                        { `${item.age} ${item.gender} from Palmer, AK` }
+                        { `${item.age} ${item.gender}` }
                     </Text>
                 </View>
             </TouchableOpacity>

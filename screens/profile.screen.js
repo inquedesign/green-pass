@@ -61,7 +61,7 @@ export default class ProfileScreen extends React.PureComponent {
                 <Text style={ STYLES.spaceAfter }>
                 {
                     this.state.id &&
-                    `${this.state.username} is a ${this.state.age} year old ${this.state.gender} from Palmer, AK.`
+                    `${this.state.username} is a ${this.state.age} year old ${this.state.gender}`
                 }
                 </Text>
 
