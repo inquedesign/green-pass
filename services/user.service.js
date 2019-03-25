@@ -28,11 +28,6 @@ export default class UserService {
             .doc( AUTH.currentUser.uid )
             .set( dataToUpdate, { merge: true } )
         }
-        else {
-        //    Navigation.push(this.props.componentId, {
-        //        component: { name: 'LoginScreen' }
-        //    })
-        }
     }
 
     static getById( uid ) {
@@ -44,7 +39,7 @@ export default class UserService {
     
         return FIRESTORE.doc( uid ).get()
         .then(( docref ) => {
-            const age = new Date().getFullYear() - docref.data().birthYear
+            const age = getAge( docref.data().birthDate )
             return { id: docref.id, age: age, ...docref.data() }
         })
     }
@@ -58,7 +53,7 @@ export default class UserService {
         .get()
         .then(( results ) => {
             return results.docs.map( (docref) => {
-                const age = new Date().getFullYear() - docref.data().birthYear
+                const age = getAge( docref.data().birthDate )
                 return { id: docref.id, age: age, ...docref.data() }
             })
         })
@@ -73,6 +68,19 @@ export default class UserService {
         .get()
         .then(( results ) => results.docs )
     }
+}
+
+function getAge( birthDateString ) {
+    const currentDate = new Date()
+    const birthDate   = new Date( birthDateString )
+    let age = currentDate.getFullYear() - birthDate.getFullYear()
+    if ( currentDate.getMonth() < birthDate.getMonth() ||
+       ( currentDate.getMonth() == birthDate.getMonth() &&
+         currentDate.getDate()  < birthDate.getDate() )) {
+        age = age - 1
+    }
+
+    return age
 }
 
 //      {firebase.admob.nativeModuleExists && <Text style={styles.module}>admob()</Text>}

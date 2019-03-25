@@ -66,7 +66,7 @@ Navigation.events().registerAppLaunchedListener(() => {
 const INITIAL_LAYOUT = {
     stack: {
         children: [
-            { component: { name: SCREENS.START_SCREEN } }
+            { component: { name: SCREENS.AGE_SCREEN } }
         ]
     }
 }
