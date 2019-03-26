@@ -3,7 +3,8 @@ import firebase from 'react-native-firebase'
 
 import { Navigation  } from 'react-native-navigation'
 
-const FIRESTORE = firebase.firestore().collection( 'Users' )
+const FIRESTORE = firebase.firestore()
+const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
 
 export default class UserService {
@@ -22,22 +23,55 @@ export default class UserService {
         )
     }
 
-    static update( dataToUpdate ) {
-        if ( AUTH.currentUser ) {
-            FIRESTORE
-            .doc( AUTH.currentUser.uid )
-            .set( dataToUpdate, { merge: true } )
+    static updateUser( dataToUpdate ) {
+        if ( !AUTH.currentUser ) {
+            error = new Error( 'User is not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
         }
+
+        USERS
+        .doc( AUTH.currentUser.uid )
+        .set( dataToUpdate, { merge: true } )
+    }
+    
+    static updateContactMethods( contactMethods ) {
+        if ( !AUTH.currentUser ) {
+            error = new Error( 'User is not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+
+        let batch = FIRESTORE.batch()
+        if ( contactMethods.text ) {
+            const doc = USERS.doc( AUTH.currentUser.uid ).collection('ContactMethods').doc('text')
+            batch = batch.set( doc, { number: contactMethods.text }, { merge: true } )
+        }
+        if ( contactMethods.facebook ) {
+            const doc = USERS.doc( AUTH.currentUser.uid ).collection('ContactMethods').doc('facebook')
+            batch = batch.set( doc, { username: contactMethods.facebook }, { merge: true } )
+        }
+        if ( contactMethods.instagram ) {
+            const doc = USERS.doc( AUTH.currentUser.uid ).collection('ContactMethods').doc('instagram')
+            batch = batch.set( doc, { username: contactMethods.instagram }, { merge: true } )
+        }
+        if ( contactMethods.snapchat ) {
+            const doc = USERS.doc( AUTH.currentUser.uid ).collection('ContactMethods').doc('snapchat')
+            batch = batch.set( doc, { username: contactMethods.snapchat }, { merge: true } )
+        }
+        return batch.commit()
     }
 
     static getById( uid ) {
         if ( !AUTH.currentUser ) {
-            return Promise.reject( 'UserService.getById: User is not logged in.' )
+            error = new Error( 'User is not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
         }
         
         if ( !uid ) uid = AUTH.currentUser.uid
     
-        return FIRESTORE.doc( uid ).get()
+        return USERS.doc( uid ).get()
         .then(( docref ) => {
             const age = getAge( docref.data().birthDate )
             return { id: docref.id, age: age, ...docref.data() }
@@ -46,10 +80,12 @@ export default class UserService {
 
     static getByUsername( searchString ) {
         if ( !AUTH.currentUser ) {
-            return Promise.reject( 'UserService.getByUsername: User is not logged in.' )
+            error = new Error( 'User is not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
         }
 
-        return FIRESTORE.where( 'username', '==', searchString )
+        return USERS.where( 'username', '==', searchString )
         .get()
         .then(( results ) => {
             return results.docs.map( (docref) => {
@@ -61,10 +97,12 @@ export default class UserService {
 
     static getBuds() {
         if ( !AUTH.currentUser ) {
-            return Promise.reject( 'UserService.getBuds(): User is not logged in.' )
+            error = new Error( 'User is not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
         }
 
-        return FIRESTORE.doc( AUTH.currentUser.uid ).collection( 'ContactList' )
+        return USERS.doc( AUTH.currentUser.uid ).collection( 'ContactList' )
         .get()
         .then(( results ) => results.docs )
     }

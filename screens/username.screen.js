@@ -27,7 +27,7 @@ export default class UsernameScreen extends React.PureComponent {
     onSubmit() {
         if ( this.state.username.length === 0 ) return
 
-        UserService.update({ username: this.state.username })
+        UserService.updateUser({ username: this.state.username })
         Navigation.push(this.props.componentId, {
             component: { name: SCREENS.AVATAR_SCREEN }
         })

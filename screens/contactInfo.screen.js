@@ -33,6 +33,14 @@ export default class ContactInfoScreen extends React.PureComponent {
     }
 
     addContactMethod( service, contactInfo ) {
+        if ( service === 'text' ) {
+            contactInfo = contactInfo.replace( /[^0-9]+/g, '' )
+            if ( contactInfo.length !== 10 ) {
+                alert( 'Invalid phone number.' )
+                return
+            }
+        }
+
         this.setState({
             contactMethods: Object.assign(
                 {},
@@ -44,7 +52,7 @@ export default class ContactInfoScreen extends React.PureComponent {
     }
 
     onSubmit() {
-        UserService.update({ contactMethods: this.state.contactMethods })
+        UserService.updateContactMethods( this.state.contactMethods )
 
         Navigation.setRoot({
             root: MAIN_LAYOUT
@@ -115,10 +123,10 @@ class ServicesModal extends React.PureComponent {
         this.state = {
             submodal: false,
             services: [
-                'Snapchat',
-                'Facebook',
-                'Instagram',
-                'Text'
+                'snapchat',
+                'facebook',
+                'instagram',
+                'text'
             ],
             service: '',
             contactInfo: ''
@@ -188,16 +196,16 @@ class ServicesModal extends React.PureComponent {
                     <TextInput style={ STYLES.spaceAfter }
                         accessibilityLabel={
                             'Enter your ' + this.state.service +
-                            this.state.service === 'Text' ? 'phone number' : 'username'
+                            this.state.service === 'text' ? 'phone number' : 'username'
                         }
                         placeholder={
-                            this.state.service === 'Text' ? 'Phone #' : 'Username'
+                            this.state.service === 'text' ? 'Phone #' : 'Username'
                         }
                         autoComplete={
-                            this.state.service === 'Text' ? 'tel' : 'username'
+                            this.state.service === 'text' ? 'tel' : 'username'
                         }
                         textContentType={
-                            this.state.service === 'Text' ? 'telephoneNumber' : 'username'
+                            this.state.service === 'text' ? 'telephoneNumber' : 'username'
                         }
                         onChangeText={ (text) => this.setState({ contactInfo: text }) }/>
 

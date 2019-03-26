@@ -23,7 +23,7 @@ export default class AgeScreen extends React.PureComponent {
     onSubmit() {
         if ( !this.state.date ) return
 
-        UserService.update({ birthDate: this.state.date })
+        UserService.updateUser({ birthDate: this.state.date })
         Navigation.push(this.props.componentId, {
             component: { name: SCREENS.USERNAME_SCREEN }
         })

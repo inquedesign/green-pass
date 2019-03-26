@@ -32,7 +32,7 @@ import firebase from 'react-native-firebase'
 
 Navigation.events().registerAppLaunchedListener(() => {
     // TODO: remove autologin and UserService
-    if (firebase.auth().currentUser) firebase.auth().signOut()
+    //if (firebase.auth().currentUser) firebase.auth().signOut()
     //UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
 
     Navigation.setDefaultOptions({
@@ -66,7 +66,7 @@ Navigation.events().registerAppLaunchedListener(() => {
 const INITIAL_LAYOUT = {
     stack: {
         children: [
-            { component: { name: SCREENS.AGE_SCREEN } }
+            { component: { name: SCREENS.START_SCREEN } }
         ]
     }
 }
