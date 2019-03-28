@@ -33,7 +33,7 @@ import firebase from 'react-native-firebase'
 Navigation.events().registerAppLaunchedListener(() => {
     // TODO: remove autologin and UserService
     //if (firebase.auth().currentUser) firebase.auth().signOut()
-    //UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
+    UserService.login( 'bj@bj.com', 'asdfjkl;').then(() => {
 
     Navigation.setDefaultOptions({
         topBar: {
@@ -57,10 +57,10 @@ Navigation.events().registerAppLaunchedListener(() => {
     })
 
     Navigation.setRoot({
-        root: INITIAL_LAYOUT
+        root: MAIN_LAYOUT
     })
         
-    //})
+    })
 })
 
 const INITIAL_LAYOUT = {

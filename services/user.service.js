@@ -7,13 +7,62 @@ const FIRESTORE = firebase.firestore()
 const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
 
+let profileMonitor   = null
+let profileListeners = new Set()
+
 export default class UserService {
+
+    static addProfileListener( user, callback ) {
+        if ( user ) {
+            const unsubscribe = USERS.doc( user ).onSnapshot(
+                docref => {
+                    const age = getAge( docref.data().birthDate )
+                    callback({ id: docref.id, age: age, ...docref.data() })
+                }
+            )
+            return unsubscribe
+        }
+
+        profileListeners.add( callback )
+
+        return callback
+    }
+
+    static removeProfileListener( callback ) {
+        profileListeners.delete( callback )
+    }
+
+    static getProfile() {
+        if ( !profileMonitor ) {
+            return new Promise(( resolve, reject ) => {
+                profileMonitor = USERS.doc( AUTH.currentUser.uid ).onSnapshot(
+                    docref => {
+                        const age = getAge( docref.data().birthDate )
+                        UserService.profile = { id: docref.id, age: age, ...docref.data() }
+                        profileListeners.forEach( callback => {
+                            callback( UserService.profile )
+                        })
+                        resolve( UserService.profile )
+                    },
+                    error => {
+                        reject( error )
+                    }
+                )
+            })
+        }
+
+        return Promise.resolve( UserService.profile )
+    }
 
     static createAccount( email, password ) {
         return AUTH.createUserWithEmailAndPassword(
             email,
             password
         )
+        .then( credentials => {
+            UserService.getProfile()
+            return credentials
+        })
     }
 
     static login( email, password ) {
@@ -21,6 +70,10 @@ export default class UserService {
             email,
             password
         )
+        .then( credentials => {
+            UserService.getProfile()
+            return credentials
+        })
     }
 
     static updateUser( dataToUpdate ) {
@@ -62,14 +115,17 @@ export default class UserService {
         return batch.commit()
     }
 
-    static getById( uid ) {
+    static getUserById( uid ) {
         if ( !AUTH.currentUser ) {
             error = new Error( 'User is not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
         
-        if ( !uid ) uid = AUTH.currentUser.uid
+        if ( !uid ) {
+            error = new Error( 'No user id provided.' )
+            return Promise.reject( error )
+        }
     
         return USERS.doc( uid ).get()
         .then(( docref ) => {
@@ -78,7 +134,7 @@ export default class UserService {
         })
     }
 
-    static getByUsername( searchString ) {
+    static getUserByUsername( searchString ) {
         if ( !AUTH.currentUser ) {
             error = new Error( 'User is not logged in.' )
             error.name = "NOAUTH"
@@ -88,10 +144,7 @@ export default class UserService {
         return USERS.where( 'username', '==', searchString )
         .get()
         .then(( results ) => {
-            return results.docs.map( (docref) => {
-                const age = getAge( docref.data().birthDate )
-                return { id: docref.id, age: age, ...docref.data() }
-            })
+            return userDataFrom( results )
         })
     }
 
@@ -102,10 +155,45 @@ export default class UserService {
             return Promise.reject( error )
         }
 
-        return USERS.doc( AUTH.currentUser.uid ).collection( 'ContactList' )
+        return USERS.where( 'buds', 'array-contains', AUTH.currentUser.uid )
         .get()
-        .then(( results ) => results.docs )
+        .then(( results ) => {
+            return userDataFrom( results )
+        })
     }
+    
+    static addBud( uid ) {
+        if ( !AUTH.currentUser ) {
+            error = new Error( 'User is not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+
+        return USERS.doc( AUTH.currentUser.uid ).collection( 'ContactList' ).doc( uid )
+        .set({ id: uid })
+    }
+    
+    static removeBud( uid ) {
+        if ( !AUTH.currentUser ) {
+            error = new Error( 'User is not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+
+        return FIRESTORE.batch()
+        .delete( USERS.doc( AUTH.currentUser.uid ).collection( 'ContactList' ).doc( uid ) )
+        .delete( USERS.doc( uid ).collection( 'ContactList' ).doc( AUTH.currentUser.uid ) )
+        .commit()
+    }
+}
+
+UserService.profile = null
+
+function userDataFrom( queryResults ) {
+    return queryResults.docs.map( (docref) => {
+        const age = getAge( docref.data().birthDate )
+        return { id: docref.id, age: age, ...docref.data() }
+    })
 }
 
 function getAge( birthDateString ) {

@@ -36,8 +36,7 @@ export default class BudsScreen extends React.PureComponent {
         // TODO: Move to listening for on change events on both bud list and individual records
         UserService.getBuds()
         .then(( results ) => {
-            buds = results.map( (docref) => docref.data() )
-            this.setState({ buds: buds })
+            this.setState({ buds: results })
         })
     }
 
@@ -45,7 +44,7 @@ export default class BudsScreen extends React.PureComponent {
         if ( searchString.length > 0 ) {
             this.setState({ searchMode: true })
 
-            UserService.getByUsername( searchString )
+            UserService.getUserByUsername( searchString )
             .then(( results ) => {
                 this.setState({
                     searchMode: true,
@@ -55,9 +54,9 @@ export default class BudsScreen extends React.PureComponent {
         }
     }
 
-    showProfile( profile ) {
+    showProfile( userId ) {
         Navigation.push( this.props.componentId, {
-            component: { name: SCREENS.PROFILE_SCREEN, passProps: { profile: profile } }
+            component: { name: SCREENS.PROFILE_SCREEN, passProps: { userId: userId } }
         })
     }
 
@@ -66,7 +65,7 @@ export default class BudsScreen extends React.PureComponent {
         return (
             <TouchableOpacity
                 style={[ LOCAL_STYLES.row, { backgroundColor: background } ]}
-                onPress={ () => { this.showProfile(item) } }>
+                onPress={ () => { this.showProfile(item.id) } }>
 
                 <Image style={ LOCAL_STYLES.thumbnail }>
                 </Image>
