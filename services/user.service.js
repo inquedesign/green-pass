@@ -7,8 +7,8 @@ const FIRESTORE = firebase.firestore()
 const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
 
-let profileMonitor   = null
-let profileListeners = new Set()
+let profileUnsubscribe = null
+let profileListeners   = new Set()
 
 export default class UserService {
 
@@ -33,11 +33,14 @@ export default class UserService {
     }
 
     static getProfile() {
-        if ( !profileMonitor ) {
+        if ( !profileUnsubscribe ) {
             return new Promise(( resolve, reject ) => {
-                profileMonitor = USERS.doc( AUTH.currentUser.uid ).onSnapshot(
+                profileUnsubscribe = USERS.doc( AUTH.currentUser.uid ).onSnapshot(
                     docref => {
-                        const age = getAge( docref.data().birthDate )
+                        let age = null
+                        if ( docref.data() && docref.data().birthDate ) {
+                            age = getAge( docref.data().birthDate )
+                        }
                         UserService.profile = { id: docref.id, age: age, ...docref.data() }
                         profileListeners.forEach( callback => {
                             callback( UserService.profile )
@@ -59,6 +62,14 @@ export default class UserService {
             email,
             password
         )
+        .then( credentials => {
+            if ( profileUnsubscribe ) { 
+                profileUnsubscribe()
+                profileUnsubscribe = null
+            }
+            UserService.getProfile()
+            return credentials
+        })
     }
 
     static login( email, password ) {
