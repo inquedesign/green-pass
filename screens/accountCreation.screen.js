@@ -108,6 +108,7 @@ export default class AccountCreationScreen extends React.PureComponent {
                     placeholder='Confirm Password'
                     autoComplete='password'
                     secureTextEntry={ true }
+                    allCaps={ false }
                     onChangeText={ this.onChangePasswordConfirmation.bind(this) }
                 />
                 <Button style={ STYLES.spaceAfter }
