@@ -58,7 +58,7 @@ export default class LoginScreen extends React.PureComponent {
                     accessibilityLabel="Enter your password"
                     placeholder='Password'
                     autoComplete='password'
-                    textContentType='newPassword'
+                    textContentType='password'
                     secureTextEntry={ true }
                     allCaps={ false }
                     onChangeText={ (text) => this.setState({ password: text }) }/>
