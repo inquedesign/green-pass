@@ -59,10 +59,6 @@ export default class UserService {
             email,
             password
         )
-        .then( credentials => {
-            UserService.getProfile()
-            return credentials
-        })
     }
 
     static login( email, password ) {

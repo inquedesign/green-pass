@@ -9,7 +9,7 @@ import { Text,
          Button,
          Container        } from '../components'
 import { STYLES,
-         REM,
+         VH,
          COMPONENT_HEIGHT } from '../styles'
 import { MAIN_LAYOUT      } from '../index'
 
@@ -34,16 +34,6 @@ export default class LoginScreen extends React.PureComponent {
             Navigation.setRoot({
                 root: MAIN_LAYOUT
             })
-            // credentials:
-            //    additionalUserInfo:
-            //        profile
-            //        username            
-            //    user:
-            //        displayName
-            //        email
-            //        metadata
-            //        photoURL
-            //        uid
         })
         .catch( error => {
             alert( "Error: " + error.message )
@@ -70,9 +60,10 @@ export default class LoginScreen extends React.PureComponent {
                     autoComplete='password'
                     textContentType='newPassword'
                     secureTextEntry={ true }
+                    allCaps={ false }
                     onChangeText={ (text) => this.setState({ password: text }) }/>
 
-                <Button style={ LOCAL_STYLES.submit }
+                <Button style={ STYLES.spaceAfter }
                     label="Go"
                     accessibilityLabel="Submit e-mail and password"
                     onPress={ this.onSubmit.bind(this) } />
@@ -103,9 +94,6 @@ export default class LoginScreen extends React.PureComponent {
 }
 
 const LOCAL_STYLES = StyleSheet.create({
-    submit: {
-        marginBottom: 36 * REM
-    },
     socialContainer: {
         flex: 0,
         width: '100%',

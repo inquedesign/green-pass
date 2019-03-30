@@ -17,9 +17,10 @@ export default class Text extends React.PureComponent {
 
 const defaults = StyleSheet.create({
     text: {
-        fontSize: FONT_SIZES.MEDIUM,
+        fontFamily: 'Open Sans',
         fontWeight: '200',
-        color: COLORS.PRIMARY,
+        fontSize: FONT_SIZES.MEDIUM,
+        color: COLORS.SECONDARY,
         textAlign: 'center'
     }
 })

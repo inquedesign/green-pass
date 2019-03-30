@@ -9,7 +9,8 @@ import { StyleSheet,
 import { SCREEN_WIDTH,
          SCREEN_HEIGHT,
          COLORS,
-         REM             } from '../styles'
+         BORDER_RADIUS,
+         VH             } from '../styles'
 
 export default class Container extends React.PureComponent {
     constructor() {
@@ -24,8 +25,8 @@ export default class Container extends React.PureComponent {
                 style={ STYLES.background }
                 resizeMode='repeat'
                 source={ this.loggedIn ?
-                    require('../assets/bgWhite.png') :
-                    require('../assets/bgGreen.png') }>
+                    require('../assets/bg/White.png') :
+                    require('../assets/bg/Green.png') }>
 
                 <View style={[ STYLES.container, this.props.style ]}>
                     <View style={ STYLES.content }>
@@ -48,10 +49,10 @@ const STYLES = StyleSheet.create({
     container: {
         width          : .45 * SCREEN_HEIGHT,
         maxWidth       : '80%',
-        padding        : 10 * REM,
+        padding        : 15 * VH,
         alignItems     : 'center',
         backgroundColor: COLORS.BACKGROUND,
-        borderRadius   : 8 * REM
+        borderRadius   : BORDER_RADIUS
     },
     content: {
         width          : '100%',

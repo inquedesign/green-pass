@@ -23,7 +23,9 @@ export default class AgeScreen extends React.PureComponent {
     onSubmit() {
         if ( !this.state.date ) return
 
-        UserService.updateUser({ birthDate: this.state.date })
+        // Change MM-DD-YYYY to ISO Standard YYYY-MM-DD
+        const date = this.state.date.slice(6) + '-' + this.state.slice(0, 5)
+        UserService.updateUser({ birthDate: date })
         Navigation.push(this.props.componentId, {
             component: { name: SCREENS.USERNAME_SCREEN }
         })
@@ -37,7 +39,7 @@ export default class AgeScreen extends React.PureComponent {
                 </Text>
 
                 <Text style={ STYLES.spaceAfter }>
-                    I was born in:
+                    I was born on:
                 </Text>
 
                 <DatePicker

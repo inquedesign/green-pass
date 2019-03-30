@@ -5,13 +5,13 @@ import React from 'react'
 import { StyleSheet,
          Dimensions,
          Text,
-         View,
+         ImageBackground,
          TouchableOpacity } from 'react-native'
 
-import { REM,
-         COLORS,
+import { COLORS,
          FONT_SIZES,
-         COMPONENT_HEIGHT } from '../styles'
+         COMPONENT_HEIGHT,
+         BORDER_RADIUS    } from '../styles'
 
 import type {PressEvent} from 'react-native'
 
@@ -77,11 +77,6 @@ type ButtonProps = $ReadOnly<{|
     accessibilityLabel?: ?string,
 
     /**
-    * If true, disable all interactions for this component.
-    */
-    disabled?: ?boolean,
-
-    /**
     * Used to locate this view in end-to-end tests.
     */
     testID?: ?string,
@@ -93,9 +88,9 @@ export default class Button extends React.PureComponent<ButtonProps> {
         const {
             label,
             accessibilityLabel,
+            backgroundImage,
             aspectRatio,
             color,
-            disabled,
             onPress,
             hasTVPreferredFocus,
             nextFocusDown,
@@ -108,6 +103,9 @@ export default class Button extends React.PureComponent<ButtonProps> {
         const buttonStyles = [ defaults.button ]
         const textStyles   = [ defaults.text ]
         const parentStyles = [ defaults.touchable, this.props.style ]
+        if ( backgroundImage ) {
+            buttonStyles.push({ backgroundColor: 'transparent' })
+        }
         if ( color ) {
             textStyles.push({ color: color })
         }
@@ -115,11 +113,6 @@ export default class Button extends React.PureComponent<ButtonProps> {
             parentStyles.push({ aspectRatio: aspectRatio })
         }
         const accessibilityStates = []
-        if ( disabled ) {
-            buttonStyles.push( styles.buttonDisabled )
-            textStyles.push( styles.textDisabled )
-            accessibilityStates.push( 'disabled' )
-        }
         return (
             <TouchableOpacity style={ parentStyles }
                 accessibilityLabel={ accessibilityLabel }
@@ -132,13 +125,15 @@ export default class Button extends React.PureComponent<ButtonProps> {
                 nextFocusRight={ nextFocusRight }
                 nextFocusUp={ nextFocusUp }
                 testID={ testID }
-                disabled={ disabled }
                 onPress={ onPress }>
-                <View style={ buttonStyles }>
-                    <Text style={ textStyles } disabled={ disabled }>
+                <ImageBackground style={ buttonStyles }
+                    resizeMode='repeat'
+                    source={ backgroundImage }>
+
+                    <Text style={ textStyles }>
                         { label }
                     </Text>
-                </View>
+                </ImageBackground>
             </TouchableOpacity>
         )
     }
@@ -150,29 +145,23 @@ const HEIGHT    = COMPONENT_HEIGHT
 const defaults = StyleSheet.create({
     touchable: {
         height: HEIGHT,
-        width: '100%',
+        width : '100%',
+        borderRadius   : BORDER_RADIUS,
+        overflow: 'hidden'
     },
     button: {
-        flex: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderRadius: .5 * HEIGHT,
-        borderColor: COLORS.PRIMARY
+        flex           : 0,
+        alignItems     : 'center',
+        justifyContent : 'center',
+        width          : '100%',
+        height         : '100%',
+        backgroundColor: COLORS.PRIMARY,
     },
     text: {
         textAlign: 'center',
-        color: COLORS.PRIMARY,
-        fontSize: FONT_SIZE,
-        fontWeight: '200'
-    },
-    buttonDisabled: {
-        borderColor: COLORS.DISABLED
-    },
-    textDisabled: {
-        color: COLORS.DISABLED
+        color: COLORS.TERTIARY,
+        fontFamily: 'HWTArtz',
+        letterSpacing: 1.5,
+        fontSize: FONT_SIZE
     }
 });

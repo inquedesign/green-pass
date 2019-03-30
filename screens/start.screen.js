@@ -1,13 +1,11 @@
 import React from 'react'
 
 import { Navigation  } from 'react-native-navigation'
-import { StyleSheet,
-         View        } from 'react-native'
+import { View        } from 'react-native'
 import { Text,
          Button,
          Container   } from '../components'
-import { STYLES,
-         REM         } from '../styles'
+import { STYLES      } from '../styles'
 import { SCREENS     } from '../util/constants'
 
 import SplashScreen from 'react-native-splash-screen'
@@ -39,10 +37,10 @@ export default class StartScreen extends React.PureComponent {
         return (
             <Container>
                 <Text style={ STYLES.header }>
-                    GreenPass connects {'\n'} Cannabis enthusiasts
+                    GreenPass connects{'\n'}Cannabis enthusiasts
                 </Text>
-                <Text style={ LOCAL_STYLES.body }>
-                    To get started, we need to {'\n'} make your profile
+                <Text style={ STYLES.spaceAfter }>
+                    To get started, we need to{'\n'}make your profile
                 </Text>
                 <Button style={ STYLES.spaceAfter }
                     label="Create an Account"
@@ -56,9 +54,3 @@ export default class StartScreen extends React.PureComponent {
         )
     }
 }
-
-const LOCAL_STYLES = StyleSheet.create({
-    body: {
-        marginBottom: 42 * REM
-    }
-});

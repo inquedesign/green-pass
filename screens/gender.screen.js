@@ -41,7 +41,7 @@ export default class GenderScreen extends React.PureComponent {
                     accessibilityLabel="Select if female"
                     onPress={ () => { this.setGender( 'female' ) } } />
                 <Button
-                    label="Prefer Not to Say"
+                    label="Other"
                     accessibilityLabel="Select if you identify with some other gender"
                     onPress={ () => { this.setGender( 'person' ) } } />
             </Container>

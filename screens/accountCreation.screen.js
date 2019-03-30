@@ -11,8 +11,6 @@ import { Text,
          Container   } from '../components'
 import { STYLES,
          COLORS,
-         FONT_SIZES,
-         REM,
          COMPONENT_HEIGHT } from '../styles'
 import { SCREENS          } from '../util/constants'
 
@@ -75,8 +73,6 @@ export default class AccountCreationScreen extends React.PureComponent {
                 Navigation.push(this.props.componentId, {
                     component: { name: SCREENS.GENDER_SCREEN }
                 })
-                // credentials.additionalUserInfo.profile? .username?
-                // credentials.user.displayName? .email? .metadata? .photoURL?
             })
             .catch( error => {
                 alert( "Error: " + error.message )
@@ -104,6 +100,7 @@ export default class AccountCreationScreen extends React.PureComponent {
                     autoComplete='password'
                     textContentType='newPassword'
                     secureTextEntry={ true }
+                    allCaps={ false }
                     onChangeText={ this.onChangePassword.bind(this) }
                 />
                 <TextInput style={[ STYLES.spaceAfter, {color: this.state.confirmColor} ]}
@@ -113,7 +110,7 @@ export default class AccountCreationScreen extends React.PureComponent {
                     secureTextEntry={ true }
                     onChangeText={ this.onChangePasswordConfirmation.bind(this) }
                 />
-                <Button style={ LOCAL_STYLES.submit }
+                <Button style={ STYLES.spaceAfter }
                     label="Submit"
                     accessibilityLabel="Submit e-mail and password"
                     onPress={ this.onSubmit.bind(this) } />
@@ -140,9 +137,6 @@ export default class AccountCreationScreen extends React.PureComponent {
 }
 
 const LOCAL_STYLES = StyleSheet.create({
-    submit: {
-        marginBottom: 36 * REM
-    },
     socialContainer: {
         flex: 0,
         width: '100%',

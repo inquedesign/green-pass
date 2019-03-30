@@ -2,22 +2,31 @@ import React       from 'react'
 import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
-import { Navigation  } from 'react-native-navigation'
-import { StyleSheet,
+import { Navigation       } from 'react-native-navigation'
+import { ImageBackground,
          FlatList,
-         Animated,
-         View        } from 'react-native'
+         Animated         } from 'react-native'
 import { Text,
          TextInput,
          Button,
          Container,
-         Modal       } from '../components'
+         Modal            } from '../components'
 import { STYLES,
          COLORS,
-         REM         } from '../styles'
-import { SCREENS     } from '../util/constants'
-import { MAIN_LAYOUT } from '../index'
+         FONT_SIZES,
+         COMPONENT_HEIGHT,
+         BORDER_RADIUS    } from '../styles'
+import { MAIN_LAYOUT      } from '../index'
 
+const SERVICES = {
+    'facebook': { source: require( '../assets/bg/Fbook.png' ) },
+    'twitter': { source: require( '../assets/bg/Twitter.png' ) },
+    'whatsapp': { source: require( '../assets/bg/Whatsapp.png' ) },
+    'snapchat': { source: require( '../assets/bg/Snapchat.png' ) },
+    'reddit': { source: require( '../assets/bg/Reddit.png' ) },
+    'instagram': { source: require( '../assets/bg/Insta.png' ) },
+    'text': { source: require( '../assets/bg/Text.png' ) }
+}
 
 export default class ContactInfoScreen extends React.PureComponent {
     constructor( props ) {
@@ -39,6 +48,7 @@ export default class ContactInfoScreen extends React.PureComponent {
                 alert( 'Invalid phone number.' )
                 return
             }
+            contactInfo = `(${contactInfo.slice(0, 3)}) ${contactInfo.slice(3, 6)}-${contactInfo.slice(6)}`
         }
 
         this.setState({
@@ -61,9 +71,28 @@ export default class ContactInfoScreen extends React.PureComponent {
 
     renderService({ item }) {
         return (
-            <TextInput style={ STYLES.spaceAfter }
-                editable={ false }
-                defaultValue={ item }/>
+            <ImageBackground style={[ STYLES.spaceAfter, {
+                    width: '100%',
+                    height: COMPONENT_HEIGHT,
+                    flex: 0,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: BORDER_RADIUS,
+                    overflow: 'hidden'
+                } ]}
+                resizeMode='repeat'
+                source={ SERVICES[item].source }>
+
+                <Text style={{
+                    textAlign: 'center',
+                    color: COLORS.TERTIARY,
+                    backgroundColor: 'transparent',
+                    fontFamily: 'HWTArtz',
+                    fontSize: FONT_SIZES.MEDIUM}}>
+
+                    { this.state.contactMethods[item] }
+                </Text>
+            </ImageBackground>
         )
     }
 
@@ -76,9 +105,6 @@ export default class ContactInfoScreen extends React.PureComponent {
 
                 <Text style={ STYLES.spaceAfter }>
                     People will request to be your Bud to connect with you.
-                </Text>
-
-                <Text style={ STYLES.spaceAfter }>
                     If you accept, GreenPass will show them these methods to get to know you better.
                 </Text>
 
@@ -102,7 +128,7 @@ export default class ContactInfoScreen extends React.PureComponent {
                 {
                 Object.keys(this.state.contactMethods).length > 0 &&
                 <Button
-                    label='Submit'
+                    label='Continue'
                     accessibilityLabel='Submit your contact methods'
                     onPress={ this.onSubmit.bind(this) }/>
                 }
@@ -122,12 +148,6 @@ class ServicesModal extends React.PureComponent {
 
         this.state = {
             submodal: false,
-            services: [
-                'snapchat',
-                'facebook',
-                'instagram',
-                'text'
-            ],
             service: '',
             contactInfo: ''
         }
@@ -150,6 +170,8 @@ class ServicesModal extends React.PureComponent {
     }
 
     onSubmit() {
+        if ( this.state.contactInfo.length == 0 ) return
+
         this.props.onSubmit( this.state.service, this.state.contactInfo )
     }
 
@@ -170,12 +192,13 @@ class ServicesModal extends React.PureComponent {
                     </Text>
 
                     <FlatList style={{ width: '100%' }}
-                        data={ this.state.services }
-                        keyExtractor={ (item, index) => item }
+                        data={ Object.keys( SERVICES ) }
+                        keyExtractor={ (key, index) => key }
                         renderItem={ ({ item }) => (
                             <Button style={ STYLES.spaceAfter }
-                                label={ item }
+                                label={ item == 'text' ? 'text message' : item }
                                 accessibilityLabel={ 'Add contact info for ' + item }
+                                backgroundImage={ SERVICES[item].source }
                                 onPress={() => {
                                     this.updateService( item )
                                 }}/>
@@ -219,21 +242,3 @@ class ServicesModal extends React.PureComponent {
         )
     }
 }
-
-const LOCAL_STYLES = StyleSheet.create({
-    modal: {
-        flex: 0,
-        width: '100%',
-        height: '100%',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: COLORS.BACKGROUND
-    },
-    content: {
-        width: '100%',
-        padding: 10 * REM,
-        //maxWidth: .45 * SCREEN_HEIGHT,
-        backgroundColor: 'transparent',
-        alignItems: 'center'
-    }
-})

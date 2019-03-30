@@ -2,10 +2,9 @@ import React from 'react';
 import DP    from 'react-native-datepicker'
 
 import { StyleSheet       } from 'react-native';
-import { Text,
-         Button           } from './'
 import { COLORS,
          FONT_SIZES,
+         BORDER_RADIUS,
          COMPONENT_HEIGHT } from '../styles'
 
 export default class DatePicker extends React.PureComponent {
@@ -18,8 +17,8 @@ export default class DatePicker extends React.PureComponent {
         const minDate = new Date()
         minDate.setFullYear( currentDate.getFullYear() - 100 )
 
-        this.maxDate = `${maxDate.getFullYear()}-${maxDate.getMonth()+1}-${maxDate.getDate()+1}`
-        this.minDate = `${minDate.getFullYear()}-${minDate.getMonth()+1}-${minDate.getDate()+1}`
+        this.maxDate = `${maxDate.getMonth()+1}-${maxDate.getDate()+1}-${maxDate.getFullYear()}`
+        this.minDate = `${minDate.getMonth()+1}-${minDate.getDate()+1}-${minDate.getFullYear()}`
 
         this.state = {
             dateString: ''
@@ -38,7 +37,7 @@ export default class DatePicker extends React.PureComponent {
                 customStyles={ DEFAULTS }
                 mode='date'
                 placeholder='Select year of birth'
-                format='YYYY-MM-DD'
+                format='MM-DD-YYYY'
                 minDate={ this.minDate }
                 maxDate={ this.maxDate }
                 showIcon={ false }
@@ -55,22 +54,28 @@ const HEIGHT = COMPONENT_HEIGHT
 
 const DEFAULTS = StyleSheet.create({
     // Property names are important
-    dateInput: {
+    dateTouchBody: {
         width          : '100%',
         height         : HEIGHT,
-        textAlign      : 'center',
         borderWidth    : 1,
-        borderRadius   : .5 * HEIGHT,
+        borderRadius   : BORDER_RADIUS,
         borderColor    : COLORS.PRIMARY,
         backgroundColor: COLORS.BACKGROUND,
     },
+    dateInput: {
+        width          : '100%',
+        height         : '100%',
+        textAlign      : 'center',
+        borderWidth: 0
+    },
     placeholderText: {
-        fontSize: FONT_SIZES.MEDIUM,
-        color   : COLORS.DISABLED
+        fontFamily: 'HWTArtz',
+        fontSize  : FONT_SIZES.MEDIUM,
+        color     : COLORS.PRIMARY
     },
     dateText: {
+        fontFamily: 'HWTArtz',
         fontSize  : FONT_SIZES.MEDIUM,
-        fontWeight: '200',
         color     : COLORS.PRIMARY,
     }
 })

@@ -5,7 +5,7 @@ import { Navigation  } from 'react-native-navigation'
 import { StyleSheet,
          View,
          TouchableOpacity,
-         FlatList,
+         SectionList,
          Image       } from 'react-native'
 import { Text,
          TextInput,
@@ -15,7 +15,7 @@ import { STYLES,
          COLORS,
          FONT_SIZES,
          //SCREEN_HEIGHT,
-         REM         } from '../styles'
+         VH         } from '../styles'
 import { SCREENS     } from '../util/constants'
 
 
@@ -24,8 +24,9 @@ export default class BudsScreen extends React.PureComponent {
         super( props )
         
         this.state = {
-            searchMode: false,
-            buds: [],
+            searchMode   : false,
+            buds         : [],
+            budRequests  : [],
             searchResults: []
         }
         
@@ -60,26 +61,42 @@ export default class BudsScreen extends React.PureComponent {
         })
     }
 
-    renderListItem({ item, index }) {
-        const background = (index % 2) === 1 ? COLORS.DISABLED : COLORS.BACKGROUND
+    renderItem({ item, index }) {
+        const data = item
+        const background = (index % 2) === 0 ? COLORS.HIGHLIGHT : COLORS.BACKGROUND
         return (
             <TouchableOpacity
                 style={[ LOCAL_STYLES.row, { backgroundColor: background } ]}
-                onPress={ () => { this.showProfile(item.id) } }>
+                onPress={ () => { this.showProfile(data.id) } }>
 
                 <Image style={ LOCAL_STYLES.thumbnail }>
                 </Image>
 
                 <View>
-                    <Text style={{ fontSize: FONT_SIZES.MEDIUM, textAlign: 'left' }}>
-                        { item.username }
+                    <Text style={{ fontSize: FONT_SIZES.MEDIUM, fontFamily: 'HWTArtz', textAlign: 'left' }}>
+                        { data.username }
                     </Text>
 
-                    <Text style={{ fontSize: FONT_SIZES.SMALL, textAlign: 'left' }}>
-                        { `${item.age} ${item.gender}` }
+                    <Text style={{ fontSize: FONT_SIZES.MEDIUM * .95, textAlign: 'left' }}>
+                        { `${data.age} ${data.gender}` }
                     </Text>
                 </View>
             </TouchableOpacity>
+        )
+    }
+
+    renderHeader({ section: {title} }) {
+        return (
+            <Text style={{
+                    paddingHorizontal: '10%',
+                    paddingVertical: '5%',
+                    fontFamily: 'HWTArtz',
+                    fontSize: FONT_SIZES.LARGE,
+                    color: COLORS.PRIMARY,
+                    textAlign: 'left',
+                }}>
+                { title }
+            </Text>
         )
     }
 
@@ -90,8 +107,7 @@ export default class BudsScreen extends React.PureComponent {
                 flex: 1,
                 padding: 0,
                 justifyContent: 'flex-start',
-                marginVertical: 20 * REM,
-                backgroundColor: this.state.searchMode ? COLORS.DISABLED : COLORS.BACKGROUND
+                marginVertical: 20 * VH
             }]}>
 
                 <View style={ LOCAL_STYLES.searchField }>
@@ -103,13 +119,23 @@ export default class BudsScreen extends React.PureComponent {
                         onChangeText={ (text) => {
                             if (text.length === 0) this.setState({ searchMode: false })
                         }}
-                        onSubmitEditing={ (event) => { this.search( event.nativeEvent.text ) } }/>
+                        onSubmitEditing={ (event) => { this.search( event.nativeEvent.text.toUpperCase() ) }}/>
                 </View>
 
-                <FlatList style={{ width: '100%' }}
+                <SectionList style={{ width: '100%' }}
                     data={ this.state.searchMode ? this.state.searchResults : this.state.buds }
                     keyExtractor={ (item, index) => item.id }
-                    renderItem={ this.renderListItem.bind(this) }/>
+                    renderSectionHeader={ this.renderHeader.bind(this) }
+                    renderItem={ this.renderItem.bind(this) }
+                    sections={
+                        this.state.searchMode ? [
+                            { title: 'Results', data: this.state.searchResults }
+                        ] : [
+                            { title: 'Bud Requests', data: this.state.budRequests },
+                            { title: 'Buds', data: this.state.buds }
+                        ]
+                    }
+                    />
 
             </Container>
         )
@@ -125,18 +151,18 @@ const LOCAL_STYLES = {
     },
     searchField: {
         width         : '100%',
-        padding: 20 * REM
+        padding: 15 * VH
     },
     row: {
         flexDirection  : 'row',
-        height         : 42 * REM,
+        height         : 42 * VH,
         alignItems     : 'center'
     },
     thumbnail: {
         height          : '80%',
-        marginHorizontal: '8%',
+        marginHorizontal: '10%',
         aspectRatio     : 1,
         borderWidth     : 1,
-        borderColor     : COLORS.PRIMARY
+        borderColor     : COLORS.SECONDARY
     }
 }

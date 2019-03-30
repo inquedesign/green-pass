@@ -9,7 +9,8 @@ import { Text,
          Button,
          Container   } from '../components'
 import { STYLES,
-         REM,
+         COLORS,
+         VH,
          COMPONENT_HEIGHT } from '../styles'
 import { SCREENS     } from '../util/constants'
 
@@ -104,18 +105,24 @@ export default class ProfileScreen extends React.PureComponent {
             budRequestReceived = this.state.buds &&
                                  this.state.buds.includes( this.state.currentUser.id )
         }
-        const article = this.state.age >= 80 && this.state.age < 90 ? 'an' : 'a'
 
         return (
             <Container style={ LOCAL_STYLES.container }>
                 <Image style={[ STYLES.avatar, STYLES.spaceAfter ]}>
                 </Image>
-                <Text style={ STYLES.spaceAfter }>
                 {
                     this.state.id &&
-                    `${this.state.username} is ${article} ${this.state.age} year old ${this.state.gender}`
+                    <Text style={[ STYLES.header, { marginBottom: 0, color: COLORS.SECONDARY } ]}>
+                        { this.state.username }
+                    </Text>
                 }
-                </Text>
+
+                {
+                    this.state.id &&
+                    <Text style={ STYLES.spaceAfter }>
+                        { this.state.age } year old { this.state.gender }
+                    </Text>
+                }
 
                 {
                     this.state.contactMethods &&
@@ -129,7 +136,7 @@ export default class ProfileScreen extends React.PureComponent {
                         ))
                     </View>
                 }
-                
+
                 {
                     !this.isOwnProfile &&
                     <View style={{ width: '100%' }}>
@@ -145,7 +152,7 @@ export default class ProfileScreen extends React.PureComponent {
                     }
                     {
                         !budRequestSent && budRequestReceived &&
-                        <Button style={{ marginTop: 12 * REM }}
+                        <Button style={{ marginTop: 15 * VH }}
                             label='Decline Bud Request'
                             accessibilityLabel="Don't become buds with this user"
                             onPress={ this.removeBud.bind(this) } />
@@ -155,7 +162,7 @@ export default class ProfileScreen extends React.PureComponent {
                         <Button style={ STYLES.spaceAfter }
                             label={
                                 budRequestReceived ?
-                                'Stop Being Buds' : 'Stop Bud Request'
+                                'Stop Being Buds' : 'Cancel Bud Request'
                             }
                             accessibilityLabel="Stop being buds with this user"
                             onPress={ this.removeBud.bind(this) } />
@@ -171,7 +178,7 @@ const LOCAL_STYLES = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'flex-start',
-        marginVertical: 20 * REM
+        marginVertical: 20 * VH
     },
     socialContainer: {
         flex: 0,

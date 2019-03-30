@@ -39,7 +39,7 @@ export default class AvatarScreen extends React.PureComponent {
                     </Text>
                     <View style={[ STYLES.avatar, STYLES.spaceAfter ]}/>
                     <Button
-                        label="Submit"
+                        label="Continue"
                         accessibilityLabel="Submit your avatar"
                         onPress={ this.onSubmit.bind(this) }/>
             </Container>

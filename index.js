@@ -33,7 +33,7 @@ import firebase from 'react-native-firebase'
 Navigation.events().registerAppLaunchedListener(() => {
     // TODO: remove autologin and UserService
     //if (firebase.auth().currentUser) firebase.auth().signOut()
-    UserService.login( 'bj@bj.com', 'asdfjkl;').then(() => {
+    UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
 
     Navigation.setDefaultOptions({
         topBar: {
@@ -42,14 +42,15 @@ Navigation.events().registerAppLaunchedListener(() => {
             animate: false
         },
         bottomTabs: {
-            backgroundColor : COLORS.HIGHLIGHT,
+            backgroundColor : COLORS.BOTTOMBAR,
             titleDisplayMode: 'alwaysShow'
         },
         bottomTab: {
-            iconColor: COLORS.PRIMARY,
-            textColor: COLORS.PRIMARY,
-            selectedIconColor: COLORS.PRIMARY,
-            selectedTextColor: COLORS.PRIMARY,
+            iconColor: COLORS.INACTIVE,
+            textColor: COLORS.INACTIVE,
+            selectedIconColor: COLORS.TERTIARY,
+            selectedTextColor: COLORS.TERTIARY,
+            fontFamily: 'Open Sans',
             fontSize : FONT_SIZES.SMALL,
             selectedFontSize: FONT_SIZES.SMALL
         },
