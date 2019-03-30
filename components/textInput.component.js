@@ -8,15 +8,27 @@ import { COLORS,
          COMPONENT_HEIGHT } from '../styles'
 
 export default class TextInput extends React.Component {
+    constructor( props ) {
+        super( props )
+        
+        this.caps = this.props.allCaps === false ? false : true
+    }
+    
+    componentwillReceiveProps( props ) {
+        this.caps = this.props.allCaps === false ? false : true
+    }
+
     onChangeText( text ) {
-        if ( this.props.onChangeText ) this.props.onChangeText( text.toUpperCase() )
+        if ( this.props.onChangeText ) {
+            if ( this.caps ) this.props.onChangeText( text.toUpperCase() )
+            else this.prop.onChangeText( text )
+        }
     }
 
     render() {
         return (
             <ReactInput 
                 { ...this.props }
-                allCaps={ this.props.allCaps == false ? false : true }
                 placeholderTextColor={ COLORS.PRIMARY }
                 clearButtonMode='while-editing'
                 underlineColorAndroid='transparent'
