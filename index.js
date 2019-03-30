@@ -37,9 +37,19 @@ Navigation.events().registerAppLaunchedListener(() => {
 
     Navigation.setDefaultOptions({
         topBar: {
-            visible: false,
+            visible: true,
+            hideOnScroll: false,
             drawBehind: true,
-            animate: false
+            elevation: 0,
+            noBorder: true,
+            backButton: {
+                color: COLORS.SECONDARY,
+                title: 'Back',
+                showTitle: true
+            },
+            background: {
+                color: 'transparent'
+            }
         },
         bottomTabs: {
             backgroundColor : COLORS.BOTTOMBAR,
@@ -58,7 +68,7 @@ Navigation.events().registerAppLaunchedListener(() => {
     })
 
     Navigation.setRoot({
-        root: MAIN_LAYOUT
+        root: INITIAL_LAYOUT
     })
         
     })

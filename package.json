@@ -1,6 +1,6 @@
 {
     "name": "GreenPass",
-    "version": "0.16.0",
+    "version": "0.17.0",
     "private": true,
     "scripts": {
         "android": "cd android && ./gradlew app:assembleDebug && ./gradlew installDebug",
@@ -23,7 +23,7 @@
         "react-native": "^0.58.6",
         "react-native-datepicker": "^1.7.2",
         "react-native-firebase": "^5.2.0",
-        "react-native-navigation": "^2.13.1",
+        "react-native-navigation": "^2.16.0",
         "react-native-splash-screen": "^3.2.0"
     },
     "devDependencies": {
