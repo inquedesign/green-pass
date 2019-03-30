@@ -12,6 +12,9 @@ export default class TextInput extends React.Component {
         super( props )
         
         this.caps = this.props.allCaps === false ? false : true
+        this.state = {
+            editing: false
+        }
     }
     
     componentwillReceiveProps( props ) {
@@ -29,11 +32,14 @@ export default class TextInput extends React.Component {
         return (
             <ReactInput 
                 { ...this.props }
+                placeholder={ this.state.editing ? '' : this.props.placeholder }
                 placeholderTextColor={ COLORS.PRIMARY }
                 clearButtonMode='while-editing'
                 underlineColorAndroid='transparent'
                 autoCapitalize='none'
                 autoCorrect={ false }
+                onFocus={() => { this.setState({ editing: true }) }}
+                onBlur={() => { this.setState({ editing: false }) }}
                 onChangeText={ this.onChangeText.bind(this) }
                 style={[ defaults.input, this.props.style ]}
             />
