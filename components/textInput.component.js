@@ -24,7 +24,7 @@ export default class TextInput extends React.Component {
     onChangeText( text ) {
         if ( this.props.onChangeText ) {
             if ( this.caps ) this.props.onChangeText( text.toUpperCase() )
-            else this.prop.onChangeText( text )
+            else this.props.onChangeText( text )
         }
     }
 
