@@ -13,6 +13,7 @@ import { STYLES,
          VH,
          COMPONENT_HEIGHT } from '../styles'
 import { SCREENS     } from '../util/constants'
+import { AVATARS     } from '../util/avatars'
 
 import SplashScreen from 'react-native-splash-screen'
 
@@ -28,6 +29,7 @@ export default class ProfileScreen extends React.PureComponent {
             username: null,
             age: null,
             gender: null,
+            avatar: null,
             buds: null,
             contactMethods: null,
             currentUser: null
@@ -79,6 +81,7 @@ export default class ProfileScreen extends React.PureComponent {
             username: data.username,
             age: data.age,
             gender: data.gender,
+            avatar: data.avatar,
             buds: data.buds,
             currentUser: data.currentUser ? data.currentUser : this.state.currentUser
         })
@@ -104,7 +107,8 @@ export default class ProfileScreen extends React.PureComponent {
 
         return (
             <Container style={ LOCAL_STYLES.container }>
-                <Image style={[ STYLES.avatar, STYLES.spaceAfter ]}>
+                <Image style={[ STYLES.avatar, STYLES.spaceAfter ]}
+                    source={ AVATARS.all[ this.state.avatar ] }>
                 </Image>
                 {
                     this.state.id &&

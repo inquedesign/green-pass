@@ -61,7 +61,7 @@ const defaults = StyleSheet.create({
         borderWidth    : 1,
         borderRadius   : BORDER_RADIUS,
         borderColor    : COLORS.PRIMARY,
-        backgroundColor: COLORS.BACKGROUND,
+        backgroundColor: COLORS.TERTIARY,
         textDecorationLine: 'none'
     }
 })

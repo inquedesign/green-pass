@@ -68,7 +68,7 @@ Navigation.events().registerAppLaunchedListener(() => {
     })
 
     Navigation.setRoot({
-        root: INITIAL_LAYOUT
+        root: MAIN_LAYOUT
     })
         
     })

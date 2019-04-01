@@ -21,7 +21,7 @@ export const COLORS = {
     SECONDARY : '#607C53',
     TERTIARY  : '#FFFFFF',
     BOTTOMBAR : '#91AB84',
-    HIGHLIGHT : '#ECFFE5',
+    HIGHLIGHT : 'rgba( 65, 255, 0, .1 )',
     INACTIVE  : '#CEEAC1',
     ERROR     : '#AA0000',
     BACKGROUND: 'rgba( 255, 255, 255, .6 )'

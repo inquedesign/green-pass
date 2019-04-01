@@ -4,7 +4,7 @@ const fs = require( 'fs' )
 
 const avatarDir = __dirname + '/../assets/avatars/'
 
-let males = '{\n'
+let males = ''
 
 fs.readdirSync( avatarDir + 'male' )
 .filter( filename => !/@[1-3]x/.test(filename) )
@@ -12,9 +12,8 @@ fs.readdirSync( avatarDir + 'male' )
 `        '${filename}': require('../assets/avatars/male/${filename}'),
 `
 )
-males += '    }'
 
-let females = '{\n'
+let females = ''
 
 fs.readdirSync( avatarDir + 'female' )
 .filter( filename => !/@[1-3]x/.test(filename) )
@@ -22,12 +21,15 @@ fs.readdirSync( avatarDir + 'female' )
 `        '${filename}': require('../assets/avatars/female/${filename}'),
 `
 )
-females += '    }'
 
 const filecontents =
 `export const AVATARS = {
-    male: ${males},
-    female: ${females}
+    male: {
+${males}    },
+    female: {
+${females}    },
+    all: {
+${males}${females}    }
 }
 `
 

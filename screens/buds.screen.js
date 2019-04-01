@@ -15,8 +15,9 @@ import { STYLES,
          COLORS,
          FONT_SIZES,
          //SCREEN_HEIGHT,
-         VH         } from '../styles'
+         VH          } from '../styles'
 import { SCREENS     } from '../util/constants'
+import { AVATARS     } from '../util/avatars'
 
 
 export default class BudsScreen extends React.PureComponent {
@@ -83,8 +84,11 @@ export default class BudsScreen extends React.PureComponent {
                 style={[ LOCAL_STYLES.row, { backgroundColor: background } ]}
                 onPress={ () => { this.showProfile(data.id) } }>
 
-                <Image style={ LOCAL_STYLES.thumbnail }>
-                </Image>
+                <View>
+                    <Image style={ LOCAL_STYLES.thumbnail }
+                        source={ AVATARS.all[ data.avatar ] }>
+                    </Image>
+                </View>
 
                 <View>
                     <Text style={{ fontSize: FONT_SIZES.MEDIUM, fontFamily: 'HWTArtz', textAlign: 'left' }}>
@@ -102,8 +106,8 @@ export default class BudsScreen extends React.PureComponent {
     renderHeader({ section: {title} }) {
         return (
             <Text style={{
-                    paddingHorizontal: '10%',
-                    paddingVertical: '5%',
+                    paddingHorizontal: 22 * VH,
+                    paddingVertical: 11 * VH,
                     fontFamily: 'HWTArtz',
                     fontSize: FONT_SIZES.LARGE,
                     color: COLORS.PRIMARY,
@@ -168,14 +172,15 @@ const LOCAL_STYLES = {
     },
     row: {
         flexDirection  : 'row',
-        height         : 42 * VH,
+        height         : 45 * VH,
         alignItems     : 'center'
     },
     thumbnail: {
-        height          : '80%',
-        marginHorizontal: '10%',
-        aspectRatio     : 1,
-        borderWidth     : 1,
-        borderColor     : COLORS.SECONDARY
+        height     : 36 * VH,
+        width      : 36 * VH,
+        marginLeft : 22 * VH,
+        marginRight: 10 * VH,
+        borderWidth: 1,
+        borderColor: COLORS.SECONDARY
     }
 }
