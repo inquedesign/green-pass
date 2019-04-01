@@ -2,20 +2,20 @@ import React       from 'react'
 import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
-import { Navigation } from 'react-native-navigation'
-import { View       } from 'react-native'
+import { Navigation   } from 'react-native-navigation'
+import { View         } from 'react-native'
 import { Text,
          Button,
-         Container  } from '../components'
+         Container,
+         AvatarPicker } from '../components'
 import { STYLES,
-         COLORS     } from '../styles'
-import { SCREENS    } from '../util/constants'
+         COLORS       } from '../styles'
+import { SCREENS      } from '../util/constants'
 
 
 export default class AvatarScreen extends React.PureComponent {
     constructor( props ) {
         super( props )
-        this.state = {}
     }
 
     componentDidMount() {
@@ -23,6 +23,9 @@ export default class AvatarScreen extends React.PureComponent {
     }
 
     onSubmit() {
+        if ( !this.avatar ) return
+        
+        UserService.updateUser({ avatar: this.avatar })
         Navigation.push(this.props.componentId, {
             component: { name: SCREENS.CONTACT_INFO_SCREEN }
         })
@@ -35,9 +38,10 @@ export default class AvatarScreen extends React.PureComponent {
                         My Avatar
                     </Text>
                     <Text style={ STYLES.spaceAfter }>
-                        Pick an avatar:
+                        Choose someone who represents you.
                     </Text>
-                    <View style={[ STYLES.avatar, STYLES.spaceAfter ]}/>
+                    <AvatarPicker style={ STYLES.spaceAfter }
+                        onChangeAvatar={( avatar ) => { this.avatar = avatar }}/>
                     <Button
                         label="Continue"
                         accessibilityLabel="Submit your avatar"

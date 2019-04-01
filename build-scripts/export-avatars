@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+
+const fs = require( 'fs' )
+
+const avatarDir = __dirname + '/../assets/avatars/'
+
+let males = '{\n'
+
+fs.readdirSync( avatarDir + 'male' )
+.filter( filename => !/@[1-3]x/.test(filename) )
+.forEach( filename => males +=
+`        '${filename}': require('../assets/avatars/male/${filename}'),
+`
+)
+males += '    }'
+
+let females = '{\n'
+
+fs.readdirSync( avatarDir + 'female' )
+.filter( filename => !/@[1-3]x/.test(filename) )
+.forEach( filename => females +=
+`        '${filename}': require('../assets/avatars/female/${filename}'),
+`
+)
+females += '    }'
+
+const filecontents =
+`export const AVATARS = {
+    male: ${males},
+    female: ${females}
+}
+`
+
+fs.writeFileSync( __dirname + '/../util/avatars.js', filecontents )

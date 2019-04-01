@@ -37,8 +37,10 @@ export const STYLES = StyleSheet.create({
         marginBottom: 15 * VH
     },
     avatar: {
-        width: '100%',
-        aspectRatio: 1,
+        width: .225 * SCREEN_HEIGHT,
+        maxWidth: .4 * SCREEN_WIDTH,
+        height: .225 * SCREEN_HEIGHT,
+        maxHeight: .4 * SCREEN_WIDTH,
         borderWidth: 1,
         borderColor: COLORS.SECONDARY
     },
