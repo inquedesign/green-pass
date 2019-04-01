@@ -8,7 +8,10 @@ const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
 
 let profileUnsubscribe = null
+let budsUnsubscribe    = null
 let profileListeners   = new Set()
+let budsListeners      = new Set()
+let profileUnsubscribers = new Set()
 
 export default class UserService {
 
@@ -20,6 +23,7 @@ export default class UserService {
                     callback({ id: docref.id, age: age, ...docref.data() })
                 }
             )
+            profileUnsubscribers.add( unsubscribe )
             return unsubscribe
         }
 
@@ -29,10 +33,21 @@ export default class UserService {
     }
 
     static removeProfileListener( callback ) {
-        profileListeners.delete( callback )
+        if ( profileUnsubscribers.has( callback ) ) {
+            callback()
+            profileUnsubscribers.delete( callback )
+        }
+        else profileListeners.delete( callback )
     }
 
     static getProfile() {
+        if ( !AUTH.currentUser ) {
+            clearProfile()
+            error = new Error( 'User is not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+
         if ( !profileUnsubscribe ) {
             return new Promise(( resolve, reject ) => {
                 profileUnsubscribe = USERS.doc( AUTH.currentUser.uid ).onSnapshot(
@@ -63,10 +78,8 @@ export default class UserService {
             password
         )
         .then( credentials => {
-            if ( profileUnsubscribe ) { 
-                profileUnsubscribe()
-                profileUnsubscribe = null
-            }
+            clearProfile()
+            clearBuds()
             UserService.getProfile()
             return credentials
         })
@@ -78,6 +91,8 @@ export default class UserService {
             password
         )
         .then( credentials => {
+            clearProfile()
+            clearBuds()
             UserService.getProfile()
             return credentials
         })
@@ -155,18 +170,44 @@ export default class UserService {
         })
     }
 
+    static addBudsListener( callback ) {
+        if ( !AUTH.currentUser ) return
+        
+        budsListeners.add( callback )
+
+        return callback
+    }
+
+    static removeBudsListener( callback ) {        
+        budsListeners.delete( callback )
+    }
+
     static getBuds() {
         if ( !AUTH.currentUser ) {
+            clearBuds()
             error = new Error( 'User is not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
-        return USERS.where( 'buds', 'array-contains', AUTH.currentUser.uid )
-        .get()
-        .then(( results ) => {
-            return userDataFrom( results )
-        })
+        if ( !budsUnsubscribe ) {
+            return new Promise(( resolve, reject ) => {
+                budsUnsubscribe = USERS.where( 'buds', 'array-contains', AUTH.currentUser.uid ).onSnapshot(
+                    queryResults => {
+                        UserService.buds = userDataFrom( queryResults )
+                        budsListeners.forEach( callback => {
+                            callback( UserService.buds )
+                        })
+                        resolve( UserService.buds )
+                    },
+                    error => {
+                        reject( error )
+                    }
+                )
+            })
+        }
+
+        return Promise.resolve( UserService.buds )
     }
     
     static addBud( uid ) {
@@ -195,6 +236,7 @@ export default class UserService {
 }
 
 UserService.profile = null
+UserService.buds    = null
 
 function userDataFrom( queryResults ) {
     return queryResults.docs.map( (docref) => {
@@ -216,6 +258,25 @@ function getAge( birthDateString ) {
     return age
 }
 
+function clearProfile() {
+    if ( profileUnsubscribe ) { 
+        profileUnsubscribe()
+        profileUnsubscribe = null
+    }
+    profileListeners.clear()
+    profileUnsubscribers.forEach( unsubscribe => unsubscribe() )
+    profileUnsubscribers.clear()
+    UserService.profile = null
+}
+
+function clearBuds() {
+    if ( budsUnsubscribe ) {
+        budsUnsubscribe()
+        budsUnsubscribe = null
+    }
+    budsListeners.clear()
+    UserService.buds = null
+}
 //      {firebase.admob.nativeModuleExists && <Text style={styles.module}>admob()</Text>}
 //      {firebase.analytics.nativeModuleExists && <Text style={styles.module}>analytics()</Text>}
 //      {firebase.auth.nativeModuleExists && <Text style={styles.module}>auth()</Text>}

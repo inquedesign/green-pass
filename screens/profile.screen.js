@@ -68,7 +68,9 @@ export default class ProfileScreen extends React.PureComponent {
         if ( this.profileListener ) {
             UserService.removeProfileListener( this.profileListener )
         }
-        if ( this.unsubscribe ) this.unsubscribe()
+        if ( this.unsubscribe ) {
+            UserService.removeProfileListener( this.unsubscribe )
+        }
     }
 
     setUserData( data ) {
@@ -87,13 +89,7 @@ export default class ProfileScreen extends React.PureComponent {
     }
 
     removeBud() {
-        if ( !this.isOwnProfile ) {
-            UserService.removeBud( this.state.id )
-            UserService.getUserById( this.props.userId )
-            .then({
-                
-            })
-        }
+        if ( !this.isOwnProfile ) UserService.removeBud( this.state.id )
     }
 
     render() {

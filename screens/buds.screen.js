@@ -33,12 +33,26 @@ export default class BudsScreen extends React.PureComponent {
         this.navigationEventListener = Navigation.events().bindComponent( this )
     }
 
-    componentDidAppear() {
+    componentDidMount() {
         // TODO: Move to listening for on change events on both bud list and individual records
         UserService.getBuds()
-        .then(( results ) => {
-            this.setState({ buds: results })
+        .then( results => {
+            this.sortBudsAndRequests( results )
         })
+        this.budsListener = UserService.addBudsListener( results => {
+            this.sortBudsAndRequests( results )
+        })
+    }
+
+    componenWillUnmount() {
+        if ( this.budsListener ) UserService.removeBudsListener( this.budsListener )
+    }
+
+    sortBudsAndRequests( results ) {
+        const budList = UserService.profile.buds
+        const budRequests = results.filter( bud => !(budList && budList.includes( bud.id )) )
+        const buds        = results.filter( bud => budList && budList.includes( bud.id ) )
+        this.setState({ buds: buds, budRequests: budRequests })
     }
 
     search( searchString ) {
@@ -123,7 +137,6 @@ export default class BudsScreen extends React.PureComponent {
                 </View>
 
                 <SectionList style={{ width: '100%' }}
-                    data={ this.state.searchMode ? this.state.searchResults : this.state.buds }
                     keyExtractor={ (item, index) => item.id }
                     renderSectionHeader={ this.renderHeader.bind(this) }
                     renderItem={ this.renderItem.bind(this) }
