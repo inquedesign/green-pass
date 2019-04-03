@@ -40,10 +40,14 @@ export default class BudsScreen extends React.Component {
         this.budsListener = UserService.addBudsListener( results => {
             this.sortBudsAndRequests( results )
         })
+        this.profileListener = UserService.addProfileListener( null, profile => {
+            this.sortBudsAndRequests( this.state.buds.concat( this.state.budRequests ) )
+        })
     }
 
     componenWillUnmount() {
-        if ( this.budsListener ) UserService.removeBudsListener( this.budsListener )
+        if ( this.budsListener    ) UserService.removeBudsListener( this.budsListener )
+        if ( this.profileListener ) UserService.removeProfileListener( this.profileListener )
     }
 
     sortBudsAndRequests( results ) {
