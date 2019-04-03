@@ -8,7 +8,8 @@ export const VH = SCREEN_HEIGHT / 500
 export const VW = SCREEN_WIDTH  / 500
 
 export const COMPONENT_HEIGHT = 36 * VH
-export const BORDER_RADIUS = .25 * COMPONENT_HEIGHT
+export const STANDARD_SPACE   = 15 * VH
+export const BORDER_RADIUS    = .25 * COMPONENT_HEIGHT
 
 export const FONT_SIZES = {
     SMALL : Math.min( 8  * VH, 14.2 * VW ),
@@ -34,7 +35,7 @@ export const STYLES = StyleSheet.create({
         lineHeight: FONT_SIZES.LARGE * .95,
         color: COLORS.PRIMARY,
         fontSize: FONT_SIZES.LARGE,
-        marginBottom: 15 * VH
+        marginBottom: STANDARD_SPACE
     },
     avatar: {
         width: .225 * SCREEN_HEIGHT,
@@ -45,6 +46,9 @@ export const STYLES = StyleSheet.create({
         borderColor: COLORS.SECONDARY
     },
     spaceAfter: {
-        marginBottom: 15 * VH
+        marginBottom: STANDARD_SPACE
+    },
+    spaceBefore: {
+        marginTop: STANDARD_SPACE
     }
 });
