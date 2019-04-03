@@ -9,18 +9,18 @@ import { StyleSheet,
          Image       } from 'react-native'
 import { Text,
          TextInput,
-         Button,
          Container   } from '../components'
 import { STYLES,
          COLORS,
          FONT_SIZES,
+         STANDARD_SPACE,
          //SCREEN_HEIGHT,
          VH          } from '../styles'
 import { SCREENS     } from '../util/constants'
 import { AVATARS     } from '../util/avatars'
 
 
-export default class BudsScreen extends React.PureComponent {
+export default class BudsScreen extends React.Component {
     constructor( props ) {
         super( props )
         
@@ -30,12 +30,9 @@ export default class BudsScreen extends React.PureComponent {
             budRequests  : [],
             searchResults: []
         }
-        
-        this.navigationEventListener = Navigation.events().bindComponent( this )
     }
 
     componentDidMount() {
-        // TODO: Move to listening for on change events on both bud list and individual records
         UserService.getBuds()
         .then( results => {
             this.sortBudsAndRequests( results )
@@ -50,7 +47,7 @@ export default class BudsScreen extends React.PureComponent {
     }
 
     sortBudsAndRequests( results ) {
-        const budList = UserService.profile.buds
+        const budList     = UserService.profile.buds
         const budRequests = results.filter( bud => !(budList && budList.includes( bud.id )) )
         const buds        = results.filter( bud => budList && budList.includes( bud.id ) )
         this.setState({ buds: buds, budRequests: budRequests })
@@ -103,8 +100,9 @@ export default class BudsScreen extends React.PureComponent {
         )
     }
 
-    renderHeader({ section: {title} }) {
+    renderHeader({ section: {title, data} }) {
         return (
+            data.length > 0 &&
             <Text style={{
                     paddingHorizontal: 22 * VH,
                     paddingVertical: 11 * VH,
@@ -118,15 +116,9 @@ export default class BudsScreen extends React.PureComponent {
         )
     }
 
-    // TODO: Loading placeholder while data is fetched
     render() {
         return (
-            <Container style={[ LOCAL_STYLES.content, {
-                flex: 1,
-                padding: 0,
-                justifyContent: 'flex-start',
-                marginVertical: 20 * VH
-            }]}>
+            <Container contentStyle={ LOCAL_STYLES.content }>
 
                 <View style={ LOCAL_STYLES.searchField }>
                     <TextInput
@@ -135,15 +127,27 @@ export default class BudsScreen extends React.PureComponent {
                         autoComplete='username'
                         textContentType='username'
                         onChangeText={ (text) => {
-                            if (text.length === 0) this.setState({ searchMode: false })
+                            if (text.length === 0) {
+                                this.setState({ searchMode: false })
+                            }
                         }}
                         onSubmitEditing={ (event) => { this.search( event.nativeEvent.text.toUpperCase() ) }}/>
                 </View>
 
                 <SectionList style={{ width: '100%' }}
+                    stickySectionHeadersEnabled={ false }
+                    scrollEnabled={ false }
+                    alwaysBounceVertical={ false }
+                    showsHorizontalScrollIndicator={ false }
+                    showsVerticalScrollIndicator={ false }
                     keyExtractor={ (item, index) => item.id }
                     renderSectionHeader={ this.renderHeader.bind(this) }
                     renderItem={ this.renderItem.bind(this) }
+                    ListEmptyComponent={ () => {
+                        return (
+                            <View style={{ width: 100, height: 100, backgroundColor: 'blue' }}></View>
+                        )
+                    }}
                     sections={
                         this.state.searchMode ? [
                             { title: 'Results', data: this.state.searchResults }
@@ -161,14 +165,11 @@ export default class BudsScreen extends React.PureComponent {
 
 const LOCAL_STYLES = {
     content: {
-        //width       : .5625 * SCREEN_HEIGHT,
-        //maxWidth          : '100%',
-        //alignItems     : 'center',
-        //backgroundColor: 'transparent'
+        padding: 0,
     },
     searchField: {
-        width         : '100%',
-        padding: 15 * VH
+        width     : '100%',
+        padding   : STANDARD_SPACE
     },
     row: {
         flexDirection  : 'row',

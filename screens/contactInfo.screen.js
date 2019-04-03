@@ -109,6 +109,10 @@ export default class ContactInfoScreen extends React.PureComponent {
                 </Text>
 
                 <FlatList style={{ width: '100%' }}
+                    scrollEnabled={ false }
+                    alwaysBounceVertical={ false }
+                    showsHorizontalScrollIndicator={ false }
+                    showsVerticalScrollIndicator={ false }
                     data={ Object.keys( this.state.contactMethods ) }
                     keyExtractor={ (item, index) => item }
                     renderItem={ this.renderService.bind(this) }/>
@@ -192,6 +196,10 @@ class ServicesModal extends React.PureComponent {
                     </Text>
 
                     <FlatList style={{ width: '100%' }}
+                        scrollEnabled={ false }
+                        alwaysBounceVertical={ false }
+                        showsHorizontalScrollIndicator={ false }
+                        showsVerticalScrollIndicator={ false }
                         data={ Object.keys( SERVICES ) }
                         keyExtractor={ (key, index) => key }
                         renderItem={ ({ item }) => (
@@ -199,6 +207,7 @@ class ServicesModal extends React.PureComponent {
                                 label={ item == 'text' ? 'text message' : item }
                                 accessibilityLabel={ 'Add contact info for ' + item }
                                 backgroundImage={ SERVICES[item].source }
+                                color='transparent'
                                 onPress={() => {
                                     this.updateService( item )
                                 }}/>

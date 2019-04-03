@@ -4,6 +4,7 @@ import firebase from 'react-native-firebase'
 import { Navigation      } from 'react-native-navigation'
 import { StyleSheet,
          ImageBackground,
+         ScrollView,
          SafeAreaView,
          View            } from 'react-native'
 import { SCREEN_WIDTH,
@@ -12,51 +13,69 @@ import { SCREEN_WIDTH,
          BORDER_RADIUS,
          VH             } from '../styles'
 
+ let CONSTANTS 
+
 export default class Container extends React.PureComponent {
     constructor() {
         super()
 
-        this.loggedIn = !!firebase.auth().currentUser
-    }
+        this.state = {
+            enableScroll: false,
+        }
 
+        this.loggedIn   = !!firebase.auth().currentUser
+    }
+    
     render() {
+        const { containerStyle, contentStyle } = this.props
+        const containerStyles = [ defaults.centerContent ]
+        const contentStyles = [ defaults.content ]
+        if ( containerStyle ) containerStyles.push( containerStyle )
+        if ( contentStyle ) contentStyles.push( contentStyle )
+        
         return (
             <ImageBackground
-                style={ STYLES.background }
+                style={ defaults.background }
                 resizeMode='repeat'
                 source={ this.loggedIn ?
                     require('../assets/bg/White.png') :
                     require('../assets/bg/Green.png') }>
 
-                <View style={[ STYLES.container, this.props.style ]}>
-                    <View style={ STYLES.content }>
-                        { this.props.children }
+                <ScrollView style={ defaults.container }
+                    centerContent={ true }
+                    contentContainerStyle={ containerStyles }
+                    alwaysBounceVertical={ false }
+                    enablescroll={ true }
+                    showsHorizontalScrollIndicator={ false }
+                    showsVerticalScrollIndicator={ false }
+                    >
+                    <View style={ contentStyles }>
+                            { this.props.children }
                     </View>
-                </View>
+                </ScrollView>
             </ImageBackground>
         )
     }
 }
 
-const STYLES = StyleSheet.create({
+const defaults = StyleSheet.create({
     background: {
-        flex           : 0,
-        justifyContent : 'center',
-        alignItems     : 'center',
         width : '100%',
         height: '100%'
     },
     container: {
+        width : '100%',
+        height: '100%',
+    },
+    centerContent: {
+        alignItems    : 'center',
+    },  
+    content: {
         width          : .45 * SCREEN_HEIGHT,
         maxWidth       : '80%',
         padding        : 15 * VH,
         alignItems     : 'center',
         backgroundColor: COLORS.BACKGROUND,
-        borderRadius   : BORDER_RADIUS
-    },
-    content: {
-        width          : '100%',
-        alignItems     : 'center',
-        backgroundColor: 'transparent',
+        borderRadius   : BORDER_RADIUS,
     }
 })
