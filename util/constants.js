@@ -12,3 +12,13 @@ export const SCREENS = {
     BUDS_SCREEN             : 'BudsScreen',
     EXPLORE_SCREEN          : 'ExploreScreen'
 }
+
+export const SOCIAL_ICONS = {
+    facebook : require('../assets/icons/Facebook.png'),
+    twitter  : require('../assets/icons/Twitter.png'),
+    whatsapp : require('../assets/icons/Whatsapp.png'),
+    snapchat : require('../assets/icons/Snapchat.png'),
+    reddit   : require('../assets/icons/Reddit.png'),
+    instagram: require('../assets/icons/Instagram.png'),
+    text     : require('../assets/icons/Text.png'),
+}

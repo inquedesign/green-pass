@@ -13,84 +13,17 @@ import { COLORS,
          COMPONENT_HEIGHT,
          BORDER_RADIUS    } from '../styles'
 
-import type {PressEvent} from 'react-native'
 
-type ButtonProps = $ReadOnly<{|
-    /**
-    * Text to display inside the button
-    */
-    label: string,
-
-    /**
-    * Handler to be called when the user taps the button
-    */
-    onPress: (event?: PressEvent) => mixed,
-
-    /**
-    * Color of the text (iOS), or background color of the button (Android)
-    */
-    color?: ?string,
-
-    /**
-    * TV preferred focus (see documentation for the View component).
-    */
-    hasTVPreferredFocus?: ?boolean,
-
-    /**
-    * TV next focus down (see documentation for the View component).
-    *
-    * @platform android
-    */
-    nextFocusDown?: ?number,
-
-    /**
-    * TV next focus forward (see documentation for the View component).
-    *
-    * @platform android
-    */
-    nextFocusForward?: ?number,
-
-    /**
-    * TV next focus left (see documentation for the View component).
-    *
-    * @platform android
-    */
-    nextFocusLeft?: ?number,
-
-    /**
-    * TV next focus right (see documentation for the View component).
-    *
-    * @platform android
-    */
-    nextFocusRight?: ?number,
-
-    /**
-    * TV next focus up (see documentation for the View component).
-    *
-    * @platform android
-    */
-    nextFocusUp?: ?number,
-
-    /**
-    * Text to display for blindness accessibility features
-    */
-    accessibilityLabel?: ?string,
-
-    /**
-    * Used to locate this view in end-to-end tests.
-    */
-    testID?: ?string,
-|}>;
-
-
-export default class Button extends React.PureComponent<ButtonProps> {
+export default class Button extends React.PureComponent {
     render() {
         const {
             label,
             accessibilityLabel,
+            color,
+            fontColor,
             backgroundImage,
             aspectRatio,
-            color,
+            disabled,
             onPress,
             hasTVPreferredFocus,
             nextFocusDown,
@@ -103,18 +36,23 @@ export default class Button extends React.PureComponent<ButtonProps> {
         const buttonStyles = [ defaults.button ]
         const textStyles   = [ defaults.text ]
         const parentStyles = [ defaults.touchable, this.props.style ]
-        if ( backgroundImage ) {
-            buttonStyles.push({ backgroundColor: 'transparent' })
-        }
         if ( color ) {
-            textStyles.push({ color: color })
+            buttonStyles.push({ backgroundColor: color })
+        }
+        if ( fontColor ) {
+            textStyles.push({ color: fontColor })
         }
         if ( aspectRatio ) {
             parentStyles.push({ aspectRatio: aspectRatio })
         }
         const accessibilityStates = []
+        if( disabled ) {
+            accessibilityStates.push( 'disabled' )
+            parentStyles.push( defaults.disabled )
+        }
         return (
             <TouchableOpacity style={ parentStyles }
+                disabled={ disabled }
                 accessibilityLabel={ accessibilityLabel }
                 accessibilityRole="button"
                 accessibilityStates={ accessibilityStates }
@@ -127,12 +65,17 @@ export default class Button extends React.PureComponent<ButtonProps> {
                 testID={ testID }
                 onPress={ onPress }>
                 <ImageBackground style={ buttonStyles }
-                    resizeMode='repeat'
+                    resizeMode={ this.props.resizeMode || 'repeat' }
                     source={ backgroundImage }>
 
+                    { label &&
                     <Text style={ textStyles }>
                         { label }
                     </Text>
+                    }
+
+                    { this.props.children }
+
                 </ImageBackground>
             </TouchableOpacity>
         )
@@ -163,5 +106,8 @@ const defaults = StyleSheet.create({
         fontFamily: 'HWTArtz',
         letterSpacing: 1.5,
         fontSize: FONT_SIZE
+    },
+    disabled: {
+        opacity: .2
     }
 });

@@ -10,10 +10,13 @@ import { Text,
          Container   } from '../components'
 import { STYLES,
          COLORS,
+         FONT_SIZES,
          VH,
          COMPONENT_HEIGHT } from '../styles'
-import { SCREENS     } from '../util/constants'
-import { AVATARS     } from '../util/avatars'
+import { SCREENS,
+         SOCIAL_ICONS } from '../util/constants'
+import { AVATARS      } from '../util/avatars'
+
 
 import SplashScreen from 'react-native-splash-screen'
 
@@ -50,16 +53,30 @@ export default class ProfileScreen extends React.PureComponent {
                 this.unsubscribe = UserService.addProfileListener( this.props.userId, profile => {
                     this.setUserData( profile )
                 })
+                
+                if (
+                    results[1].buds && results[1].buds.includes( results[0].id ) &&
+                    results[0].buds && results[0].buds.includes( results[1].id )
+                ) {
+                    this.contactMethodsWatcher = UserService.getContactMethods( this.props.userId,
+                    contactMethods => {
+                        this.setState({ contactMethods: contactMethods })
+                    })
+                }
             })
         }
         else { // Get current user's profile
             UserService.getProfile()
             .then( profile => {
                 this.setUserData( profile )
+
+                this.profileListener = UserService.addProfileListener( null, profile => {
+                    this.setUserData( profile )
+                })
             })
 
-            this.profileListener = UserService.addProfileListener( null, profile => {
-                this.setUserData( profile )
+            this.contactMethodsWatcher = UserService.getContactMethods( null, contactMethods => {
+                this.setState({ contactMethods: contactMethods })
             })
         }
 
@@ -73,6 +90,7 @@ export default class ProfileScreen extends React.PureComponent {
         if ( this.unsubscribe ) {
             UserService.removeProfileListener( this.unsubscribe )
         }
+        UserService.unsubscribe( this.contactMethodsWatcher )
     }
 
     setUserData( data ) {
@@ -96,8 +114,8 @@ export default class ProfileScreen extends React.PureComponent {
     }
 
     render() {
-        let budRequestSent
-        let budRequestReceived
+        let budRequestSent = false
+        let budRequestReceived = false
         if ( !this.isOwnProfile ) {
             budRequestSent     = this.state.currentUser.buds &&
                                  this.state.currentUser.buds.includes( this.state.id )
@@ -106,87 +124,126 @@ export default class ProfileScreen extends React.PureComponent {
         }
 
         return (
-            <Container style={ LOCAL_STYLES.container }>
+            this.state.id &&
+            <Container>
                 <Image style={[ STYLES.avatar, STYLES.spaceAfter ]}
                     source={ AVATARS.all[ this.state.avatar ] }>
                 </Image>
-                {
-                    this.state.id &&
-                    <Text style={[ STYLES.header, { marginBottom: 0, color: COLORS.SECONDARY } ]}>
-                        { this.state.username }
-                    </Text>
-                }
 
-                {
-                    this.state.id &&
-                    <Text style={ STYLES.spaceAfter }>
-                        { this.state.age } year old { this.state.gender }
-                    </Text>
-                }
+                <Text style={[ STYLES.header, LOCAL_STYLES.username ]}>
+                    { this.state.username }
+                </Text>
 
-                {
+                <Text style={ STYLES.spaceAfter }>
+                    { this.state.age } year old { this.state.gender }
+                </Text>
+
+                { ( this.isOwnProfile || (budRequestSent && budRequestReceived) ) ?
                     this.state.contactMethods &&
-                    <View style={ LOCAL_STYLES.socialContainer }>
-                        this.state.contactMethods.map(( method ) => (
+                    <View style={[ LOCAL_STYLES.socialContainer,
+                                 { width: this.state.contactMethods.length === 4 ? '75%' : '100%' } ]}>
+                        {
+                        this.state.contactMethods.map(({ method, info }) => (
                             <Button style={ LOCAL_STYLES.socialButton }
-                                label={ method.key[0] }
-                                key={ method.key }
+                                key={ method }
+                                color={ COLORS.SECONDARY }
+                                backgroundImage={ SOCIAL_ICONS[ method ] }
+                                resizeMode='cover'
                                 accessibilityLabel="Social Media Placeholder"
-                                onPress={ () => {} } />
+                                onPress={ () => {} }>
+                            </Button>
                         ))
+                        }
+                    </View> 
+                    :
+                    <View style={ LOCAL_STYLES.socialContainer}>
+                        <Button style={ LOCAL_STYLES.socialButton }
+                            disabled={ true }
+                            color={ COLORS.SECONDARY }
+                            backgroundImage={ SOCIAL_ICONS[ 'facebook' ] }
+                            resizeMode='cover'
+                            accessibilityLabel="Social Media Placeholder">
+                        </Button>
+
+                        <Button style={ LOCAL_STYLES.socialButton }
+                            disabled={ true }
+                            color={ COLORS.SECONDARY }
+                            backgroundImage={ SOCIAL_ICONS[ 'twitter' ] }
+                            resizeMode='cover'
+                            accessibilityLabel="Social Media Placeholder"
+                            onPress={ () => {} }>
+                        </Button>
+
+                        <Button style={ LOCAL_STYLES.socialButton }
+                            disabled={ true }
+                            color={ COLORS.SECONDARY }
+                            backgroundImage={ SOCIAL_ICONS[ 'reddit' ] }
+                            resizeMode='cover'
+                            accessibilityLabel="Social Media Placeholder"
+                            onPress={ () => {} }>
+                        </Button>
+
+                        <Text style={ LOCAL_STYLES.socialLockedText }>
+                            { this.state.username &&
+                            `Add ${this.state.username} as a bud to connect with them.`
+                            }
+                        </Text>
                     </View>
                 }
 
-                {
-                    !this.isOwnProfile &&
-                    <View style={{ width: '100%' }}>
-                    {
-                        !budRequestSent &&
-                        <Button
-                            label={
-                                budRequestReceived ? 
-                                'Accept Bud Request' : 'Become Buds'
-                            }
-                            accessibilityLabel='Become buds with this user'
-                            onPress={ this.addBud.bind(this) } />
-                    }
-                    {
-                        !budRequestSent && budRequestReceived &&
-                        <Button style={{ marginTop: 15 * VH }}
-                            label='Decline Bud Request'
-                            accessibilityLabel="Don't become buds with this user"
-                            onPress={ this.removeBud.bind(this) } />
-                    }
-                    {
-                        budRequestSent &&
-                        <Button style={ STYLES.spaceAfter }
-                            label={
-                                budRequestReceived ?
-                                'Stop Being Buds' : 'Cancel Bud Request'
-                            }
-                            accessibilityLabel="Stop being buds with this user"
-                            onPress={ this.removeBud.bind(this) } />
-                    }
-                    </View>
-                }
+                { !this.isOwnProfile && [
+                    !budRequestSent &&
+                    <Button style={ STYLES.spaceBefore }
+                        key='budbutton1'
+                        label={
+                            budRequestReceived ? 
+                            'Accept Bud Request' : 'Become Buds'
+                        }
+                        accessibilityLabel='Become buds with this user'
+                        onPress={ this.addBud.bind(this) } />,
+                    !budRequestSent && budRequestReceived &&
+                    <Button style={ STYLES.spaceBefore }
+                        key='budbutton2'
+                        label='Decline Bud Request'
+                        accessibilityLabel="Don't become buds with this user"
+                        onPress={ this.removeBud.bind(this) } />,
+                    budRequestSent &&
+                    <Button style={ STYLES.spaceBefore }
+                        key='budbutton3'
+                        label={
+                            budRequestReceived ?
+                            'Stop Being Buds' : 'Cancel Bud Request'
+                        }
+                        accessibilityLabel="Stop being buds with this user"
+                        onPress={ this.removeBud.bind(this) } />
+                ]}
             </Container>
         )
     }
 }
 
 const LOCAL_STYLES = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'flex-start',
-        marginVertical: 20 * VH
-    },
     socialContainer: {
         flex: 0,
-        width: '100%',
         flexDirection: 'row',
-        justifyContent: 'space-around'
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%'
     },
     socialButton: {
-        width: COMPONENT_HEIGHT
+        width: COMPONENT_HEIGHT,
+        margin: 6 * VH
+    },
+    socialLockedText: {
+        position: 'absolute',
+        width: 150 * VH,
+        fontSize: FONT_SIZES.MEDIUM,
+        color: COLORS.PRIMARY,
+        fontFamily: 'HWTArtz'
+    },
+    username: {
+        marginBottom: 0,
+        color: COLORS.SECONDARY
     }
 })

@@ -1,12 +1,18 @@
 {
     "name": "GreenPass",
-    "version": "0.19.0",
+    "version": "0.20.0",
     "private": true,
     "scripts": {
         "android": "npm run build && cd android && ./gradlew app:assembleDebug && ./gradlew installDebug",
         "ios": "npm run build && react-native run-ios",
+        "ios:ipad": "react-native run-ios --simulator='iPad Pro (10.5-inch) (12.1)'",
+        "ios:iphone5s": "react-native run-ios --simulator='iPhone 5s'",
+        "ios:iphone6splus": "react-native run-ios --simulator='iPhone 6s Plus'",
+        "ios:iphoneX": "react-native run-ios --simulator='iPhone X'",
+        "ios:iphoneXSmax": "react-native run-ios --simulator='iPhone XS Max'",
         "apk": "cd android && ./gradlew assembleRelease",
         "start": "npm run build && react-native start",
+        "clean-cache": "watchman watch-del-all && react-native start --reset-cache",
         "build": "./build-scripts/export-avatars",
         "emulator:android": "~/Library/Android/sdk/emulator/emulator -avd Nexus_5X_API_28_x86 &",
         "test": "jest"
@@ -20,19 +26,16 @@
         "preset": "react-native"
     },
     "dependencies": {
-        "react": "16.6.3",
-        "react-native": "^0.58.6",
+        "react": "^16.8.3",
+        "react-native": "^0.59.3",
         "react-native-datepicker": "^1.7.2",
-        "react-native-firebase": "^5.2.0",
+        "react-native-firebase": "^5.2.3",
         "react-native-navigation": "^2.16.0",
         "react-native-splash-screen": "^3.2.0"
     },
     "devDependencies": {
-        "babel-jest": "23.6.0",
         "fs-extra": "^6.0.1",
-        "jest": "23.6.0",
         "metro-react-native-babel-preset": "0.49.2",
-        "react-test-renderer": "16.7.0",
-        "replace-in-file": "^3.4.2"
+        "react-test-renderer": "16.7.0"
     }
 }

@@ -137,6 +137,29 @@ export default class UserService {
         return batch.commit()
     }
 
+    static getContactMethods( uid, callback ) {
+        if ( !AUTH.currentUser ) return null
+        if ( !uid ) uid = AUTH.currentUser.uid
+
+        return USERS.doc( uid ).collection( 'ContactMethods' ).onSnapshot(
+            queryResults => {
+                // queryResults.docs() == [{id, data() => document, ...}]
+                callback(
+                    queryResults.docs.map( docref => {
+                        return { method: docref.id, info: docref.data() }
+                    })
+                )
+            },
+            error => {
+                callback( [] )
+            }
+        )
+    }
+    
+    static unsubscribe( unsubscribeFunction ) {
+        if ( unsubscribeFunction ) unsubscribeFunction()
+    }
+
     static getUserById( uid ) {
         if ( !AUTH.currentUser ) {
             error = new Error( 'User is not logged in.' )
