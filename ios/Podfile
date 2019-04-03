@@ -1,5 +1,5 @@
 # Uncomment the next line to define a global platform for your project
-platform :ios, '9.0'
+platform :ios, '12.0'
 
 target 'GreenPass' do
   # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
@@ -25,7 +25,5 @@ target 'GreenPass' do
   pod 'Firebase/Performance', '~> 5.15.0'
   pod 'Fabric', '~> 1.7.13'
   pod 'Crashlytics', '~> 3.10.9'
-
-  pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
 
 end
