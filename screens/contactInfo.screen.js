@@ -28,11 +28,13 @@ const SERVICES = {
     'text': { source: require( '../assets/bg/Text.png' ) }
 }
 
+Navigation.registerComponent( 'ServicesModal', () => ServicesModal )
+
 export default class ContactInfoScreen extends React.PureComponent {
     constructor( props ) {
         super( props )
+
         this.state = {
-            modal: false,
             contactMethods: {},
         }
     }
@@ -41,23 +43,27 @@ export default class ContactInfoScreen extends React.PureComponent {
         splash.hide()
     }
 
-    addContactMethod( service, contactInfo ) {
-        if ( service === 'text' ) {
-            contactInfo = contactInfo.replace( /[^0-9]+/g, '' )
-            if ( contactInfo.length !== 10 ) {
-                alert( 'Invalid phone number.' )
-                return
+    showModal() {
+        Navigation.push(this.props.componentId, {
+            component: {
+                name: 'ServicesModal',
+                passProps: {
+                    onSubmit: this.addContactMethod.bind(this)
+                }
             }
-            contactInfo = `(${contactInfo.slice(0, 3)}) ${contactInfo.slice(3, 6)}-${contactInfo.slice(6)}`
-        }
+        })
+                //<ServicesModal
+                //    visible={ this.state.modal }
+                //    onSubmit={ this.addContactMethod.bind(this) }/>
+    }
 
+    addContactMethod( service, contactInfo ) {
         this.setState({
             contactMethods: Object.assign(
                 {},
                 this.state.contactMethods,
                 { [service]: contactInfo }
-            ),
-            modal: false
+            )
         })
     }
 
@@ -127,7 +133,7 @@ export default class ContactInfoScreen extends React.PureComponent {
                         'Add Another Service' : 'Add a Service'
                     }
                     accessibilityLabel='Add a contact method'
-                    onPress={ () => { this.setState({ modal: true }) } }/>
+                    onPress={ () => { this.showModal() } }/>
 
                 {
                 Object.keys(this.state.contactMethods).length > 0 &&
@@ -137,30 +143,22 @@ export default class ContactInfoScreen extends React.PureComponent {
                     onPress={ this.onSubmit.bind(this) }/>
                 }
 
-                <ServicesModal
-                    visible={ this.state.modal }
-                    onSubmit={ this.addContactMethod.bind(this) }/>
             </Container>
 
         )
     }
 }
 
-class ServicesModal extends React.PureComponent {
+export class ServicesModal extends React.PureComponent {
     constructor( props ) {
         super( props )
 
         this.state = {
             submodal: false,
             service: '',
-            contactInfo: ''
         }
 
-        this.submodalOpacity = new Animated.Value( 0 )
-    }
-
-    componentWillReceiveProps( newProps ) {
-        if ( newProps.visible === false ) this.setState({ submodal: false })
+        this.contactInfo     = ''
         this.submodalOpacity = new Animated.Value( 0 )
     }
 
@@ -174,14 +172,24 @@ class ServicesModal extends React.PureComponent {
     }
 
     onSubmit() {
-        if ( this.state.contactInfo.length == 0 ) return
+        if ( this.contactInfo.length === 0 ) return
+        if ( this.state.service === 'text' ) {
+            this.contactInfo = this.contactInfo.replace( /[^0-9]+/g, '' )
+            if ( this.contactInfo.length !== 10 ) {
+                alert( 'Invalid phone number.' )
+                return
+            }
+            this.contactInfo = `(${this.contactInfo.slice(0, 3)}) ${this.contactInfo.slice(3, 6)}-${this.contactInfo.slice(6)}`
+        }
 
-        this.props.onSubmit( this.state.service, this.state.contactInfo )
+
+        this.props.onSubmit( this.state.service, this.contactInfo )
+        Navigation.pop( this.props.componentId )
     }
 
     render() {
         return (
-            <Modal visible={ this.props.visible }>
+            <Container>
                 { !this.state.submodal &&
                 <Animated.View style={{
                     width: '100%',
@@ -239,7 +247,7 @@ class ServicesModal extends React.PureComponent {
                         textContentType={
                             this.state.service === 'text' ? 'telephoneNumber' : 'username'
                         }
-                        onChangeText={ (text) => this.setState({ contactInfo: text }) }/>
+                        onChangeText={ (text) => this.contactInfo = text }/>
 
                     <Button
                         label="Submit"
@@ -247,7 +255,7 @@ class ServicesModal extends React.PureComponent {
                         onPress={ this.onSubmit.bind(this) }/>
                 </Animated.View>
                 }
-            </Modal>
+            </Container>
         )
     }
 }
