@@ -179,7 +179,14 @@ export class ServicesModal extends React.PureComponent {
                 alert( 'Invalid phone number.' )
                 return
             }
-            this.contactInfo = `(${this.contactInfo.slice(0, 3)}) ${this.contactInfo.slice(3, 6)}-${this.contactInfo.slice(6)}`
+            this.contactInfo = {
+                number: `(${this.contactInfo.slice(0, 3)}) ${this.contactInfo.slice(3, 6)}-${this.contactInfo.slice(6)}`
+            }
+        }
+        else {
+            this.contactInfo = {
+                username: this.contactInfo
+            }
         }
 
 

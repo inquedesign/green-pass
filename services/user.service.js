@@ -117,23 +117,23 @@ export default class UserService {
             return Promise.reject( error )
         }
 
+        const supportedMethods = [
+            'facebook',
+            'twitter',
+            'whatsapp',
+            'snapchat',
+            'reddit',
+            'instagram',
+            'text' 
+        ]
+
         let batch = FIRESTORE.batch()
-        if ( contactMethods.text ) {
-            const doc = USERS.doc( AUTH.currentUser.uid ).collection('ContactMethods').doc('text')
-            batch = batch.set( doc, { number: contactMethods.text }, { merge: true } )
-        }
-        if ( contactMethods.facebook ) {
-            const doc = USERS.doc( AUTH.currentUser.uid ).collection('ContactMethods').doc('facebook')
-            batch = batch.set( doc, { username: contactMethods.facebook }, { merge: true } )
-        }
-        if ( contactMethods.instagram ) {
-            const doc = USERS.doc( AUTH.currentUser.uid ).collection('ContactMethods').doc('instagram')
-            batch = batch.set( doc, { username: contactMethods.instagram }, { merge: true } )
-        }
-        if ( contactMethods.snapchat ) {
-            const doc = USERS.doc( AUTH.currentUser.uid ).collection('ContactMethods').doc('snapchat')
-            batch = batch.set( doc, { username: contactMethods.snapchat }, { merge: true } )
-        }
+        supportedMethods.forEach( key => {
+            if ( contactMethods[key] ) {
+                const doc = USERS.doc( AUTH.currentUser.uid ).collection('ContactMethods').doc( key )
+                batch = batch.set( doc, contactMethods[key], { merge: true } )
+            }
+        })
         return batch.commit()
     }
 
@@ -141,6 +141,8 @@ export default class UserService {
         if ( !AUTH.currentUser ) return null
         if ( !uid ) uid = AUTH.currentUser.uid
 
+        // NOTE: If there are more than 10 documents in 1 query, it will fail.
+        // Right now, there are at most 7, so it's ok.
         return USERS.doc( uid ).collection( 'ContactMethods' ).onSnapshot(
             queryResults => {
                 // queryResults.docs() == [{id, data() => document, ...}]
