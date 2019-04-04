@@ -91,7 +91,7 @@ export const MAIN_LAYOUT = {
                     name: SCREENS.PROFILE_SCREEN,
                     options: {
                         bottomTab: {
-                            icon: require('./assets/973-user-toolbar.png'),
+                            icon: require('./assets/icons/Profile.png'),
                             text: 'PROFILE'
                         }
                     }
@@ -106,7 +106,7 @@ export const MAIN_LAYOUT = {
                     }],
                     options: {
                         bottomTab: {
-                            icon: require('./assets/973-user-toolbar.png'),
+                            icon: require('./assets/icons/Buds.png'),
                             text: 'BUDS'
                         }
                     }

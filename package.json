@@ -1,6 +1,6 @@
 {
     "name": "GreenPass",
-    "version": "0.20.4",
+    "version": "0.20.5",
     "private": true,
     "scripts": {
         "android": "npm run build && cd android && ./gradlew app:assembleDebug && ./gradlew installDebug",
