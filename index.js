@@ -9,6 +9,7 @@ import ContactInfoScreen     from './screens/contactInfo.screen'
 import TermsOfServiceScreen  from './screens/termsOfService.screen'
 import ProfileScreen         from './screens/profile.screen' 
 import BudsScreen            from './screens/buds.screen'
+import ExploreScreen         from './screens/explore.screen'
 
 import { Navigation } from "react-native-navigation"
 import { COLORS,
@@ -26,6 +27,7 @@ Navigation.registerComponent( SCREENS.CONTACT_INFO_SCREEN, () => ContactInfoScre
 Navigation.registerComponent( SCREENS.TERMS_OF_SERVICE_SCREEN, () => TermsOfServiceScreen )
 Navigation.registerComponent( SCREENS.PROFILE_SCREEN, () => ProfileScreen )
 Navigation.registerComponent( SCREENS.BUDS_SCREEN, () => BudsScreen )
+Navigation.registerComponent( SCREENS.EXPLORE_SCREEN, () => ExploreScreen )
 
 import UserService from './services/user.service'
 import firebase from 'react-native-firebase'
@@ -112,17 +114,17 @@ export const MAIN_LAYOUT = {
                     }
                 }
             },
-            //component: {
-            //    name: SCREENS.EXPLORE_SCREEN,
-            //    passProps: {
-            //        profile: 'user-uid'
-            //    },
-            //    options: {
-            //        bottomTab: {
-            //            icon: require('image')
-            //        }
-            //    }
-            //}
+            {
+                component: {
+                    name: SCREENS.EXPLORE_SCREEN,
+                    options: {
+                        bottomTab: {
+                            icon: require('./assets/icons/Explore.png'),
+                            text: 'EXPLORE'
+                        }
+                    }
+                }
+            }
         ],
         options: {
             bottomTabs: {

@@ -29,9 +29,13 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
     })
 })
 
-exports.deleteProfile = functions.firestore.document('Users/{user}')
+exports.deleteProfile = functions.firestore.document( 'Users/{user}' )
 .onDelete(( doc, context) => {
     return Promise.all([
+        firestore.doc( 'Statistics/UserCount' )
+        .set({
+            count: admin.firestore.FieldValue.increment( -1 )
+         }, { merge: true }),
         tools.firestore
         .delete( `Users/${context.params.user}/ContactList`, {
             project  : functions.config().auth.project,
@@ -47,4 +51,14 @@ exports.deleteProfile = functions.firestore.document('Users/{user}')
             yes      : true
         })
     ])
+})
+
+exports.addProfile = functions.firestore.document( 'Users/{user}' )
+.onCreate(( doc, context ) => {
+    return firestore.doc( 'Statistics/UserCount' )
+    .set({
+        count: admin.firestore.FieldValue.increment( 1 )
+     }, {
+        merge: true
+    })
 })

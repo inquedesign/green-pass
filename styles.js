@@ -14,7 +14,8 @@ export const BORDER_RADIUS    = .25 * COMPONENT_HEIGHT
 export const FONT_SIZES = {
     SMALL : Math.min( 8  * VH, 14.2 * VW ),
     MEDIUM: Math.min( 14 * VH, 24.9 * VW ),
-    LARGE : Math.min( 20 * VH, 35.6 * VW )
+    LARGE : Math.min( 20 * VH, 35.6 * VW ),
+    XLARGE: Math.min( 26 * VH, 46.3 * VW )
 }
 
 export const COLORS = {
