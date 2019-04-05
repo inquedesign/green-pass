@@ -7,10 +7,10 @@ const FIRESTORE = firebase.firestore()
 const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
 
-let profileUnsubscribe = null
-let budsUnsubscribe    = null
-let profileListeners   = new Set()
-let budsListeners      = new Set()
+let profileUnsubscribe   = null
+let budsUnsubscribe      = null
+let profileListeners     = new Set()
+let budsListeners        = new Set()
 let profileUnsubscribers = new Set()
 
 export default class UserService {
@@ -78,9 +78,7 @@ export default class UserService {
             password
         )
         .then( credentials => {
-            clearProfile()
-            clearBuds()
-            UserService.getProfile()
+            initialize()
             return credentials
         })
     }
@@ -91,9 +89,7 @@ export default class UserService {
             password
         )
         .then( credentials => {
-            clearProfile()
-            clearBuds()
-            UserService.getProfile()
+            initialize()
             return credentials
         })
     }
@@ -301,6 +297,12 @@ function clearBuds() {
     }
     budsListeners.clear()
     UserService.buds = null
+}
+
+function initialize() {
+    clearProfile()
+    clearBuds()
+    UserService.getProfile()
 }
 //      {firebase.admob.nativeModuleExists && <Text style={styles.module}>admob()</Text>}
 //      {firebase.analytics.nativeModuleExists && <Text style={styles.module}>analytics()</Text>}
