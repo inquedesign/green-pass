@@ -12,6 +12,7 @@ import { STYLES,
          COLORS,
          FONT_SIZES,
          VH,
+         SCREEN_HEIGHT,
          COMPONENT_HEIGHT } from '../styles'
 import { SCREENS,
          SOCIAL_ICONS } from '../util/constants'
@@ -141,7 +142,7 @@ export default class ProfileScreen extends React.PureComponent {
                 { ( this.isOwnProfile || (budRequestSent && budRequestReceived) ) ?
                     this.state.contactMethods &&
                     <View style={[ LOCAL_STYLES.socialContainer,
-                                 { width: this.state.contactMethods.length === 4 ? '75%' : '100%' } ]}>
+                                 { width: .3 * SCREEN_HEIGHT } ]}>
                         {
                         this.state.contactMethods.map(({ method, info }) => (
                             <Button style={ LOCAL_STYLES.socialButton }
