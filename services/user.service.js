@@ -1,7 +1,9 @@
 import React    from 'react'
 import firebase from 'react-native-firebase'
 
-import { Navigation  } from 'react-native-navigation'
+import { Navigation   } from 'react-native-navigation'
+//import { AccessToken,
+//         LoginManager } from 'react-native-fbsdk';
 
 const FIRESTORE = firebase.firestore()
 const USERS     = FIRESTORE.collection( 'Users' )
@@ -43,7 +45,7 @@ export default class UserService {
     static getProfile() {
         if ( !AUTH.currentUser ) {
             clearProfile()
-            error = new Error( 'User is not logged in.' )
+            const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
@@ -96,7 +98,7 @@ export default class UserService {
 
     static updateUser( dataToUpdate ) {
         if ( !AUTH.currentUser ) {
-            error = new Error( 'User is not logged in.' )
+            const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
@@ -108,7 +110,7 @@ export default class UserService {
     
     static updateContactMethods( contactMethods ) {
         if ( !AUTH.currentUser ) {
-            error = new Error( 'User is not logged in.' )
+            const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
@@ -160,7 +162,7 @@ export default class UserService {
 
     static getUserById( uid ) {
         if ( !AUTH.currentUser ) {
-            error = new Error( 'User is not logged in.' )
+            const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
@@ -179,7 +181,7 @@ export default class UserService {
 
     static getUserByUsername( searchString ) {
         if ( !AUTH.currentUser ) {
-            error = new Error( 'User is not logged in.' )
+            const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
@@ -206,7 +208,7 @@ export default class UserService {
     static getBuds() {
         if ( !AUTH.currentUser ) {
             clearBuds()
-            error = new Error( 'User is not logged in.' )
+            const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
@@ -233,7 +235,7 @@ export default class UserService {
     
     static addBud( uid ) {
         if ( !AUTH.currentUser ) {
-            error = new Error( 'User is not logged in.' )
+            const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
@@ -244,7 +246,7 @@ export default class UserService {
     
     static removeBud( uid ) {
         if ( !AUTH.currentUser ) {
-            error = new Error( 'User is not logged in.' )
+            const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
@@ -254,6 +256,34 @@ export default class UserService {
         .delete( USERS.doc( uid ).collection( 'ContactList' ).doc( AUTH.currentUser.uid ) )
         .commit()
     }
+    
+    //static facebookLogin() {
+    //    return LoginManager.logInWithReadPermissions(['public_profile', 'email'])
+    //    .then( result => {
+    //        if ( result.isCancelled ) {
+    //            const error = new Error('Request was canceled.')
+    //            error.name = 'CANCELED'
+    //            throw error
+    //        }
+//
+    //        return AccessToken.getCurrentAccessToken()
+    //    })
+    //    .then( data => {
+    //        if ( !data ) {
+    //            throw new Error('There was a problem obtaining the access token.')
+    //        }
+//
+    //        // create a new firebase credential with the token
+    //        const credential = firebase.auth.FacebookAuthProvider.credential( data.accessToken )
+//
+    //        // login with credential
+    //        return firebase.auth().signInWithCredential( credential )
+    //    })
+    //    .then( credentials => {
+    //        initialize()
+    //        return credentials
+    //    })
+    //}
 }
 
 UserService.profile = null

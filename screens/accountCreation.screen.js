@@ -111,27 +111,10 @@ export default class AccountCreationScreen extends React.PureComponent {
                     allCaps={ false }
                     onChangeText={ this.onChangePasswordConfirmation.bind(this) }
                 />
-                <Button style={ STYLES.spaceAfter }
+                <Button
                     label="Submit"
                     accessibilityLabel="Submit e-mail and password"
                     onPress={ this.onSubmit.bind(this) } />
-                <Text style={ STYLES.header }>
-                    Or, use your social
-                </Text>
-                <View style={ LOCAL_STYLES.socialContainer }>
-                    <Button style={ LOCAL_STYLES.socialButton }
-                        label=""
-                        accessibilityLabel="Social Media Placeholder"
-                        onPress={ () => {} } />
-                    <Button style={ LOCAL_STYLES.socialButton }
-                        label=""
-                        accessibilityLabel="Social Media Placeholder"
-                        onPress={ () => {} } />
-                    <Button style={ LOCAL_STYLES.socialButton }
-                        label=""
-                        accessibilityLabel="Social Media Placeholder"
-                        onPress={ () => {} } />
-                </View>
             </Container>
         )
     }

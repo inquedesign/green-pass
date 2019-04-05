@@ -1,10 +1,10 @@
 {
     "name": "GreenPass",
-    "version": "0.21.2",
+    "version": "0.22.0",
     "private": true,
     "scripts": {
-        "android": "npm run build && cd android && ./gradlew app:assembleDebug && ./gradlew installDebug",
-        "ios": "npm run build && react-native run-ios",
+        "android": "cd android && ./gradlew app:assembleDebug && ./gradlew installDebug",
+        "ios": "react-native run-ios",
         "ios:ipad": "react-native run-ios --simulator='iPad Pro (10.5-inch) (12.1)'",
         "ios:iphone5s": "react-native run-ios --simulator='iPhone 5s'",
         "ios:iphone6splus": "react-native run-ios --simulator='iPhone 6s Plus'",
@@ -14,8 +14,7 @@
         "start": "npm run build && react-native start",
         "clean-cache": "watchman watch-del-all && react-native start --reset-cache",
         "build": "./build-scripts/export-avatars",
-        "emulator:android": "~/Library/Android/sdk/emulator/emulator -avd Nexus_5X_API_28_x86 &",
-        "test": "jest"
+        "emulator:android": "~/Library/Android/sdk/emulator/emulator -avd Nexus_5X_API_28_x86 &"
     },
     "rnpm": {
         "assets": [
