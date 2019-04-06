@@ -122,7 +122,9 @@ export default class BudsScreen extends React.Component {
 
     render() {
         return (
-            <Container contentStyle={ LOCAL_STYLES.content }>
+            <Container
+                containerStyle={ LOCAL_STYLES.container }
+                contentStyle={ LOCAL_STYLES.content }>
 
                 <View style={ LOCAL_STYLES.searchField }>
                     <TextInput
@@ -168,6 +170,9 @@ export default class BudsScreen extends React.Component {
 }
 
 const LOCAL_STYLES = {
+    container: {
+        justifyContent: 'flex-start'
+    },
     content: {
         padding: 0,
     },

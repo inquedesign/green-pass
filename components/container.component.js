@@ -42,17 +42,19 @@ export default class Container extends React.PureComponent {
                     require('../assets/bg/Green.png') }>
 
                 <ScrollView style={ defaults.container }
-                    centerContent={ true }
                     contentContainerStyle={ containerStyles }
                     alwaysBounceVertical={ false }
                     enablescroll={ true }
                     showsHorizontalScrollIndicator={ false }
                     showsVerticalScrollIndicator={ false }
+                    contentInsetAdjustmentBehavior='never'
+                    automaticallyAdjustContentInsets={ false }
                     >
                     <View style={ contentStyles }>
                             { this.props.children }
                     </View>
                 </ScrollView>
+
             </ImageBackground>
         )
     }
@@ -65,10 +67,12 @@ const defaults = StyleSheet.create({
     },
     container: {
         width : '100%',
-        height: '100%',
+        height: '100%'
     },
     centerContent: {
-        alignItems    : 'center',
+        flexGrow      : 1,
+        justifyContent: 'center',
+        alignItems    : 'center'
     },  
     content: {
         width          : .45 * SCREEN_HEIGHT,
@@ -77,5 +81,6 @@ const defaults = StyleSheet.create({
         alignItems     : 'center',
         backgroundColor: COLORS.BACKGROUND,
         borderRadius   : BORDER_RADIUS,
+        marginVertical : 50 * VH
     }
 })
