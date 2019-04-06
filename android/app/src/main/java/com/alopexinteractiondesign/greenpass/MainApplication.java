@@ -1,16 +1,8 @@
 package com.alopexinteractiondesign.greenpass;
 
-//import android.annotation.SuppressLint;
-//import android.app.Application;
-
-//import com.facebook.react.ReactApplication;
-import org.devio.rn.splashscreen.SplashScreenReactPackage;
-import io.invertase.firebase.RNFirebasePackage;
 import org.devio.rn.splashscreen.SplashScreenReactPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
-//import com.facebook.react.shell.MainReactPackage;
-//import com.facebook.soloader.SoLoader;
 
 import com.reactnativenavigation.NavigationApplication;
 import com.reactnativenavigation.react.NavigationReactNativeHost;
@@ -62,21 +54,21 @@ public class MainApplication extends NavigationApplication {
             new SplashScreenReactPackage(),
             new RNFirebasePackage(),
             // add/remove these packages as appropriate
-            new RNFirebaseAdMobPackage(),
-            new RNFirebaseAnalyticsPackage(),
+//            new RNFirebaseAdMobPackage(),
+//            new RNFirebaseAnalyticsPackage(),
             new RNFirebaseAuthPackage(),
-            new RNFirebaseRemoteConfigPackage(),
-            new RNFirebaseCrashlyticsPackage(),
-            new RNFirebaseDatabasePackage(),
+//            new RNFirebaseRemoteConfigPackage(),
+//            new RNFirebaseCrashlyticsPackage(),
+//            new RNFirebaseDatabasePackage(),
             new RNFirebaseFirestorePackage(),
-            new RNFirebaseFunctionsPackage(),
-            new RNFirebaseInstanceIdPackage(),
-            new RNFirebaseInvitesPackage(),
+//            new RNFirebaseFunctionsPackage(),
+//            new RNFirebaseInstanceIdPackage(),
+//            new RNFirebaseInvitesPackage(),
             new RNFirebaseLinksPackage(),
             new RNFirebaseMessagingPackage(),
-            new RNFirebaseNotificationsPackage(),
-            new RNFirebasePerformancePackage(),
-            new RNFirebaseStoragePackage()
+            new RNFirebaseNotificationsPackage()
+//            new RNFirebasePerformancePackage(),
+//            new RNFirebaseStoragePackage()
         );
     }
 

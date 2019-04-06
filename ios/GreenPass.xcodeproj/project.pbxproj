@@ -43,8 +43,9 @@
 		8E7D4B171F8AFD9C00699FE4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8E7D4B161F8AFD9B00699FE4 /* GoogleService-Info.plist */; };
 		A038CD85D39748E122AC50D7 /* libPods-GreenPass.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 333056BA5B7ADABE709DF4A1 /* libPods-GreenPass.a */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
+		C2106D522257FAAC00ED8867 /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C2106D4F2257FA7E00ED8867 /* libReactNativeNavigation.a */; };
+		C2106D5622580F3C00ED8867 /* bonghit.wav in Resources */ = {isa = PBXBuildFile; fileRef = C2106D5522580F3C00ED8867 /* bonghit.wav */; };
 		C297BD912238BD6600215B03 /* libSplashScreen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C297BD902238BD4900215B03 /* libSplashScreen.a */; };
-		C2C5983A2235EA860056E8A5 /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C2C598362235EA4F0056E8A5 /* libReactNativeNavigation.a */; };
 		D8683175DA054BC1A87CF5DB /* HWTArtz.otf in Resources */ = {isa = PBXBuildFile; fileRef = F6A7828CE62848C298383476 /* HWTArtz.otf */; };
 		E8644EFDA1C341B0B11D6679 /* Open Sans SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB8CA5B437B04E8499728B23 /* Open Sans SemiBold.ttf */; };
 /* End PBXBuildFile section */
@@ -302,6 +303,20 @@
 			remoteGlobalIDString = 358F4ED71D1E81A9004DF814;
 			remoteInfo = RCTBlob;
 		};
+		C2106D4E2257FA7E00ED8867 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C2106D492257FA7E00ED8867 /* ReactNativeNavigation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = D8AFADBD1BEE6F3F00A4592D;
+			remoteInfo = ReactNativeNavigation;
+		};
+		C2106D502257FA7E00ED8867 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C2106D492257FA7E00ED8867 /* ReactNativeNavigation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 7B49FEBB1E95090800DEB3EA;
+			remoteInfo = ReactNativeNavigationTests;
+		};
 		C297BD8F2238BD4900215B03 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = C297BD632238BD4800215B03 /* SplashScreen.xcodeproj */;
@@ -336,20 +351,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = ED296FEE214C9CF800B7C4FE;
 			remoteInfo = "jsiexecutor-tvOS";
-		};
-		C2C598352235EA4F0056E8A5 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C2C598032235EA4E0056E8A5 /* ReactNativeNavigation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = D8AFADBD1BEE6F3F00A4592D;
-			remoteInfo = ReactNativeNavigation;
-		};
-		C2C598372235EA4F0056E8A5 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = C2C598032235EA4E0056E8A5 /* ReactNativeNavigation.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 7B49FEBB1E95090800DEB3EA;
-			remoteInfo = ReactNativeNavigationTests;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -388,8 +389,9 @@
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
 		ADF4CB3C3BF44D3EBA8B78C4 /* RNFirebase.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNFirebase.xcodeproj; path = "../node_modules/react-native-firebase/ios/RNFirebase.xcodeproj"; sourceTree = "<group>"; };
 		B7AFA8AA9A1CFD17320E9074 /* Pods-GreenPass.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GreenPass.release.xcconfig"; path = "Pods/Target Support Files/Pods-GreenPass/Pods-GreenPass.release.xcconfig"; sourceTree = "<group>"; };
+		C2106D492257FA7E00ED8867 /* ReactNativeNavigation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativeNavigation.xcodeproj; path = "../node_modules/react-native-navigation/lib/ios/ReactNativeNavigation.xcodeproj"; sourceTree = "<group>"; };
+		C2106D5522580F3C00ED8867 /* bonghit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = bonghit.wav; path = ../assets/sounds/bonghit.wav; sourceTree = "<group>"; };
 		C297BD632238BD4800215B03 /* SplashScreen.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SplashScreen.xcodeproj; path = "../node_modules/react-native-splash-screen/ios/SplashScreen.xcodeproj"; sourceTree = "<group>"; };
-		C2C598032235EA4E0056E8A5 /* ReactNativeNavigation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativeNavigation.xcodeproj; path = "../node_modules/react-native-navigation/lib/ios/ReactNativeNavigation.xcodeproj"; sourceTree = "<group>"; };
 		F6A7828CE62848C298383476 /* HWTArtz.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = HWTArtz.otf; path = ../assets/fonts/HWTArtz.otf; sourceTree = "<group>"; };
 		FBC8C743C046423C960F2237 /* libRNFirebase.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNFirebase.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -407,8 +409,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2106D522257FAAC00ED8867 /* libReactNativeNavigation.a in Frameworks */,
 				C297BD912238BD6600215B03 /* libSplashScreen.a in Frameworks */,
-				C2C5983A2235EA860056E8A5 /* libReactNativeNavigation.a in Frameworks */,
 				ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */,
 				11D1A2F320CAFA9E000508D9 /* libRCTAnimation.a in Frameworks */,
 				146834051AC3E58100842450 /* libReact.a in Frameworks */,
@@ -597,8 +599,8 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				C2106D492257FA7E00ED8867 /* ReactNativeNavigation.xcodeproj */,
 				C297BD632238BD4800215B03 /* SplashScreen.xcodeproj */,
-				C2C598032235EA4E0056E8A5 /* ReactNativeNavigation.xcodeproj */,
 				5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */,
 				146833FF1AC3E56700842450 /* React.xcodeproj */,
 				00C302A71ABCB8CE00DB3ED1 /* RCTActionSheet.xcodeproj */,
@@ -628,6 +630,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				C2106D5522580F3C00ED8867 /* bonghit.wav */,
 				8E7D4B161F8AFD9B00699FE4 /* GoogleService-Info.plist */,
 				13B07FAE1A68108700A75B9A /* GreenPass */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -699,19 +702,19 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C297BD642238BD4800215B03 /* Products */ = {
+		C2106D4A2257FA7E00ED8867 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C297BD902238BD4900215B03 /* libSplashScreen.a */,
+				C2106D4F2257FA7E00ED8867 /* libReactNativeNavigation.a */,
+				C2106D512257FA7E00ED8867 /* ReactNativeNavigationTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C2C598042235EA4E0056E8A5 /* Products */ = {
+		C297BD642238BD4800215B03 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C2C598362235EA4F0056E8A5 /* libReactNativeNavigation.a */,
-				C2C598382235EA4F0056E8A5 /* ReactNativeNavigationTests.xctest */,
+				C297BD902238BD4900215B03 /* libSplashScreen.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -882,8 +885,8 @@
 					ProjectRef = 146833FF1AC3E56700842450 /* React.xcodeproj */;
 				},
 				{
-					ProductGroup = C2C598042235EA4E0056E8A5 /* Products */;
-					ProjectRef = C2C598032235EA4E0056E8A5 /* ReactNativeNavigation.xcodeproj */;
+					ProductGroup = C2106D4A2257FA7E00ED8867 /* Products */;
+					ProjectRef = C2106D492257FA7E00ED8867 /* ReactNativeNavigation.xcodeproj */;
 				},
 				{
 					ProductGroup = 8E7D4B111F8AFD6F00699FE4 /* Products */;
@@ -1143,6 +1146,20 @@
 			remoteRef = ADBDB9261DFEBF0700ED6528 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		C2106D4F2257FA7E00ED8867 /* libReactNativeNavigation.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libReactNativeNavigation.a;
+			remoteRef = C2106D4E2257FA7E00ED8867 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		C2106D512257FA7E00ED8867 /* ReactNativeNavigationTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = ReactNativeNavigationTests.xctest;
+			remoteRef = C2106D502257FA7E00ED8867 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		C297BD902238BD4900215B03 /* libSplashScreen.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -1178,20 +1195,6 @@
 			remoteRef = C2C598312235EA4F0056E8A5 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		C2C598362235EA4F0056E8A5 /* libReactNativeNavigation.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libReactNativeNavigation.a;
-			remoteRef = C2C598352235EA4F0056E8A5 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		C2C598382235EA4F0056E8A5 /* ReactNativeNavigationTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = ReactNativeNavigationTests.xctest;
-			remoteRef = C2C598372235EA4F0056E8A5 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -1206,6 +1209,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C2106D5622580F3C00ED8867 /* bonghit.wav in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 				8E7D4B171F8AFD9C00699FE4 /* GoogleService-Info.plist in Resources */,
@@ -1393,10 +1397,7 @@
 				INFOPLIST_FILE = GreenPassTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-lc++",
@@ -1418,10 +1419,7 @@
 				INFOPLIST_FILE = GreenPassTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-lc++",
@@ -1506,10 +1504,7 @@
 				);
 				INFOPLIST_FILE = "GreenPass-tvOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-lc++",
@@ -1540,10 +1535,7 @@
 				);
 				INFOPLIST_FILE = "GreenPass-tvOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = (
 					"-ObjC",
 					"-lc++",
@@ -1569,10 +1561,7 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = "GreenPass-tvOSTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.facebook.REACT.GreenPass-tvOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -1594,10 +1583,7 @@
 				GCC_NO_COMMON_BLOCKS = YES;
 				INFOPLIST_FILE = "GreenPass-tvOSTests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$(SRCROOT)/$(TARGET_NAME)\"",
-				);
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.facebook.REACT.GreenPass-tvOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;

@@ -167,8 +167,6 @@ configurations.all {
 }
 
 dependencies {
-    implementation project(':react-native-splash-screen')
-    implementation project(':react-native-firebase')
   implementation project(':react-native-splash-screen')
   //noinspection GradleDynamicVersion
   implementation "com.facebook.react:react-native:+"

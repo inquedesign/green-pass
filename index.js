@@ -11,10 +11,11 @@ import ProfileScreen         from './screens/profile.screen'
 import BudsScreen            from './screens/buds.screen'
 import ExploreScreen         from './screens/explore.screen'
 
-import { Navigation } from "react-native-navigation"
+import { Platform   } from 'react-native'
+import { Navigation } from 'react-native-navigation'
 import { COLORS,
-         FONT_SIZES } from "./styles"
-import { SCREENS        } from "./util/constants"
+         FONT_SIZES } from './styles'
+import { SCREENS    } from './util/constants'
 
 Navigation.registerComponent( SCREENS.START_SCREEN, () => StartScreen )
 Navigation.registerComponent( SCREENS.ACCOUNT_CREATION_SCREEN, () => AccountCreationScreen )
@@ -31,8 +32,61 @@ Navigation.registerComponent( SCREENS.EXPLORE_SCREEN, () => ExploreScreen )
 
 import UserService from './services/user.service'
 import firebase from 'react-native-firebase'
+const notifications = firebase.notifications
+const BONG_HIT = 'bonghit.wav'
 
 Navigation.events().registerAppLaunchedListener(() => {
+    notifications().getInitialNotification()
+    .then( context => {
+        if ( context ) notifications().removeDeliveredNotification( context.notification.notificationId )
+    })
+
+    notifications().cancelAllNotifications()
+
+    firebase.messaging().hasPermission()
+    .then( enabled => {
+        if ( enabled ) return
+        else return firebase.messaging().requestPermission()
+    })
+    .then(() => {
+        const its420 = new notifications.Notification()
+        .setNotificationId( '420' )
+        .setTitle( '4:20' )
+        .setBody( "It's 4:20! Make a wish." )
+        .setSound( BONG_HIT )
+        if ( Platform.OS === 'android' ) {
+            notifications().android.createChannel( 
+                new notifications.Android.Channel( '420', '420', notifications.Android.Importance.Default )
+                .setSound( BONG_HIT )
+            )
+            its420.android.setChannelId( '420' )
+        }
+
+        notifications().onNotification( notification => {
+            notifications().displayNotification( its420 )
+        })
+        
+        notifications().onNotificationOpened( context => {
+            notifications().removeDeliveredNotification( context.notification.notificationId )
+        })
+
+        const notificationDate = new Date()
+        notificationDate.setHours( 16 )
+        notificationDate.setMinutes( 20 )
+        notificationDate.setSeconds( 0 )
+
+        notifications().scheduleNotification( its420, {
+            fireDate: notificationDate.getTime(),
+            repeatInterval: 'day',
+            exact: true
+        })
+    })
+    .catch( error => {
+        // Don't notify
+        console.error( 'Error setting up:\n' + error.message )
+    })
+
+
     // TODO: remove autologin and UserService
     //if (firebase.auth().currentUser) firebase.auth().signOut()
     UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
