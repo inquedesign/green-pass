@@ -27,7 +27,7 @@ export default class BudsScreen extends React.Component {
         this.state = {
             searchMode   : false,
             buds         : [],
-            budRequests  : [],
+            sortedBuds   : [],
             searchResults: []
         }
     }
@@ -38,10 +38,11 @@ export default class BudsScreen extends React.Component {
             this.sortBudsAndRequests( results )
         })
         this.budsListener = UserService.addBudsListener( results => {
+            this.setState({ buds: results })
             this.sortBudsAndRequests( results )
         })
         this.profileListener = UserService.addProfileListener( null, profile => {
-            this.sortBudsAndRequests( this.state.buds.concat( this.state.budRequests ) )
+            this.sortBudsAndRequests( this.state.buds )
         })
     }
 
@@ -54,7 +55,10 @@ export default class BudsScreen extends React.Component {
         const budList     = UserService.profile.buds
         const budRequests = results.filter( bud => !(budList && budList.includes( bud.id )) )
         const buds        = results.filter( bud => budList && budList.includes( bud.id ) )
-        this.setState({ buds: buds, budRequests: budRequests })
+        const array = []
+        if ( budRequests.length > 0 ) array.push({ title: 'Bud Requests', data: budRequests })
+        if ( buds.length > 0 ) array.push({ title: 'Buds', data: buds })
+        this.setState({ sortedBuds: array })
     }
 
     search( searchString ) {
@@ -64,8 +68,10 @@ export default class BudsScreen extends React.Component {
             UserService.getUserByUsername( searchString )
             .then(( results ) => {
                 this.setState({
-                    searchMode: true,
-                    searchResults: results
+                    searchResults: results.length > 0 ? [{
+                        title: 'Results',
+                        data: results
+                    }] : []
                 })
             })
         }
@@ -92,11 +98,11 @@ export default class BudsScreen extends React.Component {
                 </View>
 
                 <View>
-                    <Text style={{ fontSize: FONT_SIZES.MEDIUM, fontFamily: 'HWTArtz', textAlign: 'left' }}>
+                    <Text style={ LOCAL_STYLES.rowHeader }>
                         { data.username }
                     </Text>
 
-                    <Text style={{ fontSize: FONT_SIZES.MEDIUM * .95, textAlign: 'left' }}>
+                    <Text style={ LOCAL_STYLES.rowData }>
                         { `${data.age} ${data.gender}` }
                     </Text>
                 </View>
@@ -106,16 +112,7 @@ export default class BudsScreen extends React.Component {
 
     renderHeader({ section: {title, data} }) {
         return (
-            data.length > 0 &&
-            <Text style={{
-                    paddingHorizontal: 22 * VH,
-                    paddingVertical: 11 * VH,
-                    fontFamily: 'HWTArtz',
-                    fontSize: FONT_SIZES.LARGE,
-                    color: COLORS.PRIMARY,
-                    letterSpacing: 1.5,
-                    textAlign: 'left'
-                }}>
+            <Text style={ LOCAL_STYLES.sectionHeader }>
                 { title }
             </Text>
         )
@@ -141,7 +138,7 @@ export default class BudsScreen extends React.Component {
                         onSubmitEditing={ (event) => { this.search( event.nativeEvent.text.toUpperCase() ) }}/>
                 </View>
 
-                <SectionList style={{ width: '100%' }}
+                <SectionList style={ LOCAL_STYLES.list }
                     stickySectionHeadersEnabled={ false }
                     scrollEnabled={ false }
                     alwaysBounceVertical={ false }
@@ -152,16 +149,15 @@ export default class BudsScreen extends React.Component {
                     renderItem={ this.renderItem.bind(this) }
                     ListEmptyComponent={ () => {
                         return (
-                            <View></View>
+                            <Text style={{ paddingVertical: 11 * VH }}> {
+                                this.state.searchMode
+                                ? 'There are no results for that username.'
+                                : 'You have no buds, yet. Why not find some?'
+                            } </Text>
                         )
                     }}
                     sections={
-                        this.state.searchMode ? [
-                            { title: 'Results', data: this.state.searchResults }
-                        ] : [
-                            { title: 'Bud Requests', data: this.state.budRequests },
-                            { title: 'Buds', data: this.state.buds }
-                        ]
+                        this.state.searchMode ? this.state.searchResults : this.state.sortedBuds
                     }
                     />
 
@@ -181,10 +177,31 @@ const LOCAL_STYLES = {
         width     : '100%',
         padding   : STANDARD_SPACE
     },
+    list: {
+        width: '100%'
+    },
+    sectionHeader: {
+        paddingHorizontal: 22 * VH,
+        paddingVertical: 11 * VH,
+        fontFamily: 'HWTArtz',
+        fontSize: FONT_SIZES.LARGE,
+        color: COLORS.PRIMARY,
+        letterSpacing: 1.5,
+        textAlign: 'left'
+    },
     row: {
         flexDirection  : 'row',
         height         : 45 * VH,
         alignItems     : 'center'
+    },
+    rowHeader: {
+        fontSize: FONT_SIZES.MEDIUM,
+        fontFamily: 'HWTArtz',
+        textAlign: 'left'
+    },
+    rowData: {
+        fontSize: FONT_SIZES.MEDIUM * .95,
+        textAlign: 'left'
     },
     thumbnail: {
         height     : 36 * VH,
