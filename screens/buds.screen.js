@@ -113,7 +113,8 @@ export default class BudsScreen extends React.Component {
                     fontFamily: 'HWTArtz',
                     fontSize: FONT_SIZES.LARGE,
                     color: COLORS.PRIMARY,
-                    textAlign: 'left',
+                    letterSpacing: 1.5,
+                    textAlign: 'left'
                 }}>
                 { title }
             </Text>
@@ -151,7 +152,7 @@ export default class BudsScreen extends React.Component {
                     renderItem={ this.renderItem.bind(this) }
                     ListEmptyComponent={ () => {
                         return (
-                            <View style={{ width: 100, height: 100, backgroundColor: 'blue' }}></View>
+                            <View></View>
                         )
                     }}
                     sections={

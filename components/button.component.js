@@ -21,6 +21,7 @@ export default class Button extends React.PureComponent {
             accessibilityLabel,
             color,
             fontColor,
+            fontStyle,
             backgroundImage,
             aspectRatio,
             disabled,
@@ -69,7 +70,7 @@ export default class Button extends React.PureComponent {
                     source={ backgroundImage }>
 
                     { label &&
-                    <Text style={ textStyles }>
+                    <Text style={[ textStyles, fontStyle ]}>
                         { label }
                     </Text>
                     }
