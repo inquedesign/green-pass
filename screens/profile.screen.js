@@ -8,6 +8,7 @@ import { StyleSheet,
          Image       } from 'react-native'
 import { Text,
          Button,
+         AvatarPicker,
          Container   } from '../components'
 import { STYLES,
          COLORS,
@@ -24,6 +25,7 @@ import SplashScreen from 'react-native-splash-screen'
 
 
 export default class ProfileScreen extends React.PureComponent {
+
     constructor( props ) {
         super( props )
 
@@ -41,7 +43,6 @@ export default class ProfileScreen extends React.PureComponent {
         }
     }
 
-    // TODO: Loading placeholder while data is fetched
     componentDidMount() {
         if ( this.props.userId ) {
             Promise.all([ UserService.getUserById( this.props.userId ), UserService.getProfile() ])
@@ -80,6 +81,17 @@ export default class ProfileScreen extends React.PureComponent {
             this.contactMethodsWatcher = UserService.getContactMethods( null, contactMethods => {
                 this.setState({ contactMethods: contactMethods })
             })
+
+            Navigation.mergeOptions( this.props.componentId, {
+                topBar: {
+                    rightButtons: [{
+                        id: 'SettingsButton',
+                        icon: require('../assets/icons/Settings.png'),
+                        color: COLORS.SECONDARY
+                    }]
+                }
+            })
+            Navigation.events().bindComponent( this )
         }
 
         SplashScreen.hide()
@@ -93,6 +105,13 @@ export default class ProfileScreen extends React.PureComponent {
             UserService.removeProfileListener( this.unsubscribe )
         }
         UserService.unsubscribe( this.contactMethodsWatcher )
+    }
+
+    navigationButtonPressed({ buttonId }) {
+        if ( buttonId === 'SettingsButton' )
+            Navigation.push( this.props.componentId, {
+                component: { name: SCREENS.SETTINGS_SCREEN }
+            })
     }
 
     setUserData( data ) {
@@ -146,6 +165,10 @@ export default class ProfileScreen extends React.PureComponent {
         })
     }
 
+    onChangeAvatar( avatar ) {
+        UserService.updateUser({ avatar: avatar })
+    }
+
     render() {
         let budRequestSent = false
         let budRequestReceived = false
@@ -159,9 +182,17 @@ export default class ProfileScreen extends React.PureComponent {
         return (
             this.state.id &&
             <Container>
+                { this.isOwnProfile &&
+                <AvatarPicker style={ STYLES.spaceAfter }
+                    default={ this.state.avatar }
+                    onChangeAvatar={ this.onChangeAvatar.bind(this) }/>
+                }
+
+                { !this.isOwnProfile &&
                 <Image style={[ STYLES.avatar, STYLES.spaceAfter ]}
                     source={ AVATARS.all[ this.state.avatar ] }>
                 </Image>
+                }
 
                 <Text style={[ STYLES.header, LOCAL_STYLES.username ]}>
                     { this.state.username }
@@ -264,7 +295,7 @@ const LOCAL_STYLES = StyleSheet.create({
     },
     socialLockedText: {
         position: 'absolute',
-        //width: 150 * VH,
+        width: .3 * SCREEN_HEIGHT,
         fontSize: FONT_SIZES.MEDIUM,
         color: COLORS.PRIMARY,
         fontFamily: 'HWTArtz'

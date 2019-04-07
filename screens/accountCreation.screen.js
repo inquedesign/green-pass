@@ -41,22 +41,22 @@ export default class AccountCreationScreen extends React.PureComponent {
     }
 
     onChangePassword( text ) {
-        this.setState({ password: text }, this.confirmPassword.bind(this))
+        this.setState({ password: text })
     }
 
     onChangePasswordConfirmation( text ) {
-        this.setState({ pconfirm: text }, this.confirmPassword.bind(this))
+        this.setState({ pconfirm: text })
     }
 
-    confirmPassword() {
-        // TODO: get update to fix color change not rendering or remove feedback
-        if ( this.passwordIsValid() ) {
-            this.setState({ confirmColor: COLORS.PRIMARY })
-        }
-        else {
-            this.setState({ confirmColor: COLORS.ERROR })
-        }
-    }
+    //confirmPassword() {
+    //    // TODO: get update to fix color change not rendering or remove feedback
+    //    if ( this.passwordIsValid() ) {
+    //        this.setState({ confirmColor: COLORS.PRIMARY })
+    //    }
+    //    else {
+    //        this.setState({ confirmColor: COLORS.ERROR })
+    //    }
+    //}
 
     emailIsValid() {
         return /^.+@.+(\..+)+$/.test( this.state.email )
@@ -78,6 +78,7 @@ export default class AccountCreationScreen extends React.PureComponent {
                 alert( "Error: " + error.message )
             })
         }
+        else alert( 'Invalid email or password' )
     }
 
     render() {
@@ -91,6 +92,7 @@ export default class AccountCreationScreen extends React.PureComponent {
                     placeholder='E-mail'
                     autoComplete='email'
                     textContentType='emailAddress'
+                    keyboardType='email-address'
                     onChangeText={ (text) => this.setState({ email: text }) }
                     onBlur={ this.validateEmail.bind(this) }
                 />

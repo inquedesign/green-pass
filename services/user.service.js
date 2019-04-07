@@ -8,6 +8,7 @@ import { Navigation   } from 'react-native-navigation'
 const FIRESTORE = firebase.firestore()
 const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
+const FUNCTIONS = firebase.functions()
 
 let profileUnsubscribe   = null
 let budsUnsubscribe      = null
@@ -83,6 +84,16 @@ export default class UserService {
             initialize()
             return credentials
         })
+    }
+
+    static deleteAccount() {
+        if ( !AUTH.currentUser ) {
+            const error = new Error( 'Not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+
+        return FUNCTIONS.httpsCallable( 'deleteAccount' )()
     }
 
     static login( email, password ) {

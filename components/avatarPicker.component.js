@@ -17,19 +17,26 @@ import { AVATARS } from '../util/avatars'
 export default class AvatarPicker extends React.PureComponent {
     constructor( props ) {
         super( props )
-        
+
         this.getAvatarList( props.gender )
+        const avatars = Object.keys( this.avatars )
+        const defaultProvided = this.props.default && avatars.includes( this.props.default )
 
         this.state = {
             modal: false,
-            selection: Object.keys( this.avatars )[0]
+            selection: defaultProvided
+                ? this.props.default
+                : avatars[0]
         }
-        
+
         if ( props.onChangeAvatar ) props.onChangeAvatar( this.state.selection )
     }
 
     componentWillReceiveProps( newProps ) {
         if ( newProps.gender != this.props.gender ) this.getAvatarList( newProps.gender )
+        if ( newProps.default && newProps.default != this.state.selection ) {
+            this.setState({ selection: newProps.default })
+        }
     }
 
     getAvatarList( gender ) {

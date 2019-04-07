@@ -65,6 +65,7 @@ export default class LoginScreen extends React.PureComponent {
                     placeholder='E-mail'
                     autoComplete='email'
                     textContentType='emailAddress'
+                    keyboardType='email-address'
                     onChangeText={ (text) => this.setState({ email: text }) }/>
 
                 <TextInput style={ STYLES.spaceAfter }

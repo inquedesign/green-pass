@@ -10,7 +10,8 @@ export const SCREENS = {
     TERMS_OF_SERVICE_SCREEN : 'TermsOfServiceScreen',
     PROFILE_SCREEN          : 'ProfileScreen',
     BUDS_SCREEN             : 'BudsScreen',
-    EXPLORE_SCREEN          : 'ExploreScreen'
+    EXPLORE_SCREEN          : 'ExploreScreen',
+    SETTINGS_SCREEN         : 'SettingsScreen'
 }
 
 export const SOCIAL_ICONS = {

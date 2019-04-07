@@ -10,12 +10,15 @@ import TermsOfServiceScreen  from './screens/termsOfService.screen'
 import ProfileScreen         from './screens/profile.screen' 
 import BudsScreen            from './screens/buds.screen'
 import ExploreScreen         from './screens/explore.screen'
+import SettingsScreen        from './screens/settings.screen'
 
 import { Platform   } from 'react-native'
 import { Navigation } from 'react-native-navigation'
 import { COLORS,
          FONT_SIZES } from './styles'
 import { SCREENS    } from './util/constants'
+import { MAIN_LAYOUT,
+         INITIAL_LAYOUT } from './layouts'
 
 Navigation.registerComponent( SCREENS.START_SCREEN, () => StartScreen )
 Navigation.registerComponent( SCREENS.ACCOUNT_CREATION_SCREEN, () => AccountCreationScreen )
@@ -29,6 +32,7 @@ Navigation.registerComponent( SCREENS.TERMS_OF_SERVICE_SCREEN, () => TermsOfServ
 Navigation.registerComponent( SCREENS.PROFILE_SCREEN, () => ProfileScreen )
 Navigation.registerComponent( SCREENS.BUDS_SCREEN, () => BudsScreen )
 Navigation.registerComponent( SCREENS.EXPLORE_SCREEN, () => ExploreScreen )
+Navigation.registerComponent( SCREENS.SETTINGS_SCREEN, () => SettingsScreen )
 
 import UserService from './services/user.service'
 import firebase from 'react-native-firebase'
@@ -88,8 +92,8 @@ Navigation.events().registerAppLaunchedListener(() => {
 
 
     // TODO: remove autologin and UserService
-    //if (firebase.auth().currentUser) firebase.auth().signOut()
-    UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
+    if (firebase.auth().currentUser) firebase.auth().signOut()
+    //UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
 
     Navigation.setDefaultOptions({
         topBar: {
@@ -109,7 +113,8 @@ Navigation.events().registerAppLaunchedListener(() => {
         },
         bottomTabs: {
             backgroundColor : COLORS.BOTTOMBAR,
-            titleDisplayMode: 'alwaysShow'
+            titleDisplayMode: 'alwaysShow',
+            drawBehind: true
         },
         bottomTab: {
             iconColor: COLORS.INACTIVE,
@@ -127,63 +132,5 @@ Navigation.events().registerAppLaunchedListener(() => {
         root: INITIAL_LAYOUT
     })
         
-    })
+    //})
 })
-
-const INITIAL_LAYOUT = {
-    stack: {
-        children: [
-            { component: { name: SCREENS.START_SCREEN } }
-        ]
-    }
-}
-
-export const MAIN_LAYOUT = {
-    bottomTabs: {
-        children: [
-            {
-                component: {
-                    id: SCREENS.PROFILE_SCREEN,
-                    name: SCREENS.PROFILE_SCREEN,
-                    options: {
-                        bottomTab: {
-                            icon: require('./assets/icons/Profile.png'),
-                            text: 'PROFILE'
-                        }
-                    }
-                }
-            },
-            {
-                stack: {
-                    children: [{
-                        component: {
-                            name: SCREENS.BUDS_SCREEN
-                        }
-                    }],
-                    options: {
-                        bottomTab: {
-                            icon: require('./assets/icons/Buds.png'),
-                            text: 'BUDS'
-                        }
-                    }
-                }
-            },
-            {
-                component: {
-                    name: SCREENS.EXPLORE_SCREEN,
-                    options: {
-                        bottomTab: {
-                            icon: require('./assets/icons/Explore.png'),
-                            text: 'EXPLORE'
-                        }
-                    }
-                }
-            }
-        ],
-        options: {
-            bottomTabs: {
-                currentTabId: SCREENS.PROFILE_SCREEN
-            }
-        }
-    }
-}

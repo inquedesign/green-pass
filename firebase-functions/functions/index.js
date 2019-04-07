@@ -7,6 +7,7 @@ admin.initializeApp()
 // we initialize Firestore without any arguments because it
 // detects authentication from the environment.
 const firestore = admin.firestore()
+const auth      = admin.auth()
 
 exports.syncContactList = functions.firestore.document('Users/{user}/ContactList/{contact}')
 .onWrite(( change, context ) => {
@@ -32,26 +33,26 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
 exports.deleteProfile = functions.firestore.document( 'Users/{user}' )
 .onDelete(( doc, context) => {
     return Promise.all([
-        firestore.doc( 'Statistics/UserCount' )
-        .set({
+        firestore.doc( 'Statistics/UserCount' ).set({
             count: admin.firestore.FieldValue.increment( -1 )
          }, { merge: true }),
-        tools.firestore
-        .delete( `Users/${context.params.user}/ContactList`, {
-            project  : functions.config().auth.project,
-            token    : functions.config().auth.token,
-            recursive: true,
-            yes      : true
-        }),
-        tools.firestore
-        .delete( `Users/${context.params.user}/ContactMethods`, {
-            project  : functions.config().auth.project,
-            token    : functions.config().auth.token,
-            recursive: true,
-            yes      : true
-        })
+        deleteCollection( `Users/${context.params.user}/ContactList` ),
+        deleteCollection( `Users/${context.params.user}/ContactMethods` )
     ])
 })
+
+function deleteCollection( path ) {
+    return tools.firestore
+    .delete( path, {
+        project  : functions.config().auth.project,
+        token    : functions.config().auth.token,
+        recursive: true,
+        yes      : true
+    })
+    .catch( error => {
+        console.error( error.message )
+    })
+}
 
 exports.addProfile = functions.firestore.document( 'Users/{user}' )
 .onCreate(( doc, context ) => {
@@ -61,4 +62,13 @@ exports.addProfile = functions.firestore.document( 'Users/{user}' )
      }, {
         merge: true
     })
+})
+
+exports.deleteAccount = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) return
+    
+    return Promise.all([
+        firestore.doc( `Users/${context.auth.uid}` ).delete(),
+        auth.deleteUser( context.auth.uid )
+    ])
 })

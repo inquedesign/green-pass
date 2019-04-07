@@ -79,7 +79,11 @@ export default class BudsScreen extends React.Component {
 
     showProfile( userId ) {
         Navigation.push( this.props.componentId, {
-            component: { name: SCREENS.PROFILE_SCREEN, passProps: { userId: userId } }
+            component: {
+                name: SCREENS.PROFILE_SCREEN,
+                // NOTE: We have the profile and it should be up to date, we should pass it instead
+                passProps: { userId: userId }
+            }
         })
     }
 

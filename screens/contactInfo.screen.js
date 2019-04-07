@@ -18,7 +18,7 @@ import { STYLES,
          FONT_SIZES,
          COMPONENT_HEIGHT,
          BORDER_RADIUS    } from '../styles'
-import { MAIN_LAYOUT      } from '../index'
+import { MAIN_LAYOUT      } from '../layouts'
 
 const SERVICES = {
     'facebook': {
@@ -93,9 +93,12 @@ export default class ContactInfoScreen extends React.PureComponent {
     onSubmit() {
         UserService.updateContactMethods( this.state.contactMethods )
 
-        Navigation.setRoot({
-            root: MAIN_LAYOUT
-        })
+        if ( this.props.return ) {
+            Navigation.pop( this.props.componentId )
+        }
+        else {
+            Navigation.setRoot({ root: MAIN_LAYOUT })
+        }
     }
 
     renderService({ item }) {
