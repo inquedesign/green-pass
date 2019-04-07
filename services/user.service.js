@@ -144,14 +144,14 @@ export default class UserService {
         return USERS.doc( uid ).collection( 'ContactMethods' ).onSnapshot(
             queryResults => {
                 // queryResults.docs() == [{id, data() => document, ...}]
-                callback(
-                    queryResults.docs.map( docref => {
-                        return { method: docref.id, info: docref.data() }
-                    })
-                )
+                let contactMethods = {}
+                queryResults.docs.forEach( docref => {
+                    contactMethods[ docref.id ] = docref.data()
+                })
+                callback( contactMethods )
             },
             error => {
-                callback( [] )
+                callback( {} )
             }
         )
     }

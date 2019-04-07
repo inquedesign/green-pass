@@ -2,6 +2,8 @@ import React       from 'react'
 import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
+import { parsePhoneNumberFromString,
+         AsYouType        } from 'libphonenumber-js/mobile'
 import { Navigation       } from 'react-native-navigation'
 import { ImageBackground,
          FlatList,
@@ -19,13 +21,37 @@ import { STYLES,
 import { MAIN_LAYOUT      } from '../index'
 
 const SERVICES = {
-    'facebook': { source: require( '../assets/bg/Fbook.png' ) },
-    'twitter': { source: require( '../assets/bg/Twitter.png' ) },
-    'whatsapp': { source: require( '../assets/bg/Whatsapp.png' ) },
-    'snapchat': { source: require( '../assets/bg/Snapchat.png' ) },
-    'reddit': { source: require( '../assets/bg/Reddit.png' ) },
-    'instagram': { source: require( '../assets/bg/Insta.png' ) },
-    'text': { source: require( '../assets/bg/Text.png' ) }
+    'facebook': {
+        text: "What is your Facebook username?",
+        subtext:"This is not the same as your login name. Go to General Account Settings on Facebook if you can't remember.",
+        bgsource: require( '../assets/bg/Fbook.png' )
+    },
+    'twitter': {
+        text: 'What is your Twitter username?',
+        bgsource: require( '../assets/bg/Twitter.png' )
+    },
+    'whatsapp': {
+        text: 'WhatsApp uses your phone number, what is it?',
+        subtext: 'This needs to be your full international number.',
+        bgsource: require( '../assets/bg/Whatsapp.png' )
+    },
+    'snapchat': {
+        text: 'What is your Snapchat username?',
+        bgsource: require( '../assets/bg/Snapchat.png' )
+    },
+    'reddit': {
+        text: 'What is your Reddit username?',
+        bgsource: require( '../assets/bg/Reddit.png' )
+    },
+    'instagram': {
+        text: 'What is your Instagram username?',
+        bgsource: require( '../assets/bg/Insta.png' )
+    },
+    'text': {
+        text: 'What is your number for texting?',
+        subtext: 'This needs to be your full international number.',
+        bgsource: require( '../assets/bg/Text.png' )
+    }
 }
 
 Navigation.registerComponent( 'ServicesModal', () => ServicesModal )
@@ -52,9 +78,6 @@ export default class ContactInfoScreen extends React.PureComponent {
                 }
             }
         })
-                //<ServicesModal
-                //    visible={ this.state.modal }
-                //    onSubmit={ this.addContactMethod.bind(this) }/>
     }
 
     addContactMethod( service, contactInfo ) {
@@ -87,7 +110,7 @@ export default class ContactInfoScreen extends React.PureComponent {
                     overflow: 'hidden'
                 } ]}
                 resizeMode='repeat'
-                source={ SERVICES[item].source }>
+                source={ SERVICES[item].bgsource }>
 
                 <Text style={{
                     textAlign: 'center',
@@ -96,7 +119,10 @@ export default class ContactInfoScreen extends React.PureComponent {
                     fontFamily: 'HWTArtz',
                     fontSize: FONT_SIZES.MEDIUM}}>
 
-                    { this.state.contactMethods[item] }
+                    { ( this.state.contactMethods[item].number &&
+                      parsePhoneNumberFromString( '+' + this.state.contactMethods[item].number ).formatInternational() ) ||
+                      this.state.contactMethods[item].username
+                    }
                 </Text>
             </ImageBackground>
         )
@@ -156,9 +182,11 @@ export class ServicesModal extends React.PureComponent {
         this.state = {
             submodal: false,
             service: '',
+            contactInfo: ''
         }
 
-        this.contactInfo     = ''
+        this.numberFormatter = new AsYouType()
+        this.numberFormatter.input('+')
         this.submodalOpacity = new Animated.Value( 0 )
     }
 
@@ -172,29 +200,37 @@ export class ServicesModal extends React.PureComponent {
     }
 
     onSubmit() {
-        if ( this.contactInfo.length === 0 ) return
-        if ( this.state.service === 'text' ) {
-            this.contactInfo = this.contactInfo.replace( /[^0-9]+/g, '' )
-            if ( this.contactInfo.length !== 10 ) {
+        if ( this.state.contactInfo.length === 0 ) return
+
+        if ( this.state.service === 'text' || this.state.service === 'whatsapp' ) {
+            // Returns a number in E.164 format (+1234...) if it can.
+            let number = parsePhoneNumberFromString( '+' + this.state.contactInfo )
+
+            if ( number && number.isValid() ) {
+                number = number.number.slice(1) // Remove leading +
+            }
+            else {
                 alert( 'Invalid phone number.' )
                 return
             }
-            this.contactInfo = {
-                number: `(${this.contactInfo.slice(0, 3)}) ${this.contactInfo.slice(3, 6)}-${this.contactInfo.slice(6)}`
+
+            contactInfo = {
+                number: number
             }
         }
         else {
-            this.contactInfo = {
-                username: this.contactInfo
+            contactInfo = {
+                username: this.state.contactInfo
             }
         }
 
 
-        this.props.onSubmit( this.state.service, this.contactInfo )
+        this.props.onSubmit( this.state.service, contactInfo )
         Navigation.pop( this.props.componentId )
     }
 
     render() {
+        const serviceNeedsNumber = this.state.service === 'text' || this.state.service === 'whatsapp'
         return (
             <Container>
                 { !this.state.submodal &&
@@ -221,7 +257,7 @@ export class ServicesModal extends React.PureComponent {
                             <Button style={ STYLES.spaceAfter }
                                 label={ item == 'text' ? 'text message' : item }
                                 accessibilityLabel={ 'Add contact info for ' + item }
-                                backgroundImage={ SERVICES[item].source }
+                                backgroundImage={ SERVICES[item].bgsource }
                                 color='transparent'
                                 onPress={() => {
                                     this.updateService( item )
@@ -237,24 +273,44 @@ export class ServicesModal extends React.PureComponent {
                 }}>
 
                     <Text style={ STYLES.header }>
-                        Enter Your {'\n' + this.state.service} Info
+                        { SERVICES[this.state.service].text }
                     </Text>
 
+                    { SERVICES[this.state.service].subtext &&
+                    <Text style={ STYLES.spaceAfter }>
+                        { SERVICES[this.state.service].subtext }
+                    </Text>
+                    }
+
                     <TextInput style={ STYLES.spaceAfter }
+                        value={ this.state.contactInfo }
                         accessibilityLabel={
                             'Enter your ' + this.state.service +
-                            this.state.service === 'text' ? 'phone number' : 'username'
+                            serviceNeedsNumber ? 'phone number' : 'username'
                         }
                         placeholder={
-                            this.state.service === 'text' ? 'Phone #' : 'Username'
+                            serviceNeedsNumber ? 'Phone #' : 'Username'
                         }
                         autoComplete={
-                            this.state.service === 'text' ? 'tel' : 'username'
+                            serviceNeedsNumber ? 'tel' : 'username'
                         }
                         textContentType={
-                            this.state.service === 'text' ? 'telephoneNumber' : 'username'
+                            serviceNeedsNumber ? 'telephoneNumber' : 'username'
                         }
-                        onChangeText={ (text) => this.contactInfo = text }/>
+                        keyboardType={
+                            serviceNeedsNumber ? 'phone-pad' : 'default'
+                        }
+                        onChangeText={ serviceNeedsNumber
+                            ? ( text ) => {
+                                text = text.replace(/[^0-9]+/g, '')
+                                text = text.replace(/^0+/, '')
+                                let number = this.numberFormatter.input( '+' + text )
+                                this.setState({
+                                    contactInfo: number.slice(1)
+                                })
+                                this.numberFormatter.reset()
+                            }
+                            : ( text ) => { this.setState({ contactInfo: text }) } }/>
 
                     <Button
                         label="Submit"

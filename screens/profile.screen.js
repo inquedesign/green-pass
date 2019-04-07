@@ -3,6 +3,7 @@ import UserService from '../services/user.service'
 
 import { Navigation  } from 'react-native-navigation'
 import { StyleSheet,
+         Linking,
          View,
          Image       } from 'react-native'
 import { Text,
@@ -114,6 +115,37 @@ export default class ProfileScreen extends React.PureComponent {
         if ( !this.isOwnProfile ) UserService.removeBud( this.state.id )
     }
 
+    activateLink( service ) {
+        let url
+        switch( service ) {
+            case 'facebook':
+                url = `https://www.facebook.com/${this.state.contactMethods[ service ].username}`
+                break
+            case 'twitter':
+                url = `https://www.twitter.com/${this.state.contactMethods[ service ].username}`
+                break
+            case 'whatsapp':
+                url = `https://wa.me/${this.state.contactMethods[ service ].number}`
+                break
+            case 'snapchat':
+                url = `https://www.snapchat.com/add/${this.state.contactMethods[ service ].username}`
+                break
+            case 'reddit':
+                url = `https://www.reddit.com/user/${this.state.contactMethods[ service ].username}`
+                break
+            case 'instagram':
+                url = `https://www.instagram.com/${this.state.contactMethods[ service ].username}`
+                break
+            case 'text':
+                url = `sms:+${this.state.contactMethods[ service ].number}`
+                break
+        }
+        Linking.openURL( url )
+        .catch( error => {
+            alert( error.message )
+        })
+    }
+
     render() {
         let budRequestSent = false
         let budRequestReceived = false
@@ -141,17 +173,16 @@ export default class ProfileScreen extends React.PureComponent {
 
                 { ( this.isOwnProfile || (budRequestSent && budRequestReceived) ) ?
                     this.state.contactMethods &&
-                    <View style={[ LOCAL_STYLES.socialContainer,
-                                 { width: .3 * SCREEN_HEIGHT } ]}>
+                    <View style={ LOCAL_STYLES.socialContainer }>
                         {
-                        this.state.contactMethods.map(({ method, info }) => (
+                        Object.keys( this.state.contactMethods ).map( method => (
                             <Button style={ LOCAL_STYLES.socialButton }
                                 key={ method }
                                 color={ COLORS.SECONDARY }
                                 backgroundImage={ SOCIAL_ICONS[ method ] }
                                 resizeMode='cover'
-                                accessibilityLabel="Social Media Placeholder"
-                                onPress={ () => {} }>
+                                accessibilityLabel="Contact this user"
+                                onPress={() => { this.activateLink( method ) }}>
                             </Button>
                         ))
                         }
@@ -162,26 +193,21 @@ export default class ProfileScreen extends React.PureComponent {
                             disabled={ true }
                             color={ COLORS.SECONDARY }
                             backgroundImage={ SOCIAL_ICONS[ 'facebook' ] }
-                            resizeMode='cover'
-                            accessibilityLabel="Social Media Placeholder">
+                            resizeMode='cover'>
                         </Button>
 
                         <Button style={ LOCAL_STYLES.socialButton }
                             disabled={ true }
                             color={ COLORS.SECONDARY }
                             backgroundImage={ SOCIAL_ICONS[ 'twitter' ] }
-                            resizeMode='cover'
-                            accessibilityLabel="Social Media Placeholder"
-                            onPress={ () => {} }>
+                            resizeMode='cover'>
                         </Button>
 
                         <Button style={ LOCAL_STYLES.socialButton }
                             disabled={ true }
                             color={ COLORS.SECONDARY }
                             backgroundImage={ SOCIAL_ICONS[ 'reddit' ] }
-                            resizeMode='cover'
-                            accessibilityLabel="Social Media Placeholder"
-                            onPress={ () => {} }>
+                            resizeMode='cover'>
                         </Button>
 
                         <Text style={ LOCAL_STYLES.socialLockedText }>
@@ -230,7 +256,7 @@ const LOCAL_STYLES = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'center',
         alignItems: 'center',
-        width: '100%'
+        width: .3 * SCREEN_HEIGHT
     },
     socialButton: {
         width: COMPONENT_HEIGHT,
@@ -238,7 +264,7 @@ const LOCAL_STYLES = StyleSheet.create({
     },
     socialLockedText: {
         position: 'absolute',
-        width: 150 * VH,
+        //width: 150 * VH,
         fontSize: FONT_SIZES.MEDIUM,
         color: COLORS.PRIMARY,
         fontFamily: 'HWTArtz'

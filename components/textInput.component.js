@@ -38,7 +38,7 @@ export default class TextInput extends React.Component {
             <View style={[ defaults.container, this.props.style ]}>
                 <ReactInput 
                     { ...this.props }
-                    value={ this.state.text }
+                    value={ this.props.value || this.state.text }
                     placeholder={ this.state.editing ? '' : this.props.placeholder }
                     placeholderTextColor={ COLORS.PRIMARY }
                     underlineColorAndroid='transparent'
