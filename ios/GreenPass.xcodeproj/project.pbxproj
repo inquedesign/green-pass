@@ -46,6 +46,7 @@
 		C20FE8FF225ADE18007A409A /* launch_image@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C20FE8FC225ADE17007A409A /* launch_image@2x.png */; };
 		C20FE900225ADE18007A409A /* launch_image@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = C20FE8FD225ADE17007A409A /* launch_image@3x.png */; };
 		C20FE901225ADE18007A409A /* launch_image.png in Resources */ = {isa = PBXBuildFile; fileRef = C20FE8FE225ADE18007A409A /* launch_image.png */; };
+		C20FE903225B3154007A409A /* Mega Background.png in Resources */ = {isa = PBXBuildFile; fileRef = C20FE902225B3153007A409A /* Mega Background.png */; };
 		C2106D522257FAAC00ED8867 /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C2106D4F2257FA7E00ED8867 /* libReactNativeNavigation.a */; };
 		C2106D5622580F3C00ED8867 /* bonghit.wav in Resources */ = {isa = PBXBuildFile; fileRef = C2106D5522580F3C00ED8867 /* bonghit.wav */; };
 		C297BD912238BD6600215B03 /* libSplashScreen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C297BD902238BD4900215B03 /* libSplashScreen.a */; };
@@ -395,6 +396,7 @@
 		C20FE8FC225ADE17007A409A /* launch_image@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "launch_image@2x.png"; path = "../assets/launchScreen/launch_image@2x.png"; sourceTree = "<group>"; };
 		C20FE8FD225ADE17007A409A /* launch_image@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "launch_image@3x.png"; path = "../assets/launchScreen/launch_image@3x.png"; sourceTree = "<group>"; };
 		C20FE8FE225ADE18007A409A /* launch_image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = launch_image.png; path = ../assets/launchScreen/launch_image.png; sourceTree = "<group>"; };
+		C20FE902225B3153007A409A /* Mega Background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Mega Background.png"; path = "../assets/launchScreen/Mega Background.png"; sourceTree = "<group>"; };
 		C2106D492257FA7E00ED8867 /* ReactNativeNavigation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativeNavigation.xcodeproj; path = "../node_modules/react-native-navigation/lib/ios/ReactNativeNavigation.xcodeproj"; sourceTree = "<group>"; };
 		C2106D5522580F3C00ED8867 /* bonghit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = bonghit.wav; path = ../assets/sounds/bonghit.wav; sourceTree = "<group>"; };
 		C297BD632238BD4800215B03 /* SplashScreen.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SplashScreen.xcodeproj; path = "../node_modules/react-native-splash-screen/ios/SplashScreen.xcodeproj"; sourceTree = "<group>"; };
@@ -690,6 +692,7 @@
 		A823DD0C2C1B4BBEA9A01D8A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				C20FE902225B3153007A409A /* Mega Background.png */,
 				C20FE8FE225ADE18007A409A /* launch_image.png */,
 				C20FE8FC225ADE17007A409A /* launch_image@2x.png */,
 				C20FE8FD225ADE17007A409A /* launch_image@3x.png */,
@@ -1226,6 +1229,7 @@
 				C20FE8FF225ADE18007A409A /* launch_image@2x.png in Resources */,
 				44079C5E680D49CFBB6045B1 /* Open Sans Bold.ttf in Resources */,
 				C20FE900225ADE18007A409A /* launch_image@3x.png in Resources */,
+				C20FE903225B3154007A409A /* Mega Background.png in Resources */,
 				2B82CA88807D413BBAB12A6C /* Open Sans Light.ttf in Resources */,
 				40C71DA323E54734816E9A6F /* Open Sans Regular.ttf in Resources */,
 				E8644EFDA1C341B0B11D6679 /* Open Sans SemiBold.ttf in Resources */,

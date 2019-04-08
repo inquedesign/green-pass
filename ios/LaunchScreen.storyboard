@@ -18,6 +18,10 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="TopLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Mega Background.png" translatesAutoresizingMaskIntoConstraints="NO" id="g1c-1x-sil">
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                            </imageView>
                             <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="launch_image.png" translatesAutoresizingMaskIntoConstraints="NO" id="26E-mn-fEr">
                                 <rect key="frame" x="87" y="384" width="240" height="129"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
@@ -33,6 +37,7 @@
         </scene>
     </scenes>
     <resources>
+        <image name="Mega Background.png" width="1125" height="2001"/>
         <image name="launch_image.png" width="290" height="170"/>
     </resources>
 </document>
