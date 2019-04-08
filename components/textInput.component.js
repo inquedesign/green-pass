@@ -13,7 +13,7 @@ export default class TextInput extends React.Component {
     constructor( props ) {
         super( props )
         
-        this.caps = this.props.allCaps === false ? false : true
+        this.caps = props.allCaps === false ? false : true
         this.state = {
             editing: false,
             text: ''
@@ -21,7 +21,7 @@ export default class TextInput extends React.Component {
     }
     
     componentwillReceiveProps( props ) {
-        this.caps = this.props.allCaps === false ? false : true
+        this.caps = props.allCaps === false ? false : true
     }
 
     onChangeText( text ) {

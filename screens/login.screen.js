@@ -12,7 +12,7 @@ import { STYLES,
          VH,
          COMPONENT_HEIGHT } from '../styles'
 import { SOCIAL_ICONS     } from '../util/constants'
-import { MAIN_LAYOUT      } from '../index'
+import { MAIN_LAYOUT      } from '../layouts'
 
 import SplashScreen from 'react-native-splash-screen'
 
