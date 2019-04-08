@@ -94,6 +94,9 @@ export default class UserService {
         }
 
         return FUNCTIONS.httpsCallable( 'deleteAccount' )()
+        .then(() => {
+            return AUTH.signOut()
+        })
     }
 
     static login( email, password ) {
