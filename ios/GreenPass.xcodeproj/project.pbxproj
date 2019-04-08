@@ -18,7 +18,6 @@
 		139105C61AF99C1200B5F7CC /* libRCTSettings.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139105C11AF99BAD00B5F7CC /* libRCTSettings.a */; };
 		139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 139FDEF41B06529B00C62182 /* libRCTWebSocket.a */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
-		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		140ED2AC1D01E1AD002B40FF /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
@@ -43,6 +42,10 @@
 		8E7D4B171F8AFD9C00699FE4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8E7D4B161F8AFD9B00699FE4 /* GoogleService-Info.plist */; };
 		A038CD85D39748E122AC50D7 /* libPods-GreenPass.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 333056BA5B7ADABE709DF4A1 /* libPods-GreenPass.a */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
+		C20FE8D0225AD566007A409A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C20FE8CF225AD566007A409A /* LaunchScreen.storyboard */; };
+		C20FE8FF225ADE18007A409A /* launch_image@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C20FE8FC225ADE17007A409A /* launch_image@2x.png */; };
+		C20FE900225ADE18007A409A /* launch_image@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = C20FE8FD225ADE17007A409A /* launch_image@3x.png */; };
+		C20FE901225ADE18007A409A /* launch_image.png in Resources */ = {isa = PBXBuildFile; fileRef = C20FE8FE225ADE18007A409A /* launch_image.png */; };
 		C2106D522257FAAC00ED8867 /* libReactNativeNavigation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C2106D4F2257FA7E00ED8867 /* libReactNativeNavigation.a */; };
 		C2106D5622580F3C00ED8867 /* bonghit.wav in Resources */ = {isa = PBXBuildFile; fileRef = C2106D5522580F3C00ED8867 /* bonghit.wav */; };
 		C297BD912238BD6600215B03 /* libSplashScreen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C297BD902238BD4900215B03 /* libSplashScreen.a */; };
@@ -370,7 +373,6 @@
 		13B07F961A680F5B00A75B9A /* GreenPass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GreenPass.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = GreenPass/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = GreenPass/AppDelegate.m; sourceTree = "<group>"; };
-		13B07FB21A68108700A75B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = GreenPass/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = GreenPass/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = GreenPass/main.m; sourceTree = "<group>"; };
@@ -389,6 +391,10 @@
 		ADBDB91F1DFEBF0600ED6528 /* RCTBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBlob.xcodeproj; path = "../node_modules/react-native/Libraries/Blob/RCTBlob.xcodeproj"; sourceTree = "<group>"; };
 		ADF4CB3C3BF44D3EBA8B78C4 /* RNFirebase.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNFirebase.xcodeproj; path = "../node_modules/react-native-firebase/ios/RNFirebase.xcodeproj"; sourceTree = "<group>"; };
 		B7AFA8AA9A1CFD17320E9074 /* Pods-GreenPass.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GreenPass.release.xcconfig"; path = "Pods/Target Support Files/Pods-GreenPass/Pods-GreenPass.release.xcconfig"; sourceTree = "<group>"; };
+		C20FE8CF225AD566007A409A /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		C20FE8FC225ADE17007A409A /* launch_image@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "launch_image@2x.png"; path = "../assets/launchScreen/launch_image@2x.png"; sourceTree = "<group>"; };
+		C20FE8FD225ADE17007A409A /* launch_image@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "launch_image@3x.png"; path = "../assets/launchScreen/launch_image@3x.png"; sourceTree = "<group>"; };
+		C20FE8FE225ADE18007A409A /* launch_image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = launch_image.png; path = ../assets/launchScreen/launch_image.png; sourceTree = "<group>"; };
 		C2106D492257FA7E00ED8867 /* ReactNativeNavigation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ReactNativeNavigation.xcodeproj; path = "../node_modules/react-native-navigation/lib/ios/ReactNativeNavigation.xcodeproj"; sourceTree = "<group>"; };
 		C2106D5522580F3C00ED8867 /* bonghit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = bonghit.wav; path = ../assets/sounds/bonghit.wav; sourceTree = "<group>"; };
 		C297BD632238BD4800215B03 /* SplashScreen.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SplashScreen.xcodeproj; path = "../node_modules/react-native-splash-screen/ios/SplashScreen.xcodeproj"; sourceTree = "<group>"; };
@@ -540,7 +546,7 @@
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
-				13B07FB11A68108700A75B9A /* LaunchScreen.xib */,
+				C20FE8CF225AD566007A409A /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
 			);
 			name = GreenPass;
@@ -684,6 +690,9 @@
 		A823DD0C2C1B4BBEA9A01D8A /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				C20FE8FE225ADE18007A409A /* launch_image.png */,
+				C20FE8FC225ADE17007A409A /* launch_image@2x.png */,
+				C20FE8FD225ADE17007A409A /* launch_image@3x.png */,
 				67B8DB4056024B90A65DF030 /* Open Sans Bold.ttf */,
 				315F285EA8834142AA41AF63 /* Open Sans Light.ttf */,
 				0C1F5E281A4E4F12BFC0DE55 /* Open Sans Regular.ttf */,
@@ -1210,10 +1219,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				C2106D5622580F3C00ED8867 /* bonghit.wav in Resources */,
+				C20FE901225ADE18007A409A /* launch_image.png in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
+				C20FE8D0225AD566007A409A /* LaunchScreen.storyboard in Resources */,
 				8E7D4B171F8AFD9C00699FE4 /* GoogleService-Info.plist in Resources */,
+				C20FE8FF225ADE18007A409A /* launch_image@2x.png in Resources */,
 				44079C5E680D49CFBB6045B1 /* Open Sans Bold.ttf in Resources */,
+				C20FE900225ADE18007A409A /* launch_image@3x.png in Resources */,
 				2B82CA88807D413BBAB12A6C /* Open Sans Light.ttf in Resources */,
 				40C71DA323E54734816E9A6F /* Open Sans Regular.ttf in Resources */,
 				E8644EFDA1C341B0B11D6679 /* Open Sans SemiBold.ttf in Resources */,
@@ -1368,18 +1380,6 @@
 			targetProxy = 2D02E4911E0B4A5D006451C7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
-
-/* Begin PBXVariantGroup section */
-		13B07FB11A68108700A75B9A /* LaunchScreen.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				13B07FB21A68108700A75B9A /* Base */,
-			);
-			name = LaunchScreen.xib;
-			path = GreenPass;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {

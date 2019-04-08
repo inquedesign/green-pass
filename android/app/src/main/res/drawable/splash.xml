@@ -2,9 +2,13 @@
 <layer-list
   xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <item android:drawable="@color/background"/>
+  <item>
+      <bitmap
+          android:src="@drawable/green"
+          android:tileMode="repeat"/>
+  </item>
 
   <item
-      android:drawable="@mipmap/welcome"
+      android:drawable="@drawable/launch_image"
       android:gravity="center"/>
 </layer-list>
