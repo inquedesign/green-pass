@@ -14,7 +14,6 @@ import { STYLES,
          COLORS,
          FONT_SIZES,
          STANDARD_SPACE,
-         //SCREEN_HEIGHT,
          VH          } from '../styles'
 import { SCREENS     } from '../util/constants'
 import { AVATARS     } from '../util/avatars'
@@ -33,26 +32,29 @@ export default class BudsScreen extends React.Component {
     }
 
     componentDidMount() {
-        UserService.getBuds()
+        Promise.all([
+            UserService.getBuds(),
+            UserService.profile || UserService.getUserById(/* currentUser */)
+        ])
         .then( results => {
-            this.sortBudsAndRequests( results )
+            this.sortBudsAndRequests( results[0], results[1] )
         })
         this.budsListener = UserService.addBudsListener( results => {
             this.setState({ buds: results })
-            this.sortBudsAndRequests( results )
+            if ( UserService.profile ) this.sortBudsAndRequests( results, UserService.profile )
         })
         this.profileListener = UserService.addProfileListener( null, profile => {
-            this.sortBudsAndRequests( this.state.buds )
+            if ( this.state.buds ) this.sortBudsAndRequests( this.state.buds, profile )
         })
     }
 
     componenWillUnmount() {
-        if ( this.budsListener    ) UserService.removeBudsListener( this.budsListener )
-        if ( this.profileListener ) UserService.removeProfileListener( this.profileListener )
+        if ( this.budsListener    ) UserService.unsubscribe( this.budsListener )
+        if ( this.profileListener ) UserService.unsubscribe( this.profileListener )
     }
 
-    sortBudsAndRequests( results ) {
-        const budList     = UserService.profile.buds
+    sortBudsAndRequests( results, profile ) {
+        const budList     = profile.buds
         const budRequests = results.filter( bud => !(budList && budList.includes( bud.id )) )
         const buds        = results.filter( bud => budList && budList.includes( bud.id ) )
         const array = []

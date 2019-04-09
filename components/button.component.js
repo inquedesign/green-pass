@@ -3,7 +3,6 @@
 import React from 'react'
 
 import { StyleSheet,
-         Dimensions,
          Text,
          ImageBackground,
          TouchableOpacity } from 'react-native'

@@ -12,9 +12,11 @@ import BudsScreen            from './screens/buds.screen'
 import ExploreScreen         from './screens/explore.screen'
 import SettingsScreen        from './screens/settings.screen'
 
-import { Platform   } from 'react-native'
-import { Navigation } from 'react-native-navigation'
-import { SCREENS    } from './util/constants'
+import { Platform       } from 'react-native'
+import { Navigation     } from 'react-native-navigation'
+import { SCREENS        } from './util/constants'
+import { COLORS,
+         FONT_SIZES     } from './styles'
 import { MAIN_LAYOUT,
          INITIAL_LAYOUT } from './layouts'
 
@@ -38,11 +40,62 @@ const notifications = firebase.notifications
 const BONG_HIT = 'bonghit.wav'
 
 Navigation.events().registerAppLaunchedListener(() => {
+    onNotificationLaunchedApp()
+
+    configureDailyNotification()
+
+    // TODO: remove autologin and UserService
+    //if (firebase.auth().currentUser) firebase.auth().signOut()
+    //UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
+
+    Navigation.setDefaultOptions({
+        topBar: {
+            visible: true,
+            hideOnScroll: false,
+            drawBehind: true,
+            elevation: 0,
+            noBorder: true,
+            backButton: {
+                color: COLORS.SECONDARY,
+                title: 'Back',
+                showTitle: true
+            },
+            background: {
+                color: 'transparent'
+            }
+        },
+        bottomTabs: {
+            backgroundColor : COLORS.BOTTOMBAR,
+            titleDisplayMode: 'alwaysShow',
+            drawBehind: false
+        },
+        bottomTab: {
+            iconColor: COLORS.INACTIVE,
+            textColor: COLORS.INACTIVE,
+            selectedIconColor: COLORS.TERTIARY,
+            selectedTextColor: COLORS.TERTIARY,
+            fontFamily: 'Open Sans',
+            fontSize : FONT_SIZES.SMALL,
+            selectedFontSize: FONT_SIZES.SMALL
+        },
+        blurOnUnmount: true
+    })
+
+    Navigation.setRoot({
+        root: INITIAL_LAYOUT
+    })
+        
+    //})
+})
+
+function onNotificationLaunchedApp() {
     notifications().getInitialNotification()
     .then( context => {
         if ( context ) notifications().removeDeliveredNotification( context.notification.notificationId )
     })
+}
 
+function configureDailyNotification() {
     notifications().cancelAllNotifications()
 
     firebase.messaging().hasPermission()
@@ -87,52 +140,4 @@ Navigation.events().registerAppLaunchedListener(() => {
         // Don't notify
         console.error( 'Error setting up:\n' + error.message )
     })
-
-
-    // TODO: remove autologin and UserService
-    if (firebase.auth().currentUser) firebase.auth().signOut()
-    //UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
-
-    styles = require('./styles')
-    let COLORS = styles.COLORS
-    let FONT_SIZES = styles.FONT_SIZES
-
-    Navigation.setDefaultOptions({
-        topBar: {
-            visible: true,
-            hideOnScroll: false,
-            drawBehind: true,
-            elevation: 0,
-            noBorder: true,
-            backButton: {
-                color: COLORS.SECONDARY,
-                title: 'Back',
-                showTitle: true
-            },
-            background: {
-                color: 'transparent'
-            }
-        },
-        bottomTabs: {
-            backgroundColor : COLORS.BOTTOMBAR,
-            titleDisplayMode: 'alwaysShow',
-            drawBehind: true
-        },
-        bottomTab: {
-            iconColor: COLORS.INACTIVE,
-            textColor: COLORS.INACTIVE,
-            selectedIconColor: COLORS.TERTIARY,
-            selectedTextColor: COLORS.TERTIARY,
-            fontFamily: 'Open Sans',
-            fontSize : FONT_SIZES.SMALL,
-            selectedFontSize: FONT_SIZES.SMALL
-        },
-        blurOnUnmount: true
-    })
-
-    Navigation.setRoot({
-        root: INITIAL_LAYOUT
-    })
-        
-    //})
-})
+}

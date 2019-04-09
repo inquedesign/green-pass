@@ -8,7 +8,6 @@ import { Text,
          Container      } from '../components'
 import { STYLES         } from '../styles'
 import { SCREENS        } from '../util/constants'
-import { INITIAL_LAYOUT } from '../layouts'
 
 import SplashScreen from 'react-native-splash-screen'
 
@@ -27,6 +26,10 @@ export default class SettingsScreen extends React.PureComponent {
         })
     }
 
+    logout() {
+        UserService.logout()
+    }
+
     deleteAccount() {
         Alert.alert(
             'Delete Account',
@@ -37,7 +40,6 @@ export default class SettingsScreen extends React.PureComponent {
                     UserService.deleteAccount()
                     .then(() => {
                         alert( 'Account deleted' )
-                        Navigation.setRoot({ root: INITIAL_LAYOUT })
                     })
                     .catch( error => {
                         alert( error.message )
@@ -58,6 +60,11 @@ export default class SettingsScreen extends React.PureComponent {
                     label="Connect Methods"
                     accessibilityLabel="Change your contact methods"
                     onPress={ this.goToContactInfoScreen.bind(this) } />
+
+                <Button style={ STYLES.spaceAfter }
+                    label="Logout"
+                    accessibilityLabel="Log out of your account"
+                    onPress={ this.logout.bind(this) } />
 
                 <Button
                     label="Delete My Account"

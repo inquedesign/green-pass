@@ -63,10 +63,10 @@ export default class Container extends React.PureComponent {
 const defaults = StyleSheet.create({
     background: {
         position: 'absolute',
-        top: 0,
-        left: 0,
-        width : SCREEN_WIDTH,
-        height: SCREEN_HEIGHT
+        top     : 0,
+        left    : 0,
+        width   : SCREEN_WIDTH,
+        height  : SCREEN_HEIGHT
     },
     container: {
         width : SCREEN_WIDTH,

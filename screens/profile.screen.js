@@ -45,15 +45,18 @@ export default class ProfileScreen extends React.PureComponent {
 
     componentDidMount() {
         if ( this.props.userId ) {
-            Promise.all([ UserService.getUserById( this.props.userId ), UserService.getProfile() ])
+            Promise.all([
+                UserService.getUserById( this.props.userId ),
+                UserService.profile || UserService.getUserById(/* currentUser */)
+            ])
             .then( results => {
                 this.isOwnProfile = false
                 this.setUserData({ ...results[0], currentUser: results[1] })
 
-                this.profileListener = UserService.addProfileListener( null, profile => {
+                this.profileWatcher = UserService.addProfileListener( null, profile => {
                     this.setState({ currentUser: profile })
                 })
-                this.unsubscribe = UserService.addProfileListener( this.props.userId, profile => {
+                this.userWatcher = UserService.addProfileListener( this.props.userId, profile => {
                     this.setUserData( profile )
                 })
                 
@@ -61,21 +64,22 @@ export default class ProfileScreen extends React.PureComponent {
                     results[1].buds && results[1].buds.includes( results[0].id ) &&
                     results[0].buds && results[0].buds.includes( results[1].id )
                 ) {
-                    this.contactMethodsWatcher = UserService.getContactMethods( this.props.userId,
-                    contactMethods => {
-                        this.setState({ contactMethods: contactMethods })
-                    })
+                    this.contactMethodsWatcher = UserService.getContactMethods(
+                        this.props.userId,
+                        contactMethods => {
+                            this.setState({ contactMethods: contactMethods })
+                        }
+                    )
                 }
             })
         }
         else { // Get current user's profile
-            UserService.getProfile()
-            .then( profile => {
-                this.setUserData( profile )
+            if ( UserService.profile ) {
+                this.setUserData( UserService.profile )
+            }
 
-                this.profileListener = UserService.addProfileListener( null, profile => {
-                    this.setUserData( profile )
-                })
+            this.profileWatcher = UserService.addProfileListener( null, profile => {
+                this.setUserData( profile )
             })
 
             this.contactMethodsWatcher = UserService.getContactMethods( null, contactMethods => {
@@ -91,6 +95,7 @@ export default class ProfileScreen extends React.PureComponent {
                     }]
                 }
             })
+
             Navigation.events().bindComponent( this )
         }
 
@@ -98,13 +103,9 @@ export default class ProfileScreen extends React.PureComponent {
     }
     
     componentWillUnmount() {
-        if ( this.profileListener ) {
-            UserService.removeProfileListener( this.profileListener )
-        }
-        if ( this.unsubscribe ) {
-            UserService.removeProfileListener( this.unsubscribe )
-        }
-        UserService.unsubscribe( this.contactMethodsWatcher )
+        if ( this.profileWatcher        ) UserService.unsubscribe( this.profileWatcher )
+        if ( this.userWatcher           ) UserService.unsubscribe( this.userWatcher )
+        if ( this.contactMethodsWatcher ) UserService.unsubscribe( this.contactMethodsWatcher )
     }
 
     navigationButtonPressed({ buttonId }) {

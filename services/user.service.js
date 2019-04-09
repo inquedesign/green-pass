@@ -1,7 +1,8 @@
 import React    from 'react'
 import firebase from 'react-native-firebase'
 
-import { Navigation   } from 'react-native-navigation'
+import { Navigation     } from 'react-native-navigation'
+import { INITIAL_LAYOUT } from '../layouts'
 //import { AccessToken,
 //         LoginManager } from 'react-native-fbsdk';
 
@@ -10,83 +11,126 @@ const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
 const FUNCTIONS = firebase.functions()
 
-let profileUnsubscribe   = null
-let budsUnsubscribe      = null
-let profileListeners     = new Set()
-let budsListeners        = new Set()
-let profileUnsubscribers = new Set()
 
-export default class UserService {
+function logout() {
+    if ( !AUTH.currentUser ) return Promise.resolve()
 
-    static addProfileListener( user, callback ) {
-        if ( user ) {
-            const unsubscribe = USERS.doc( user ).onSnapshot(
-                docref => {
-                    const age = getAge( docref.data().birthDate )
-                    callback({ id: docref.id, age: age, ...docref.data() })
+    return AUTH.signOut()
+    .then(() => {
+        clearProfile.call(this)
+        clearBuds.call(this)
+        clearSocials.call(this)
+    })
+}
+
+function clearProfile() {
+    if ( this._profileUnsubscribe ) { 
+        this._profileUnsubscribe()
+        this._profileUnsubscribe = null
+    }
+    this._profileListeners.clear()
+    this._userListeners.forEach( unsubscribe => unsubscribe() )
+    this._userListeners.clear()
+    this._profile = null
+}
+
+function clearBuds() {
+    if ( this._budsUnsubscribe ) {
+        this._budsUnsubscribe()
+        this._budsUnsubscribe = null
+    }
+    this._budsListeners.clear()
+    this._buds = null
+}
+
+function clearSocials() {
+    this._socialListeners.forEach( unsubscribe => unsubscribe() )
+    this._socialListeners.clear()
+}
+
+function watchProfile() {
+    if ( !AUTH.currentUser ) {
+        clearProfile.call(this)
+        const error = new Error( 'Not logged in.' )
+        error.name = "NOAUTH"
+        return Promise.reject( error )
+    }
+
+    if ( !this._profileUnsubscribe ) {
+        this._profileUnsubscribe = USERS.doc( AUTH.currentUser.uid ).onSnapshot(
+            docref => {
+                let age = null
+                if ( docref.data() && docref.data().birthDate ) {
+                    age = getAge( docref.data().birthDate )
                 }
-            )
-            profileUnsubscribers.add( unsubscribe )
-            return unsubscribe
-        }
-
-        profileListeners.add( callback )
-
-        return callback
-    }
-
-    static removeProfileListener( callback ) {
-        if ( profileUnsubscribers.has( callback ) ) {
-            callback()
-            profileUnsubscribers.delete( callback )
-        }
-        else profileListeners.delete( callback )
-    }
-
-    static getProfile() {
-        if ( !AUTH.currentUser ) {
-            clearProfile()
-            const error = new Error( 'Not logged in.' )
-            error.name = "NOAUTH"
-            return Promise.reject( error )
-        }
-
-        if ( !profileUnsubscribe ) {
-            return new Promise(( resolve, reject ) => {
-                profileUnsubscribe = USERS.doc( AUTH.currentUser.uid ).onSnapshot(
-                    docref => {
-                        let age = null
-                        if ( docref.data() && docref.data().birthDate ) {
-                            age = getAge( docref.data().birthDate )
-                        }
-                        UserService.profile = { id: docref.id, age: age, ...docref.data() }
-                        profileListeners.forEach( callback => {
-                            callback( UserService.profile )
-                        })
-                        resolve( UserService.profile )
-                    },
-                    error => {
-                        reject( error )
-                    }
-                )
-            })
-        }
-
-        return Promise.resolve( UserService.profile )
-    }
-
-    static createAccount( email, password ) {
-        return AUTH.createUserWithEmailAndPassword(
-            email,
-            password
+                this._profile = { id: docref.id, age: age, ...docref.data() }
+                this._profileListeners.forEach( callback => {
+                    callback( this._profile )
+                })
+            }
         )
+    }
+
+    return Promise.resolve( this._profile )
+}
+
+function userDataFrom( queryResults ) {
+    return queryResults.docs.map( (docref) => {
+        const age = getAge( docref.data().birthDate )
+        return { id: docref.id, age: age, ...docref.data() }
+    })
+}
+
+function getAge( birthDateString ) {
+    const currentDate = new Date()
+    const birthDate   = new Date( birthDateString )
+    let age = currentDate.getFullYear() - birthDate.getFullYear()
+    if ( currentDate.getMonth() < birthDate.getMonth() ||
+       ( currentDate.getMonth() == birthDate.getMonth() &&
+         currentDate.getDate()  < birthDate.getDate() )) {
+        age = age - 1
+    }
+
+    return age
+}
+
+
+class UserServiceClass {
+    constructor() {
+        this._profile = null
+        this._buds    = null
+        this._profileUnsubscribe = null
+        this._budsUnsubscribe    = null
+        this._profileListeners   = new Set()
+        this._budsListeners      = new Set()
+        this._userListeners      = new Set()
+        this._socialListeners    = new Set()
+    }
+
+    get profile() {
+        return this._profile
+    }
+    
+    get buds() {
+        return this._buds
+    }
+
+    createAccount( email, password ) {
+        return logout.call(this)
+        .then(()=> {
+            return AUTH.createUserWithEmailAndPassword(
+                email,
+                password
+            )
+        })
         .then( credentials => {
-            initialize()
+            //initialize()
+            watchProfile.call(this)
             return credentials
         })
     }
 
-    static deleteAccount() {
+    deleteAccount() {
         if ( !AUTH.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
@@ -95,22 +139,33 @@ export default class UserService {
 
         return FUNCTIONS.httpsCallable( 'deleteAccount' )()
         .then(() => {
-            return AUTH.signOut()
+            return this.logout()
         })
     }
 
-    static login( email, password ) {
-        return AUTH.signInWithEmailAndPassword(
-            email,
-            password
-        )
+    login( email, password ) {
+        return logout.call(this)
+        .then(() => {
+            return AUTH.signInWithEmailAndPassword(
+                email,
+                password
+            )
+        })
         .then( credentials => {
-            initialize()
+            //initialize()
+            watchProfile.call(this)
             return credentials
         })
     }
+    
+    logout() {
+        logout.call(this)
+        .then(() => {
+            Navigation.setRoot({ root: INITIAL_LAYOUT })
+        })
+    }
 
-    static updateUser( dataToUpdate ) {
+    updateUser( dataToUpdate ) {
         if ( !AUTH.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
@@ -122,7 +177,7 @@ export default class UserService {
         .set( dataToUpdate, { merge: true } )
     }
     
-    static updateContactMethods( contactMethods ) {
+    updateContactMethods( contactMethods ) {
         if ( !AUTH.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
@@ -149,13 +204,13 @@ export default class UserService {
         return batch.commit()
     }
 
-    static getContactMethods( uid, callback ) {
+    getContactMethods( uid, callback ) {
         if ( !AUTH.currentUser ) return null
         if ( !uid ) uid = AUTH.currentUser.uid
 
         // NOTE: If there are more than 10 documents in 1 query, it will fail.
         // Right now, there are at most 7, so it's ok.
-        return USERS.doc( uid ).collection( 'ContactMethods' ).onSnapshot(
+        const unsubsribe = USERS.doc( uid ).collection( 'ContactMethods' ).onSnapshot(
             queryResults => {
                 // queryResults.docs() == [{id, data() => document, ...}]
                 let contactMethods = {}
@@ -168,13 +223,46 @@ export default class UserService {
                 callback( {} )
             }
         )
+        
+        this._socialListeners.add( unsubsribe )
+        return unsubsribe
     }
     
-    static unsubscribe( unsubscribeFunction ) {
-        if ( unsubscribeFunction ) unsubscribeFunction()
+    addProfileListener( user, callback ) {
+        if ( user ) {
+            const unsubscribe = USERS.doc( user ).onSnapshot(
+                docref => {
+                    const age = getAge( docref.data().birthDate )
+                    callback({ id: docref.id, age: age, ...docref.data() })
+                }
+            )
+            this._userListeners.add( unsubscribe )
+            return unsubscribe
+        }
+
+        this._profileListeners.add( callback )
+
+        return callback
     }
 
-    static getUserById( uid ) {
+    unsubscribe( unsubscribeFunction ) {
+        if ( this._userListeners.has( unsubscribeFunction ) ) {
+            unsubscribeFunction()
+            this._userListeners.delete( unsubscribeFunction )
+        }
+        else if ( this._profileListeners.has( unsubscribeFunction ) ) {
+            this._profileListeners.delete( unsubscribeFunction )
+        }
+        else if ( this._budsListeners.has( unsubscribeFunction ) ) {
+            this._budsListeners.delete( unsubscribeFunction )
+        }
+        else if ( this._socialListeners.has( unsubscribeFunction ) ) {
+            unsubscribeFunction()
+            this._socialListeners.delete( unsubscribeFunction )
+        }
+    }
+
+    getUserById( uid ) {
         if ( !AUTH.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
@@ -182,8 +270,7 @@ export default class UserService {
         }
         
         if ( !uid ) {
-            error = new Error( 'No user id provided.' )
-            return Promise.reject( error )
+            uid = AUTH.currentUser.uid
         }
     
         return USERS.doc( uid ).get()
@@ -193,7 +280,7 @@ export default class UserService {
         })
     }
 
-    static getUserByUsername( searchString ) {
+    getUserByUsername( searchString ) {
         if ( !AUTH.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
@@ -207,35 +294,31 @@ export default class UserService {
         })
     }
 
-    static addBudsListener( callback ) {
+    addBudsListener( callback ) {
         if ( !AUTH.currentUser ) return
         
-        budsListeners.add( callback )
+        this._budsListeners.add( callback )
 
         return callback
     }
 
-    static removeBudsListener( callback ) {        
-        budsListeners.delete( callback )
-    }
-
-    static getBuds() {
+    getBuds() {
         if ( !AUTH.currentUser ) {
-            clearBuds()
+            clearBuds.call(this)
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
-        if ( !budsUnsubscribe ) {
+        if ( !this._budsUnsubscribe ) {
             return new Promise(( resolve, reject ) => {
-                budsUnsubscribe = USERS.where( 'buds', 'array-contains', AUTH.currentUser.uid ).onSnapshot(
+                this._budsUnsubscribe = USERS.where( 'buds', 'array-contains', AUTH.currentUser.uid ).onSnapshot(
                     queryResults => {
-                        UserService.buds = userDataFrom( queryResults )
-                        budsListeners.forEach( callback => {
-                            callback( UserService.buds )
+                        this._buds = userDataFrom( queryResults )
+                        this._budsListeners.forEach( callback => {
+                            callback( this._buds )
                         })
-                        resolve( UserService.buds )
+                        resolve( this._buds )
                     },
                     error => {
                         reject( error )
@@ -244,10 +327,10 @@ export default class UserService {
             })
         }
 
-        return Promise.resolve( UserService.buds )
+        return Promise.resolve( this._buds )
     }
     
-    static addBud( uid ) {
+    addBud( uid ) {
         if ( !AUTH.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
@@ -258,7 +341,7 @@ export default class UserService {
         .set({ id: uid })
     }
     
-    static removeBud( uid ) {
+    removeBud( uid ) {
         if ( !AUTH.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
@@ -271,7 +354,7 @@ export default class UserService {
         .commit()
     }
     
-    //static facebookLogin() {
+    // facebookLogin() {
     //    return LoginManager.logInWithReadPermissions(['public_profile', 'email'])
     //    .then( result => {
     //        if ( result.isCancelled ) {
@@ -300,54 +383,10 @@ export default class UserService {
     //}
 }
 
-UserService.profile = null
-UserService.buds    = null
+const UserService = new UserServiceClass()
 
-function userDataFrom( queryResults ) {
-    return queryResults.docs.map( (docref) => {
-        const age = getAge( docref.data().birthDate )
-        return { id: docref.id, age: age, ...docref.data() }
-    })
-}
+export default UserService
 
-function getAge( birthDateString ) {
-    const currentDate = new Date()
-    const birthDate   = new Date( birthDateString )
-    let age = currentDate.getFullYear() - birthDate.getFullYear()
-    if ( currentDate.getMonth() < birthDate.getMonth() ||
-       ( currentDate.getMonth() == birthDate.getMonth() &&
-         currentDate.getDate()  < birthDate.getDate() )) {
-        age = age - 1
-    }
-
-    return age
-}
-
-function clearProfile() {
-    if ( profileUnsubscribe ) { 
-        profileUnsubscribe()
-        profileUnsubscribe = null
-    }
-    profileListeners.clear()
-    profileUnsubscribers.forEach( unsubscribe => unsubscribe() )
-    profileUnsubscribers.clear()
-    UserService.profile = null
-}
-
-function clearBuds() {
-    if ( budsUnsubscribe ) {
-        budsUnsubscribe()
-        budsUnsubscribe = null
-    }
-    budsListeners.clear()
-    UserService.buds = null
-}
-
-function initialize() {
-    clearProfile()
-    clearBuds()
-    UserService.getProfile()
-}
 //      {firebase.admob.nativeModuleExists && <Text style={styles.module}>admob()</Text>}
 //      {firebase.analytics.nativeModuleExists && <Text style={styles.module}>analytics()</Text>}
 //      {firebase.auth.nativeModuleExists && <Text style={styles.module}>auth()</Text>}
