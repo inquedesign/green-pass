@@ -1,8 +1,9 @@
 import React    from 'react'
 import firebase from 'react-native-firebase'
 
-import { Navigation     } from 'react-native-navigation'
-import { INITIAL_LAYOUT } from '../layouts'
+import { Navigation    } from 'react-native-navigation'
+import { initialLayout } from '../layouts'
+import { SCREENS       } from '../util/constants'
 //import { AccessToken,
 //         LoginManager } from 'react-native-fbsdk';
 
@@ -82,9 +83,13 @@ function userDataFrom( queryResults ) {
 }
 
 function getAge( birthDateString ) {
+    if ( !Date.parse( birthDateString ) ) return 0
+    
     const currentDate = new Date()
     const birthDate   = new Date( birthDateString )
+
     let age = currentDate.getFullYear() - birthDate.getFullYear()
+
     if ( currentDate.getMonth() < birthDate.getMonth() ||
        ( currentDate.getMonth() == birthDate.getMonth() &&
          currentDate.getDate()  < birthDate.getDate() )) {
@@ -105,6 +110,10 @@ class UserServiceClass {
         this._budsListeners      = new Set()
         this._userListeners      = new Set()
         this._socialListeners    = new Set()
+    }
+
+    get currentUser() {
+        return AUTH.currentUser
     }
 
     get profile() {
@@ -161,7 +170,39 @@ class UserServiceClass {
     logout() {
         logout.call(this)
         .then(() => {
-            Navigation.setRoot({ root: INITIAL_LAYOUT })
+            Navigation.setRoot({ root: initialLayout( SCREENS.START_SCREEN ) })
+        })
+    }
+
+    getUserById( userid ) {
+        if ( !AUTH.currentUser ) {
+            const error = new Error( 'Not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+        
+        if ( !userid ) {
+            userid = AUTH.currentUser.uid
+        }
+    
+        return USERS.doc( userid ).get()
+        .then(( docref ) => {
+            const age = getAge( docref.data().birthDate )
+            return { id: docref.id, age: age, ...docref.data() }
+        })
+    }
+
+    getUserByUsername( searchString ) {
+        if ( !AUTH.currentUser ) {
+            const error = new Error( 'Not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+
+        return USERS.where( 'username', '==', searchString )
+        .get()
+        .then(( results ) => {
+            return userDataFrom( results )
         })
     }
 
@@ -204,28 +245,43 @@ class UserServiceClass {
         return batch.commit()
     }
 
-    getContactMethods( uid, callback ) {
+    getContactMethods( userid, callback ) {
         if ( !AUTH.currentUser ) return null
-        if ( !uid ) uid = AUTH.currentUser.uid
+        if ( !userid ) userid = AUTH.currentUser.uid
 
-        // NOTE: If there are more than 10 documents in 1 query, it will fail.
-        // Right now, there are at most 7, so it's ok.
-        const unsubsribe = USERS.doc( uid ).collection( 'ContactMethods' ).onSnapshot(
-            queryResults => {
+        const contactMethods = USERS.doc( userid ).collection( 'ContactMethods' )
+
+        if ( callback ) {
+            // NOTE: If there are more than 10 documents in 1 query, it will fail.
+            // Right now, there are at most 7, so it's ok.
+            const unsubsribe = contactMethods.onSnapshot(
+                queryResults => {
+                    // queryResults.docs() == [{id, data() => document, ...}]
+                    let contactMethods = {}
+                    queryResults.docs.forEach( docref => {
+                        contactMethods[ docref.id ] = docref.data()
+                    })
+                    callback( contactMethods )
+                },
+                error => {
+                    callback( {} )
+                }
+            )
+
+            this._socialListeners.add( unsubsribe )
+            return unsubsribe
+        }
+        else {
+            return contactMethods.get()
+            .then( queryResults => {
                 // queryResults.docs() == [{id, data() => document, ...}]
                 let contactMethods = {}
                 queryResults.docs.forEach( docref => {
                     contactMethods[ docref.id ] = docref.data()
                 })
-                callback( contactMethods )
-            },
-            error => {
-                callback( {} )
-            }
-        )
-        
-        this._socialListeners.add( unsubsribe )
-        return unsubsribe
+                return contactMethods
+            })
+        }
     }
     
     addProfileListener( user, callback ) {
@@ -260,38 +316,6 @@ class UserServiceClass {
             unsubscribeFunction()
             this._socialListeners.delete( unsubscribeFunction )
         }
-    }
-
-    getUserById( uid ) {
-        if ( !AUTH.currentUser ) {
-            const error = new Error( 'Not logged in.' )
-            error.name = "NOAUTH"
-            return Promise.reject( error )
-        }
-        
-        if ( !uid ) {
-            uid = AUTH.currentUser.uid
-        }
-    
-        return USERS.doc( uid ).get()
-        .then(( docref ) => {
-            const age = getAge( docref.data().birthDate )
-            return { id: docref.id, age: age, ...docref.data() }
-        })
-    }
-
-    getUserByUsername( searchString ) {
-        if ( !AUTH.currentUser ) {
-            const error = new Error( 'Not logged in.' )
-            error.name = "NOAUTH"
-            return Promise.reject( error )
-        }
-
-        return USERS.where( 'username', '==', searchString )
-        .get()
-        .then(( results ) => {
-            return userDataFrom( results )
-        })
     }
 
     addBudsListener( callback ) {

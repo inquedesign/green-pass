@@ -77,6 +77,12 @@ export default class ProfileScreen extends React.PureComponent {
             if ( UserService.profile ) {
                 this.setUserData( UserService.profile )
             }
+            else {
+                UserService.getUserById(/* current user */)
+                .then( profile => {
+                    this.setUserData( profile )
+                })
+            }
 
             this.profileWatcher = UserService.addProfileListener( null, profile => {
                 this.setUserData( profile )

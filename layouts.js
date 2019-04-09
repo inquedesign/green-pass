@@ -1,10 +1,12 @@
 import { SCREENS } from './util/constants'
 
-export const INITIAL_LAYOUT = {
-    stack: {
-        children: [
-            { component: { name: SCREENS.START_SCREEN } }
-        ]
+export function initialLayout( startingScreen ) {
+    return {
+        stack: {
+            children: [
+                { component: { name: startingScreen } }
+            ]
+        }
     }
 }
 

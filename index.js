@@ -18,7 +18,8 @@ import { SCREENS        } from './util/constants'
 import { COLORS,
          FONT_SIZES     } from './styles'
 import { MAIN_LAYOUT,
-         INITIAL_LAYOUT } from './layouts'
+         initialLayout } from './layouts'
+import { AVATARS        } from './util/avatars'
 
 Navigation.registerComponent( SCREENS.START_SCREEN, () => StartScreen )
 Navigation.registerComponent( SCREENS.ACCOUNT_CREATION_SCREEN, () => AccountCreationScreen )
@@ -36,8 +37,9 @@ Navigation.registerComponent( SCREENS.SETTINGS_SCREEN, () => SettingsScreen )
 
 import UserService from './services/user.service'
 import firebase from 'react-native-firebase'
+
 const notifications = firebase.notifications
-const BONG_HIT = 'bonghit.wav'
+const BONG_HIT      = 'bonghit.wav'
 
 Navigation.events().registerAppLaunchedListener(() => {
     onNotificationLaunchedApp()
@@ -48,41 +50,74 @@ Navigation.events().registerAppLaunchedListener(() => {
     //if (firebase.auth().currentUser) firebase.auth().signOut()
     //UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
 
-    Navigation.setDefaultOptions({
-        topBar: {
-            visible: true,
-            hideOnScroll: false,
-            drawBehind: true,
-            elevation: 0,
-            noBorder: true,
-            backButton: {
-                color: COLORS.SECONDARY,
-                title: 'Back',
-                showTitle: true
-            },
-            background: {
-                color: 'transparent'
-            }
-        },
-        bottomTabs: {
-            backgroundColor : COLORS.BOTTOMBAR,
-            titleDisplayMode: 'alwaysShow',
-            drawBehind: false
-        },
-        bottomTab: {
-            iconColor: COLORS.INACTIVE,
-            textColor: COLORS.INACTIVE,
-            selectedIconColor: COLORS.TERTIARY,
-            selectedTextColor: COLORS.TERTIARY,
-            fontFamily: 'Open Sans',
-            fontSize : FONT_SIZES.SMALL,
-            selectedFontSize: FONT_SIZES.SMALL
-        },
-        blurOnUnmount: true
-    })
+    Promise.resolve( UserService.currentUser )
+    .then( currentUser => {
+        if ( !currentUser ) return initialLayout( SCREENS.START_SCREEN )
 
-    Navigation.setRoot({
-        root: INITIAL_LAYOUT
+        // Verify profile and determine redirect screen
+        return Promise.all([
+            UserService.getUserById(/* currentUser */),
+            UserService.getContactMethods(/* currentUser */)
+        ])
+        .then( results => {
+            const profile        = results[0]
+            const contactMethods = results[1]
+
+            if ( !(profile.gender && ['male', 'female', 'person'].includes( profile.gender )) ) {
+                return initialLayout( SCREENS.GENDER_SCREEN )
+            }
+            else if ( !(profile.age && profile.age >= 21) ) {
+                return initialLayout( SCREENS.AGE_SCREEN )
+            }
+            else if ( !profile.username ) {
+                return initialLayout( SCREENS.USERNAME_SCREEN )
+            }
+            else if ( !(profile.avatar && Object.keys( AVATARS.all ).includes( profile.avatar )) ) {
+                return initialLayout( SCREENS.AVATAR_SCREEN )
+            }
+            else if ( !(contactMethods && Object.keys( contactMethods ).length > 0) ) {
+                return initialLayout( SCREENS.CONTACT_INFO_SCREEN )
+            }
+            else return MAIN_LAYOUT
+        })
+    })
+    .then( startingLayout => {
+        Navigation.setDefaultOptions({
+            topBar: {
+                visible: true,
+                hideOnScroll: false,
+                drawBehind: true,
+                elevation: 0,
+                noBorder: true,
+                backButton: {
+                    color: COLORS.SECONDARY,
+                    title: 'Back',
+                    showTitle: true
+                },
+                background: {
+                    color: 'transparent'
+                }
+            },
+            bottomTabs: {
+                backgroundColor : COLORS.BOTTOMBAR,
+                titleDisplayMode: 'alwaysShow',
+                drawBehind: false
+            },
+            bottomTab: {
+                iconColor: COLORS.INACTIVE,
+                textColor: COLORS.INACTIVE,
+                selectedIconColor: COLORS.TERTIARY,
+                selectedTextColor: COLORS.TERTIARY,
+                fontFamily: 'Open Sans',
+                fontSize : FONT_SIZES.SMALL,
+                selectedFontSize: FONT_SIZES.SMALL
+            },
+            blurOnUnmount: true
+        })
+
+        Navigation.setRoot({
+            root: startingLayout
+        })
     })
         
     //})
