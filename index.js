@@ -14,8 +14,6 @@ import SettingsScreen        from './screens/settings.screen'
 
 import { Platform   } from 'react-native'
 import { Navigation } from 'react-native-navigation'
-import { COLORS,
-         FONT_SIZES } from './styles'
 import { SCREENS    } from './util/constants'
 import { MAIN_LAYOUT,
          INITIAL_LAYOUT } from './layouts'
@@ -94,6 +92,10 @@ Navigation.events().registerAppLaunchedListener(() => {
     // TODO: remove autologin and UserService
     if (firebase.auth().currentUser) firebase.auth().signOut()
     //UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
+
+    styles = require('./styles')
+    let COLORS = styles.COLORS
+    let FONT_SIZES = styles.FONT_SIZES
 
     Navigation.setDefaultOptions({
         topBar: {
