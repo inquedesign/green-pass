@@ -1,5 +1,6 @@
-import React    from 'react'
-import firebase from 'react-native-firebase'
+import React               from 'react'
+import firebase            from 'react-native-firebase'
+import NotificationService from './notification.service'
 
 import { Navigation    } from 'react-native-navigation'
 import { initialLayout } from '../layouts'
@@ -12,9 +13,17 @@ const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
 const FUNCTIONS = firebase.functions()
 
+function login( credentials ) {
+    NotificationService.configureNotifications()
+    watchProfile.call(this)
+    return credentials
+}
 
 function logout() {
     if ( !AUTH.currentUser ) return Promise.resolve()
+
+    NotificationService.cancelNotifications()
+    NotificationService.unsubscribePushNotifications()
 
     return AUTH.signOut()
     .then(() => {
@@ -132,11 +141,7 @@ class UserServiceClass {
                 password
             )
         })
-        .then( credentials => {
-            //initialize()
-            watchProfile.call(this)
-            return credentials
-        })
+        .then( login.bind( this ) )
     }
 
     deleteAccount() {
@@ -160,11 +165,7 @@ class UserServiceClass {
                 password
             )
         })
-        .then( credentials => {
-            //initialize()
-            watchProfile.call(this)
-            return credentials
-        })
+        .then( login.bind( this ) )
     }
     
     logout() {
