@@ -19,8 +19,9 @@
 {
   [FIRApp configure];
 
-  NSURL *jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
-  [[RCTBundleURLProvider sharedSettings] setJsLocation:jsCodeLocation.host];
+  NSURL *jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
+  //[[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
+  //[[RCTBundleURLProvider sharedSettings] setJsLocation:jsCodeLocation.host];
 
   [ReactNativeNavigation bootstrap:jsCodeLocation launchOptions:launchOptions];
 

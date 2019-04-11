@@ -1,6 +1,6 @@
 {
     "name": "GreenPass",
-    "version": "0.29.3",
+    "version": "0.30.0",
     "private": true,
     "scripts": {
         "android": "cd android && ./gradlew app:assembleDebug && ./gradlew installDebug",
@@ -14,6 +14,7 @@
         "start": "npm run build && react-native start",
         "clean-cache": "watchman watch-del-all && react-native start --reset-cache",
         "build": "./build-scripts/export-avatars",
+        "bundle": "react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios",
         "emulator:android": "~/Library/Android/sdk/emulator/emulator -avd Nexus_5X_API_28_x86 &"
     },
     "rnpm": {
