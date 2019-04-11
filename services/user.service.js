@@ -155,6 +155,9 @@ class UserServiceClass {
         .then(() => {
             return this.logout()
         })
+        .then(() => {
+            alert( 'Account deleted' )
+        })
     }
 
     login( email, password ) {
@@ -169,9 +172,9 @@ class UserServiceClass {
     }
     
     logout() {
-        logout.call(this)
+        return logout.call(this)
         .then(() => {
-            Navigation.setRoot({ root: initialLayout( SCREENS.START_SCREEN ) })
+            return Navigation.setRoot({ root: initialLayout( SCREENS.START_SCREEN ) })
         })
     }
 
@@ -302,6 +305,14 @@ class UserServiceClass {
         return callback
     }
 
+    addBudsListener( callback ) {
+        if ( !AUTH.currentUser ) return
+        
+        this._budsListeners.add( callback )
+
+        return callback
+    }
+
     unsubscribe( unsubscribeFunction ) {
         if ( this._userListeners.has( unsubscribeFunction ) ) {
             unsubscribeFunction()
@@ -317,14 +328,6 @@ class UserServiceClass {
             unsubscribeFunction()
             this._socialListeners.delete( unsubscribeFunction )
         }
-    }
-
-    addBudsListener( callback ) {
-        if ( !AUTH.currentUser ) return
-        
-        this._budsListeners.add( callback )
-
-        return callback
     }
 
     getBuds() {

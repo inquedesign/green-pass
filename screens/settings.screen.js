@@ -38,9 +38,6 @@ export default class SettingsScreen extends React.PureComponent {
                 { text: 'No', style: 'cancel' },
                 { text: 'Yes', style: 'destructive', onPress: () => {
                     UserService.deleteAccount()
-                    .then(() => {
-                        alert( 'Account deleted' )
-                    })
                     .catch( error => {
                         alert( error.message )
                     })
