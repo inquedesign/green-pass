@@ -41,7 +41,7 @@ export default class NotificationService {
     }
 
     static cancelNotifications() {
-        notifications().cancelAllNotifications()
+        return notifications().cancelAllNotifications()
     }
 
     static onNotificationLaunchedApp() {
@@ -72,7 +72,7 @@ export default class NotificationService {
             }
 
             notifications().onNotification( notification => {
-                notifications().displayNotification( its420 )
+                notifications().displayNotification( notification )
             })
 
             notifications().onNotificationOpened( context => {

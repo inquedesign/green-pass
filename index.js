@@ -41,16 +41,14 @@ Navigation.registerComponent( SCREENS.SETTINGS_SCREEN, () => SettingsScreen )
 Navigation.events().registerAppLaunchedListener(() => {
     NotificationService.onNotificationLaunchedApp()
 
-    // TODO: remove autologin and UserService
-    //if (firebase.auth().currentUser) firebase.auth().signOut()
-    //UserService.login( 'bob@bob.com', 'asdfjkl;').then(() => {
-
     Promise.resolve( UserService.currentUser )
     .then( currentUser => {
         if ( !currentUser ) return initialLayout( SCREENS.START_SCREEN )
 
         NotificationService.cancelNotifications()
-        NotificationService.configureNotifications()
+        .then(() => {
+            NotificationService.configureNotifications()
+        })
 
         // Verify profile and determine redirect screen
         return Promise.all([
@@ -118,5 +116,4 @@ Navigation.events().registerAppLaunchedListener(() => {
         })
     })
         
-    //})
 })
