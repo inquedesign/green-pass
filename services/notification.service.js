@@ -90,7 +90,7 @@ export default class NotificationService {
                 exact: true
             })
             
-            setToken()
+            getToken()
         })
         .catch( error => {
             // Don't notify
