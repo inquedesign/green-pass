@@ -69,6 +69,7 @@ exports.deleteAccount = functions.https.onCall(( data, context ) => {
     
     return Promise.all([
         firestore.doc( `Users/${context.auth.uid}` ).delete(),
+        firestore.doc( `PushTokens/${context.auth.uid}` ).delete(),
         auth.deleteUser( context.auth.uid )
     ])
 })
