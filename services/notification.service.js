@@ -1,19 +1,18 @@
 import firebase    from 'react-native-firebase'
-import UserService from './user.service'
 
 import { Platform       } from 'react-native'
 
 const notifications = firebase.notifications
 const messaging     = firebase.messaging
 const pushTokens    = firebase.firestore().collection( 'PushTokens' )
+const auth          = firebase.auth()
 const BONG_HIT      = 'bonghit.wav'
 
 let unsubscribeTokenListener = null
-let _token = null
 
 function setToken( token ) {
-    _token = token
-    pushTokens.doc( UserService.currentUser.uid ).set({
+    if ( !auth.currentUser.uid ) return
+    pushTokens.doc( auth.currentUser.uid ).set({
         token: token
     }, {
         merge: true
@@ -37,7 +36,8 @@ export default class NotificationService {
 
     static unsubscribePushNotifications() {
         if ( unsubscribeTokenListener ) unsubscribeTokenListener()
-        pushTokens.doc( UserService.currentUser.uid ).delete()
+        
+        if ( auth.currentUser.uid ) pushTokens.doc( auth.currentUser.uid ).delete()
     }
 
     static cancelNotifications() {

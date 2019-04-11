@@ -1,21 +1,22 @@
 {
     "name": "GreenPass",
-    "version": "0.30.0",
+    "version": "0.30.1",
     "private": true,
     "scripts": {
-        "android": "cd android && ./gradlew app:assembleDebug && ./gradlew installDebug",
+        "android:emulator": "~/Library/Android/sdk/emulator/emulator -avd Nexus_5X_API_28_x86 &",
+        "android:debug": "cd android && ./gradlew app:assembleDebug && ./gradlew installDebug",
+        "android:release": "npm run bundle:android && ./gradlew installRelease",
         "ios": "react-native run-ios",
         "ios:ipad": "react-native run-ios --simulator='iPad Pro (10.5-inch) (12.1)'",
         "ios:iphone5s": "react-native run-ios --simulator='iPhone 5s'",
         "ios:iphone6splus": "react-native run-ios --simulator='iPhone 6s Plus'",
         "ios:iphoneX": "react-native run-ios --simulator='iPhone X'",
         "ios:iphoneXSmax": "react-native run-ios --simulator='iPhone XS Max'",
-        "apk": "cd android && ./gradlew assembleRelease",
-        "start": "npm run build && react-native start",
-        "clean-cache": "watchman watch-del-all && react-native start --reset-cache",
-        "build": "./build-scripts/export-avatars",
-        "bundle": "react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios",
-        "emulator:android": "~/Library/Android/sdk/emulator/emulator -avd Nexus_5X_API_28_x86 &"
+        "bundle:android": "cd android && ./gradlew assembleRelease",
+        "bundle:ios": "react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios",
+        "metro": "react-native start",
+        "metro:clear-cache": "watchman watch-del-all && react-native start --reset-cache",
+        "export-avatars": "./build-scripts/export-avatars"
     },
     "rnpm": {
         "assets": [

@@ -3,7 +3,7 @@ import { StyleSheet,
          Platform,
          View,
          TextInput as ReactInput } from 'react-native';
-import { Button } from './'
+import { Button } from './button.component'
 import { COLORS,
          FONT_SIZES,
          BORDER_RADIUS,
@@ -84,6 +84,7 @@ const defaults = StyleSheet.create({
         textAlign      : 'center',
         fontFamily     : 'HWTArtz',
         fontSize       : FONT_SIZES.MEDIUM,
+        fontWeight     : 'normal',
         letterSpacing  : 1.5,
         textDecorationLine: 'none'
     },

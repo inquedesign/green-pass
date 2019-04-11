@@ -1,7 +1,7 @@
 import React       from 'react'
 
 import { Modal as ReactModal } from 'react-native'
-import { Container           } from './'
+import { Container           } from './container.component'
 
 export default class Modal extends React.PureComponent {
     render() {
