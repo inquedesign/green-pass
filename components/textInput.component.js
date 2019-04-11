@@ -3,7 +3,7 @@ import { StyleSheet,
          Platform,
          View,
          TextInput as ReactInput } from 'react-native';
-import { Button } from './button.component'
+import Button from './button.component'
 import { COLORS,
          FONT_SIZES,
          BORDER_RADIUS,

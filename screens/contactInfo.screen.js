@@ -223,13 +223,26 @@ export class ServicesModal extends React.PureComponent {
         }
         else {
             contactInfo = {
-                username: this.state.contactInfo
+                username: this.state.contactInfo.toUpperCase()
             }
         }
 
-
-        this.props.onSubmit( this.state.service, contactInfo )
+        if ( this.props.onSubmit ) this.props.onSubmit( this.state.service, contactInfo )
         Navigation.pop( this.props.componentId )
+    }
+
+    formatNumber( input ) {
+        input = input.replace(/[^0-9]+/g, '')
+        input = input.replace(/^0+/, '')
+        let number = this.numberFormatter.input( '+' + input )
+        this.setState({
+            contactInfo: number.slice(1)
+        })
+        this.numberFormatter.reset()
+    }
+
+    formatText( input ) {
+        this.setState({ contactInfo: input })
     }
 
     render() {
@@ -287,6 +300,7 @@ export class ServicesModal extends React.PureComponent {
 
                     <TextInput style={ STYLES.spaceAfter }
                         value={ this.state.contactInfo }
+                        allCaps={ false }
                         accessibilityLabel={
                             'Enter your ' + this.state.service +
                             serviceNeedsNumber ? 'phone number' : 'username'
@@ -304,16 +318,8 @@ export class ServicesModal extends React.PureComponent {
                             serviceNeedsNumber ? 'phone-pad' : 'default'
                         }
                         onChangeText={ serviceNeedsNumber
-                            ? ( text ) => {
-                                text = text.replace(/[^0-9]+/g, '')
-                                text = text.replace(/^0+/, '')
-                                let number = this.numberFormatter.input( '+' + text )
-                                this.setState({
-                                    contactInfo: number.slice(1)
-                                })
-                                this.numberFormatter.reset()
-                            }
-                            : ( text ) => { this.setState({ contactInfo: text }) } }/>
+                            ? this.formatNumber.bind( this )
+                            : this.formatText.bind( this ) }/>
 
                     <Button
                         label="Submit"
