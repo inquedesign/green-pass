@@ -1,6 +1,8 @@
-import firebase    from 'react-native-firebase'
+import firebase from 'react-native-firebase'
 
-import { Platform       } from 'react-native'
+import { Platform   } from 'react-native'
+import { Navigation } from 'react-native-navigation'
+import { SCREENS    } from '../util/constants'
 
 const notifications = firebase.notifications
 const messaging     = firebase.messaging
@@ -79,6 +81,22 @@ export default class NotificationService {
 
             notifications().onNotificationOpened( context => {
                 notifications().removeDeliveredNotification( context.notification.notificationId )
+                .then(() => {
+                    if ( context.notification.notificationId === '420' ) return
+                    Navigation.push( SCREENS.BUDS_SCREEN, {
+                        component: {
+                            name: SCREENS.PROFILE_SCREEN,
+                            passProps: { userId: context.notification.data.userid },
+                        }
+                    })
+                    .then(() => {
+                        Navigation.mergeOptions( 'bottomtabs', {
+                            bottomTabs: {
+                                currentTabIndex: 1
+                            }
+                        })
+                    })
+                })
             })
 
             const notificationDate = new Date()

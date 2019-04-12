@@ -12,6 +12,7 @@ export function initialLayout( startingScreen ) {
 
 export const MAIN_LAYOUT = {
     bottomTabs: {
+        id: 'bottomtabs',
         children: [
             {
                 stack: {
@@ -33,6 +34,7 @@ export const MAIN_LAYOUT = {
                 stack: {
                     children: [{
                         component: {
+                            id: SCREENS.BUDS_SCREEN,
                             name: SCREENS.BUDS_SCREEN
                         }
                     }],

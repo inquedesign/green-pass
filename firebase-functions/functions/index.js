@@ -7,27 +7,80 @@ admin.initializeApp()
 // we initialize Firestore without any arguments because it
 // detects authentication from the environment.
 const firestore = admin.firestore()
+const messaging = admin.messaging()
 const auth      = admin.auth()
 
 exports.syncContactList = functions.firestore.document('Users/{user}/ContactList/{contact}')
 .onWrite(( change, context ) => {
-    let data = null
+    let data  = null
+    let tasks = []
 
     // Updates won't happen, because security rule prevents it, so handle add/remove
     if ( change.after.exists ) { // Added
         data = { buds: admin.firestore.FieldValue.arrayUnion( context.params.contact ) }
+
+        tasks.push(
+            Promise.all([
+                firestore.doc( `Users/${context.params.contact}/ContactList/${context.params.user}` ).get(),
+                firestore.doc( `PushTokens/${context.params.contact}` ).get(),
+                firestore.doc( `Users/${context.params.user}` ).get()
+            ])
+            .then( results => {
+                const requestIsMutual   = results[0].exists
+                const registrationToken = results[1].data().token
+                const user              = results[2].data().username
+
+                let payload =  null
+                if ( requestIsMutual ) {
+                    payload =  {
+                        notification: {
+                            tag: 'request',
+                            title: `A new Bud.`,
+                            body : `Congratulations! You are now buds with ${user}`,
+                            sound: 'default'
+                        },
+                        data: {
+                            userid: context.params.user
+                        }
+                    }
+                }
+                else {
+                    payload =  {
+                        notification: {
+                            tag: 'request',
+                            title: 'Bud Request',
+                            body : `${user} wants to be your bud! Check them out!`,
+                            sound: 'default'
+                        },
+                        data: {
+                            userid: context.params.user
+                        }
+                    }
+                }
+
+                return messaging.sendToDevice( registrationToken, payload )
+            })
+        )
     }
     else { // Removed
         data = { buds: admin.firestore.FieldValue.arrayRemove( context.params.contact ) }
     }
 
-    return firestore.collection( 'Users' ).doc( context.params.user ).get()
-    .then( docref => {
-        if ( docref.exists ) {
-            return firestore.collection( 'Users' ).doc( context.params.user )
-            .set( data, { merge: true } )
-        }
+    tasks.push(
+        firestore.collection( 'Users' ).doc( context.params.user ).get()
+        .then( docref => {
+            if ( docref.exists ) {
+                return firestore.collection( 'Users' ).doc( context.params.user )
+                .set( data, { merge: true } )
+            }
+        })
+    )
+    
+    return Promise.all( tasks )
+    .catch( error => {
+        console.log('Error sending message:', error);
     })
+
 })
 
 exports.deleteProfile = functions.firestore.document( 'Users/{user}' )
