@@ -72,6 +72,8 @@ export default class NotificationService {
             }
 
             notifications().onNotification( notification => {
+                if ( notification.notificationId === '420' ) notification.setSound( BONG_HIT )
+                else notification.setSound( 'default' )
                 notifications().displayNotification( notification )
             })
 
