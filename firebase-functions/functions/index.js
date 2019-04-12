@@ -83,7 +83,7 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
 
 })
 
-exports.deleteProfile = functions.firestore.document( 'Users/{user}' )
+exports.onDeleteProfile = functions.firestore.document( 'Users/{user}' )
 .onDelete(( doc, context) => {
 
     // Get all users who have this user listed as a buddy
@@ -122,7 +122,7 @@ function deleteCollection( path ) {
     })
 }
 
-exports.addProfile = functions.firestore.document( 'Users/{user}' )
+exports.onAddProfile = functions.firestore.document( 'Users/{user}' )
 .onCreate(( doc, context ) => {
     return firestore.doc( 'Statistics/UserCount' )
     .set({
@@ -135,9 +135,14 @@ exports.addProfile = functions.firestore.document( 'Users/{user}' )
 exports.deleteAccount = functions.https.onCall(( data, context ) => {
     if ( !context.auth ) return
     
+    auth.deleteUser( context.auth.uid )
+})
+
+exports.onDeleteAccount = functions.auth.user()
+.onDelete(( user, context ) => {
+
     return Promise.all([
-        firestore.doc( `Users/${context.auth.uid}` ).delete(),
-        firestore.doc( `PushTokens/${context.auth.uid}` ).delete(),
-        auth.deleteUser( context.auth.uid )
+        firestore.doc( `Users/${user.uid}` ).delete(),
+        firestore.doc( `PushTokens/${user.uid}` ).delete(),
     ])
 })

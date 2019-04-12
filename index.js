@@ -41,7 +41,7 @@ Navigation.registerComponent( SCREENS.SETTINGS_SCREEN, () => SettingsScreen )
 Navigation.events().registerAppLaunchedListener(() => {
     NotificationService.onNotificationLaunchedApp()
 
-    Promise.resolve( UserService.currentUser )
+    UserService.refresh()
     .then( currentUser => {
         if ( !currentUser ) return initialLayout( SCREENS.START_SCREEN )
 

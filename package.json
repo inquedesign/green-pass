@@ -1,6 +1,6 @@
 {
     "name": "GreenPass",
-    "version": "0.31.2",
+    "version": "0.31.3",
     "private": true,
     "scripts": {
         "android:emulator": "~/Library/Android/sdk/emulator/emulator -avd Nexus_5X_API_28_x86 &",

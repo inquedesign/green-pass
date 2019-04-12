@@ -56,8 +56,10 @@ export default class ProfileScreen extends React.PureComponent {
                 this.profileWatcher = UserService.addProfileListener( null, profile => {
                     this.setState({ currentUser: profile })
                 })
+
                 this.userWatcher = UserService.addProfileListener( this.props.userId, profile => {
-                    this.setUserData( profile )
+                    if ( profile ) this.setUserData( profile )
+                    else Navigation.pop( this.props.componentId )
                 })
                 
                 if (
@@ -168,7 +170,7 @@ export default class ProfileScreen extends React.PureComponent {
         }
         Linking.openURL( url )
         .catch( error => {
-            alert( error.message )
+            alert( 'Profile Screen: ' + error.message )
         })
     }
 

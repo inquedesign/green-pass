@@ -13,7 +13,12 @@ const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
 const FUNCTIONS = firebase.functions()
 
+let authListener = null
+
 function login( credentials ) {
+//    authListener = AUTH.onUserChanged( something => {
+//        console.error( JSON.stringify( something, null, 4) )
+//    })
     NotificationService.configureNotifications()
     watchProfile.call(this)
     return credentials
@@ -69,11 +74,10 @@ function watchProfile() {
     if ( !this._profileUnsubscribe ) {
         this._profileUnsubscribe = USERS.doc( AUTH.currentUser.uid ).onSnapshot(
             docref => {
-                let age = null
-                if ( docref.data() && docref.data().birthDate ) {
-                    age = getAge( docref.data().birthDate )
-                }
-                this._profile = { id: docref.id, age: age, ...docref.data() }
+                if ( !docref.exists ) return this.logout()
+
+                this._profile = getProfileData( docref )
+
                 this._profileListeners.forEach( callback => {
                     callback( this._profile )
                 })
@@ -84,10 +88,19 @@ function watchProfile() {
     return Promise.resolve( this._profile )
 }
 
+function getProfileData( docref ) {
+    let age = null
+
+    if ( docref.data() && docref.data().birthDate ) {
+        age = getAge( docref.data().birthDate )
+    }
+
+    return { id: docref.id, age: age, ...docref.data() }
+}
+
 function userDataFrom( queryResults ) {
     return queryResults.docs.map( (docref) => {
-        const age = getAge( docref.data().birthDate )
-        return { id: docref.id, age: age, ...docref.data() }
+        return getProfileData( docref )
     })
 }
 
@@ -133,6 +146,15 @@ class UserServiceClass {
         return this._buds
     }
 
+    refresh() {
+        if ( AUTH.currentUser ) {
+            return AUTH.currentUser.reload()
+            .then(() => { return AUTH.currentUser })
+            .catch( error => { return null })
+        }
+        return Promise.resolve( AUTH.currentUser )
+    }
+
     createAccount( email, password ) {
         return logout.call(this)
         .then(()=> {
@@ -140,6 +162,16 @@ class UserServiceClass {
                 email,
                 password
             )
+        })
+        .then( credentials => {
+            return USERS
+            .doc( AUTH.currentUser.uid )
+            .set({
+                username : null
+            }, { merge: true } )
+            .then(() => {
+                return credentials
+            })
         })
         .then( login.bind( this ) )
     }
@@ -191,8 +223,7 @@ class UserServiceClass {
     
         return USERS.doc( userid ).get()
         .then(( docref ) => {
-            const age = getAge( docref.data().birthDate )
-            return { id: docref.id, age: age, ...docref.data() }
+            return getProfileData( docref )
         })
     }
 
@@ -292,8 +323,8 @@ class UserServiceClass {
         if ( user ) {
             const unsubscribe = USERS.doc( user ).onSnapshot(
                 docref => {
-                    const age = getAge( docref.data().birthDate )
-                    callback({ id: docref.id, age: age, ...docref.data() })
+                    if ( docref.exists ) callback( getProfileData( docref ) )
+                    else callback( null )
                 }
             )
             this._userListeners.add( unsubscribe )
