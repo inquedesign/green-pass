@@ -19,7 +19,7 @@ export default class GenderScreen extends React.PureComponent {
     setGender( gender ) {
         UserService.updateUser({ gender: gender })
         Navigation.push(this.props.componentId, {
-            component: { name: SCREENS.AGE_SCREEN }
+            component: { name: SCREENS.USERNAME_SCREEN }
         })
     }
 

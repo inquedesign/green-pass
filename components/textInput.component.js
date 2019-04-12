@@ -101,12 +101,12 @@ const defaults = StyleSheet.create({
         height  : COMPONENT_HEIGHT
     },
     clearButtonLabel: {
-        width            : 16 * VH,
-        height           : 16 * VH,
-        lineHeight       : 16 * VH,
+        width            : 14 * VH,
+        height           : 14 * VH,
+        lineHeight       : 14 * VH,
         textAlign        : 'center',
         textAlignVertical: 'center',
-        borderRadius     : 8 * VH,
+        borderRadius     : 7 * VH,
         backgroundColor  : '#D0D0D0',
         color            : COLORS.TERTIARY ,
         fontFamily       : 'Open Sans',

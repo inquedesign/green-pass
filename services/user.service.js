@@ -166,9 +166,7 @@ class UserServiceClass {
         .then( credentials => {
             return USERS
             .doc( AUTH.currentUser.uid )
-            .set({
-                username : null
-            }, { merge: true } )
+            .set( this.profile, { merge: true } ) // Due to age verification gateway, profile should always have a birthDate at least
             .then(() => {
                 return credentials
             })

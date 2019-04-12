@@ -25,9 +25,9 @@ export default class AgeScreen extends React.PureComponent {
 
         // Change MM-DD-YYYY to ISO Standard YYYY-MM-DD
         const date = this.state.date.slice(6) + '-' + this.state.date.slice(0, 5)
-        UserService.updateUser({ birthDate: date })
+        UserService._profile = { birthDate: date }
         Navigation.push(this.props.componentId, {
-            component: { name: SCREENS.USERNAME_SCREEN }
+            component: { name: SCREENS.TERMS_OF_SERVICE_SCREEN }
         })
     }
 

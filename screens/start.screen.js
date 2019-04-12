@@ -22,7 +22,7 @@ export default class StartScreen extends React.PureComponent {
 
     goToTermsOfService() {
         Navigation.push(this.props.componentId, {
-            component: { name: SCREENS.TERMS_OF_SERVICE_SCREEN }
+            component: { name: SCREENS.AGE_SCREEN }
         })
     }
 

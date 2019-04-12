@@ -62,9 +62,6 @@ Navigation.events().registerAppLaunchedListener(() => {
             if ( !(profile.gender && ['male', 'female', 'person'].includes( profile.gender )) ) {
                 return initialLayout( SCREENS.GENDER_SCREEN )
             }
-            else if ( !(profile.age && profile.age >= 21) ) {
-                return initialLayout( SCREENS.AGE_SCREEN )
-            }
             else if ( !profile.username ) {
                 return initialLayout( SCREENS.USERNAME_SCREEN )
             }
