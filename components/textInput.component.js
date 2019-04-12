@@ -2,9 +2,12 @@ import React from 'react';
 import { StyleSheet,
          Platform,
          View,
+         Text,
+         TouchableOpacity,
          TextInput as ReactInput } from 'react-native';
 import Button from './button.component'
 import { COLORS,
+         VH,
          FONT_SIZES,
          BORDER_RADIUS,
          COMPONENT_HEIGHT } from '../styles'
@@ -51,16 +54,16 @@ export default class TextInput extends React.Component {
                 />
                 
                 { this.state.text.length > 0 &&
-                <Button style={ defaults.clearButton }
-                    label='X'
-                    color='#E0E0E0'
-                    fontColor={ COLORS.TERTIARY }
-                    fontStyle={ defaults.clearButtonLabel }
+                <TouchableOpacity style={ defaults.clearButton }
                     onPress={() => {
                         this.setState({ text: '' })
                         this.onChangeText( '' )
                     }}>
-                </Button>
+
+                    <Text style={ defaults.clearButtonLabel }>
+                        X
+                    </Text>
+                </TouchableOpacity>
                 }
             </View>
         )
@@ -90,20 +93,25 @@ const defaults = StyleSheet.create({
     },
     clearButton: {
         position: 'absolute',
-        top: .5 * (HEIGHT - FONT_SIZES.MEDIUM),
-        right: .4 * (HEIGHT - FONT_SIZES.MEDIUM),
-        width : FONT_SIZES.MEDIUM,
-        height: FONT_SIZES.MEDIUM,
-        borderRadius: .5 * FONT_SIZES.MEDIUM,
+        right   : 0,
+        flex    : 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        width   : COMPONENT_HEIGHT,
+        height  : COMPONENT_HEIGHT
     },
     clearButtonLabel: {
-        fontFamily: 'Open Sans',
-        fontWeight: 'bold',
-        fontSize: FONT_SIZES.SMALL * 1.2,
-        letterSpacing: 1,
-        paddingLeft: Platform.select({
-            ios: .0225 * HEIGHT,
-            android: 0
-        })
+        width            : 16 * VH,
+        height           : 16 * VH,
+        lineHeight       : 16 * VH,
+        textAlign        : 'center',
+        textAlignVertical: 'center',
+        borderRadius     : 8 * VH,
+        backgroundColor  : '#D0D0D0',
+        color            : COLORS.TERTIARY ,
+        fontFamily       : 'Open Sans',
+        fontWeight       : 'bold',
+        fontSize         : 10 * VH,
+        overflow         : 'hidden'
     }
 })
