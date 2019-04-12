@@ -44,7 +44,7 @@ export default class ProfileScreen extends React.PureComponent {
     }
 
     componentDidMount() {
-        if ( this.props.userId ) {
+        if ( this.props.userId && ( this.props.userId !== UserService.currentUser.uid ) ) {
             Promise.all([
                 UserService.getUserById( this.props.userId ),
                 UserService.profile || UserService.getUserById(/* currentUser */)
