@@ -32,12 +32,27 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
 
 exports.deleteProfile = functions.firestore.document( 'Users/{user}' )
 .onDelete(( doc, context) => {
+
+    // Get all users who have this user listed as a buddy
+    const cleanContactLists = firestore.collection( 'Users' ).where( 'buds', 'array-contains', context.params.user ).get()
+    .then( results => {
+        let batch = firestore.batch()
+
+        // remove this user from each user's contact list
+        results.forEach( doc => {
+            batch = batch.delete( doc.ref.collection( 'ContactList' ).doc( context.params.user ) )
+        })
+
+        return batch.commit()
+    })
+    
     return Promise.all([
         firestore.doc( 'Statistics/UserCount' ).set({
             count: admin.firestore.FieldValue.increment( -1 )
          }, { merge: true }),
         deleteCollection( `Users/${context.params.user}/ContactList` ),
-        deleteCollection( `Users/${context.params.user}/ContactMethods` )
+        deleteCollection( `Users/${context.params.user}/ContactMethods` ),
+        cleanContactLists
     ])
 })
 
