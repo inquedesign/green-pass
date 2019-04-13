@@ -10,21 +10,21 @@ import com.reactnativenavigation.react.ReactGateway;
 
 import io.invertase.firebase.RNFirebasePackage;
 // optional packages - add/remove as appropriate
-import io.invertase.firebase.admob.RNFirebaseAdMobPackage;
-import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage;
+//import io.invertase.firebase.admob.RNFirebaseAdMobPackage;
+//import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage;
 import io.invertase.firebase.auth.RNFirebaseAuthPackage;
-import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage;
-import io.invertase.firebase.database.RNFirebaseDatabasePackage;
-import io.invertase.firebase.fabric.crashlytics.RNFirebaseCrashlyticsPackage;
+//import io.invertase.firebase.config.RNFirebaseRemoteConfigPackage;
+//import io.invertase.firebase.database.RNFirebaseDatabasePackage;
+//import io.invertase.firebase.fabric.crashlytics.RNFirebaseCrashlyticsPackage;
 import io.invertase.firebase.firestore.RNFirebaseFirestorePackage;
 import io.invertase.firebase.functions.RNFirebaseFunctionsPackage;
-import io.invertase.firebase.instanceid.RNFirebaseInstanceIdPackage;
-import io.invertase.firebase.invites.RNFirebaseInvitesPackage;
+//import io.invertase.firebase.instanceid.RNFirebaseInstanceIdPackage;
+//import io.invertase.firebase.invites.RNFirebaseInvitesPackage;
 import io.invertase.firebase.links.RNFirebaseLinksPackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
-import io.invertase.firebase.perf.RNFirebasePerformancePackage;
-import io.invertase.firebase.storage.RNFirebaseStoragePackage;
+//import io.invertase.firebase.perf.RNFirebasePerformancePackage;
+//import io.invertase.firebase.storage.RNFirebaseStoragePackage;
 
 import java.util.Arrays;
 import java.util.List;

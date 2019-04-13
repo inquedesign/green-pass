@@ -12,7 +12,7 @@
         "ios:iphone6splus": "react-native run-ios --simulator='iPhone 6s Plus'",
         "ios:iphoneX": "react-native run-ios --simulator='iPhone X'",
         "ios:iphoneXSmax": "react-native run-ios --simulator='iPhone XS Max'",
-        "bundle:android": "cd android && ./gradlew assembleRelease",
+        "bundle:android": "cd android && ./gradlew app:assembleRelease",
         "bundle:ios": "react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios",
         "metro": "react-native start",
         "metro:clear-cache": "watchman watch-del-all && react-native start --reset-cache",
