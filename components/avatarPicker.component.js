@@ -42,7 +42,7 @@ export default class AvatarPicker extends React.PureComponent {
     getAvatarList( gender ) {
         if ( gender == 'male' ) this.avatars = AVATARS.male
         else if ( gender == 'female' ) this.avatars = AVATARS.female
-        else this.avatars = Object.assign( {}, AVATARS.male, AVATARS.female )
+        else this.avatars = AVATARS.all
     }
 
     selectAvatar( avatar ) {
