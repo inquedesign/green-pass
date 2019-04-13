@@ -16,7 +16,7 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
     let tasks = []
 
     // Updates won't happen, because security rule prevents it, so handle add/remove
-    if ( change.after.exists ) { // Added
+    if ( change.after.exists && !change.before.exists ) { // Added
         data = { buds: admin.firestore.FieldValue.arrayUnion( context.params.contact ) }
 
         tasks.push(

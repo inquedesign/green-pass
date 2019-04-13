@@ -39,10 +39,12 @@ export default class BudsScreen extends React.Component {
         .then( results => {
             this.sortBudsAndRequests( results[0], results[1] )
         })
+
         this.budsListener = UserService.addBudsListener( results => {
             this.setState({ buds: results })
             if ( UserService.profile ) this.sortBudsAndRequests( results, UserService.profile )
         })
+
         this.profileListener = UserService.addProfileListener( null, profile => {
             if ( this.state.buds ) this.sortBudsAndRequests( this.state.buds, profile )
         })

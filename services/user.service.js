@@ -30,12 +30,11 @@ function logout() {
     NotificationService.cancelNotifications()
     NotificationService.unsubscribePushNotifications()
 
+    clearProfile.call(this)
+    clearBuds.call(this)
+    clearSocials.call(this)
+
     return AUTH.signOut()
-    .then(() => {
-        clearProfile.call(this)
-        clearBuds.call(this)
-        clearSocials.call(this)
-    })
 }
 
 function clearProfile() {
@@ -84,8 +83,6 @@ function watchProfile() {
             }
         )
     }
-
-    return Promise.resolve( this._profile )
 }
 
 function getProfileData( docref ) {
@@ -149,7 +146,10 @@ class UserServiceClass {
     refresh() {
         if ( AUTH.currentUser ) {
             return AUTH.currentUser.reload()
-            .then(() => { return AUTH.currentUser })
+            .then(() => {
+                watchProfile.call( this )
+                return AUTH.currentUser
+            })
             .catch( error => { return null })
         }
         return Promise.resolve( AUTH.currentUser )
