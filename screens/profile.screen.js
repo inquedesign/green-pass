@@ -54,7 +54,14 @@ export default class ProfileScreen extends React.PureComponent {
                 this.setUserData({ ...results[0], currentUser: results[1] })
 
                 this.profileWatcher = UserService.addProfileListener( null, profile => {
-                    this.setState({ currentUser: profile })
+//                    if ( profile && this.state.currentUser ) {
+//                        newBudListContainsUser = profile.buds && profile.buds.includes( this.state.id )
+//                        oldBudListContainsUser = this.state.currentUser.buds && this.state.currentUser.buds.includes( this.state.id )
+//                        if (( newBudListContainsUser && !oldBudListContainsUser ) || ( !newBudListContainsUser && oldBudListContainsUser )) {
+//                            this.setState({ disableButtons: false })
+//                        }
+//                    }
+                    this.setState({ currentUser: profile, disableButtons: false })
                 })
 
                 this.userWatcher = UserService.addProfileListener( this.props.userId, profile => {
@@ -131,16 +138,23 @@ export default class ProfileScreen extends React.PureComponent {
             gender: data.gender,
             avatar: data.avatar,
             buds: data.buds,
-            currentUser: data.currentUser ? data.currentUser : this.state.currentUser
+            currentUser: data.currentUser ? data.currentUser : this.state.currentUser,
+            disableButtons: false
         })
     }
 
     addBud() {
-        if ( !this.isOwnProfile ) UserService.addBud( this.state.id )
+        if ( !this.isOwnProfile ) {
+            this.setState({ disableButtons: true })
+            UserService.addBud( this.state.id )
+        }
     }
 
     removeBud() {
-        if ( !this.isOwnProfile ) UserService.removeBud( this.state.id )
+        if ( !this.isOwnProfile ) {
+            this.setState({ disableButtons: true })
+            UserService.removeBud( this.state.id )
+        }
     }
 
     activateLink( service ) {
@@ -266,12 +280,16 @@ export default class ProfileScreen extends React.PureComponent {
                             budRequestReceived ? 
                             'Accept Bud Request' : 'Become Buds'
                         }
+                        disabled={ this.state.disableButtons }
                         accessibilityLabel='Become buds with this user'
-                        onPress={ this.addBud.bind(this) } />,
+                        onPress={ () => {
+                            this.addBud()
+                        }} />,
                     !budRequestSent && budRequestReceived &&
                     <Button style={ STYLES.spaceBefore }
                         key='budbutton2'
                         label='Decline Bud Request'
+                        disabled={ this.state.disableButtons }
                         accessibilityLabel="Don't become buds with this user"
                         onPress={ this.removeBud.bind(this) } />,
                     budRequestSent &&
@@ -281,8 +299,11 @@ export default class ProfileScreen extends React.PureComponent {
                             budRequestReceived ?
                             'Stop Being Buds' : 'Cancel Bud Request'
                         }
+                        disabled={ this.state.disableButtons }
                         accessibilityLabel="Stop being buds with this user"
-                        onPress={ this.removeBud.bind(this) } />
+                        onPress={ () => {
+                            this.removeBud()
+                        }} />
                 ]}
             </Container>
         )
