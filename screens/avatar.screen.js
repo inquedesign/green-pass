@@ -39,6 +39,7 @@ export default class AvatarScreen extends React.PureComponent {
                     Choose someone who represents you.
                 </Text>
                 <AvatarPicker style={ STYLES.spaceAfter }
+                    gender={ UserService.profile.gender }
                     onChangeAvatar={( avatar ) => { this.avatar = avatar }}/>
                 <Button
                     label="Continue"

@@ -208,6 +208,7 @@ export default class ProfileScreen extends React.PureComponent {
                 { this.isOwnProfile &&
                 <AvatarPicker style={ STYLES.spaceAfter }
                     default={ this.state.avatar }
+                    gender={ this.state.gender }
                     onChangeAvatar={ this.onChangeAvatar.bind(this) }/>
                 }
 
