@@ -225,7 +225,7 @@ class UserServiceClass {
         })
     }
 
-    getUserByUsername( searchString ) {
+    getUserByUsername( searchString, callback ) {
         if ( !AUTH.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
@@ -233,9 +233,8 @@ class UserServiceClass {
         }
 
         return USERS.where( 'username', '==', searchString )
-        .get()
-        .then(( results ) => {
-            return userDataFrom( results )
+        .onSnapshot( results => {
+            callback( userDataFrom( results ) )
         })
     }
 

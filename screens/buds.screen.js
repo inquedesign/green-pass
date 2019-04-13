@@ -53,6 +53,7 @@ export default class BudsScreen extends React.Component {
     componenWillUnmount() {
         if ( this.budsListener    ) UserService.unsubscribe( this.budsListener )
         if ( this.profileListener ) UserService.unsubscribe( this.profileListener )
+        if ( this.searchListener  ) this.searchListener()
     }
 
     sortBudsAndRequests( results, profile ) {
@@ -66,11 +67,12 @@ export default class BudsScreen extends React.Component {
     }
 
     search( searchString ) {
+        if ( this.searchListener ) this.searchListener()
+
         if ( searchString.length > 0 ) {
             this.setState({ searchMode: true })
 
-            UserService.getUserByUsername( searchString )
-            .then(( results ) => {
+            this.searchListener = UserService.getUserByUsername( searchString, results => {
                 this.setState({
                     searchResults: results.length > 0 ? [{
                         title: 'Results',
