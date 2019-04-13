@@ -3,8 +3,7 @@ import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
 import { Navigation  } from 'react-native-navigation'
-import { StyleSheet,
-         View        } from 'react-native'
+import { StyleSheet  } from 'react-native'
 import { Text,
          TextInput,
          Button,
@@ -132,4 +131,4 @@ const LOCAL_STYLES = StyleSheet.create({
     socialButton: {
         width: COMPONENT_HEIGHT
     }
-});
+})

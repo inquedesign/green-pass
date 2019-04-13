@@ -3,13 +3,11 @@ import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
 import { Navigation   } from 'react-native-navigation'
-import { View         } from 'react-native'
 import { Text,
          Button,
          Container,
          AvatarPicker } from '../components'
-import { STYLES,
-         COLORS       } from '../styles'
+import { STYLES       } from '../styles'
 import { SCREENS      } from '../util/constants'
 
 
@@ -34,18 +32,18 @@ export default class AvatarScreen extends React.PureComponent {
     render() {
         return (
             <Container>
-                    <Text style={ STYLES.header }>
-                        My Avatar
-                    </Text>
-                    <Text style={ STYLES.spaceAfter }>
-                        Choose someone who represents you.
-                    </Text>
-                    <AvatarPicker style={ STYLES.spaceAfter }
-                        onChangeAvatar={( avatar ) => { this.avatar = avatar }}/>
-                    <Button
-                        label="Continue"
-                        accessibilityLabel="Submit your avatar"
-                        onPress={ this.onSubmit.bind(this) }/>
+                <Text style={ STYLES.header }>
+                    My Avatar
+                </Text>
+                <Text style={ STYLES.spaceAfter }>
+                    Choose someone who represents you.
+                </Text>
+                <AvatarPicker style={ STYLES.spaceAfter }
+                    onChangeAvatar={( avatar ) => { this.avatar = avatar }}/>
+                <Button
+                    label="Continue"
+                    accessibilityLabel="Submit your avatar"
+                    onPress={ this.onSubmit.bind(this) }/>
             </Container>
         )
     }

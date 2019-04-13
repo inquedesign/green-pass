@@ -2,14 +2,12 @@ import React       from 'react'
 import UserService from '../services/user.service'
 
 import { Navigation       } from 'react-native-navigation'
-import { StyleSheet,
-         View             } from 'react-native'
+import { StyleSheet       } from 'react-native'
 import { Text,
          TextInput,
          Button,
          Container        } from '../components'
 import { STYLES,
-         VH,
          COMPONENT_HEIGHT } from '../styles'
 import { SOCIAL_ICONS     } from '../util/constants'
 import { MAIN_LAYOUT      } from '../layouts'

@@ -3,7 +3,6 @@ import splash      from 'react-native-splash-screen'
 import UserService from '../services/user.service'
 
 import { Navigation } from 'react-native-navigation'
-import { View       } from 'react-native'
 import { Text,
          Button,
          DatePicker,

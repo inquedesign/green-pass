@@ -1,7 +1,6 @@
 import React from 'react'
 
 import { Navigation  } from 'react-native-navigation'
-import { View        } from 'react-native'
 import { Text,
          Button,
          Container  } from '../components'

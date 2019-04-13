@@ -11,8 +11,7 @@ import { ImageBackground,
 import { Text,
          TextInput,
          Button,
-         Container,
-         Modal            } from '../components'
+         Container        } from '../components'
 import { STYLES,
          COLORS,
          FONT_SIZES,

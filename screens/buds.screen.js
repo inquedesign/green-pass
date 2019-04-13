@@ -176,7 +176,7 @@ export default class BudsScreen extends React.Component {
     }
 }
 
-const LOCAL_STYLES = {
+const LOCAL_STYLES = StyleSheet.create({
     container: {
         justifyContent: 'flex-start'
     },
@@ -221,4 +221,4 @@ const LOCAL_STYLES = {
         borderWidth: 1,
         borderColor: COLORS.SECONDARY
     }
-}
+})
