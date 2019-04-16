@@ -36,7 +36,7 @@ export default class DatePicker extends React.PureComponent {
                 style={[ { width: '100%' }, this.props.style ]}
                 customStyles={ DEFAULTS }
                 mode='date'
-                placeholder='Select year of birth'
+                placeholder='Select birthday'
                 format='MM-DD-YYYY'
                 minDate={ this.minDate }
                 maxDate={ this.maxDate }

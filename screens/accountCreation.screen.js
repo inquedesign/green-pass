@@ -86,6 +86,9 @@ export default class AccountCreationScreen extends React.PureComponent {
                 <Text style={ STYLES.header }>
                     Account Creation
                 </Text>
+                <Text style={ STYLES.spaceAfter }>
+                    Please use a real email for password retrieval.
+                </Text>
                 <TextInput style={[ STYLES.spaceAfter, {color: this.state.emailColor} ]}
                     accessibilityLabel="Enter your email"
                     placeholder='E-mail'
