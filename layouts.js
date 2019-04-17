@@ -45,18 +45,18 @@ export const MAIN_LAYOUT = {
                         }
                     }
                 }
-            },
-            {
-                component: {
-                    name: SCREENS.EXPLORE_SCREEN,
-                    options: {
-                        bottomTab: {
-                            icon: require('./assets/icons/Explore.png'),
-                            text: 'EXPLORE'
-                        }
-                    }
-                }
-            }
+            }//,
+            //{
+            //    component: {
+            //        name: SCREENS.EXPLORE_SCREEN,
+            //        options: {
+            //            bottomTab: {
+            //                icon: require('./assets/icons/Explore.png'),
+            //                text: 'EXPLORE'
+            //            }
+            //        }
+            //    }
+            //}
         ],
         options: {
             bottomTabs: {

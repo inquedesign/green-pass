@@ -9,7 +9,7 @@ import ContactInfoScreen     from './screens/contactInfo.screen'
 import TermsOfServiceScreen  from './screens/termsOfService.screen'
 import ProfileScreen         from './screens/profile.screen' 
 import BudsScreen            from './screens/buds.screen'
-import ExploreScreen         from './screens/explore.screen'
+//import ExploreScreen         from './screens/explore.screen'
 import SettingsScreen        from './screens/settings.screen'
 import UserService           from './services/user.service'
 import NotificationService   from './services/notification.service'
@@ -33,7 +33,7 @@ Navigation.registerComponent( SCREENS.CONTACT_INFO_SCREEN, () => ContactInfoScre
 Navigation.registerComponent( SCREENS.TERMS_OF_SERVICE_SCREEN, () => TermsOfServiceScreen )
 Navigation.registerComponent( SCREENS.PROFILE_SCREEN, () => ProfileScreen )
 Navigation.registerComponent( SCREENS.BUDS_SCREEN, () => BudsScreen )
-Navigation.registerComponent( SCREENS.EXPLORE_SCREEN, () => ExploreScreen )
+//Navigation.registerComponent( SCREENS.EXPLORE_SCREEN, () => ExploreScreen )
 Navigation.registerComponent( SCREENS.SETTINGS_SCREEN, () => SettingsScreen )
 
 //import firebase from 'react-native-firebase'
