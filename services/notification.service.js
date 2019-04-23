@@ -12,6 +12,9 @@ const BONG_HIT      = 'bonghit.wav'
 
 let unsubscribeTokenListener = null
 
+const BUD  = 'budRequest'
+const ICON = 'launcher_icon'
+
 function setToken( token ) {
     if ( !auth.currentUser.uid ) return
     pushTokens.doc( auth.currentUser.uid ).set({
@@ -67,15 +70,26 @@ export default class NotificationService {
             .setSound( BONG_HIT )
             if ( Platform.OS === 'android' ) {
                 notifications().android.createChannel( 
+                    new notifications.Android.Channel( BUD, BUD, notifications.Android.Importance.Default )
+                    .setSound( 'default' )
+                )
+                notifications().android.createChannel( 
                     new notifications.Android.Channel( '420', '420', notifications.Android.Importance.Default )
                     .setSound( BONG_HIT )
                 )
                 its420.android.setChannelId( '420' )
+                its420.android.setSmallIcon( ICON )
             }
 
             notifications().onNotification( notification => {
                 if ( notification.notificationId === '420' ) notification.setSound( BONG_HIT )
-                else notification.setSound( 'default' )
+                else {
+                    if ( Platform.OS === 'android' ) {
+                        notification.android.setChannelId( BUD )
+                        notification.android.setSmallIcon( ICON )
+                    }
+                    notification.setSound( 'default' )
+                }
                 notifications().displayNotification( notification )
             })
 
