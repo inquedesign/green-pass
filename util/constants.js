@@ -11,7 +11,8 @@ export const SCREENS = {
     PROFILE_SCREEN          : 'ProfileScreen',
     BUDS_SCREEN             : 'BudsScreen',
     EXPLORE_SCREEN          : 'ExploreScreen',
-    SETTINGS_SCREEN         : 'SettingsScreen'
+    SETTINGS_SCREEN         : 'SettingsScreen',
+    DISCLAIMER_SCREEN       : 'DisclaimerScreen'
 }
 
 export const SOCIAL_ICONS = {
@@ -23,3 +24,5 @@ export const SOCIAL_ICONS = {
     instagram: require('../assets/icons/Instagram.png'),
     text     : require('../assets/icons/Text.png'),
 }
+
+export const SKIP_DISCLAIMER = 'SKIP_DISCLAIMER'

@@ -11,11 +11,6 @@ import SplashScreen from 'react-native-splash-screen'
 
 
 export default class StartScreen extends React.PureComponent {
-    constructor() {
-        super()
-        this.state = {}
-    }
-
     componentDidMount() {
         SplashScreen.hide()
     }

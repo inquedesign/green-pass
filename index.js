@@ -11,16 +11,19 @@ import ProfileScreen         from './screens/profile.screen'
 import BudsScreen            from './screens/buds.screen'
 //import ExploreScreen         from './screens/explore.screen'
 import SettingsScreen        from './screens/settings.screen'
+import DisclaimerScreen      from './screens/disclaimer.screen'
 import UserService           from './services/user.service'
 import NotificationService   from './services/notification.service'
 
-import { Navigation     } from 'react-native-navigation'
-import { SCREENS        } from './util/constants'
+import { AsyncStorage  } from 'react-native'
+import { Navigation    } from 'react-native-navigation'
+import { SCREENS,
+         SKIP_DISCLAIMER } from './util/constants'
 import { COLORS,
-         FONT_SIZES     } from './styles'
+         FONT_SIZES    } from './styles'
 import { MAIN_LAYOUT,
          initialLayout } from './layouts'
-import { AVATARS        } from './util/avatars'
+import { AVATARS       } from './util/avatars'
 
 Navigation.registerComponent( SCREENS.START_SCREEN, () => StartScreen )
 Navigation.registerComponent( SCREENS.ACCOUNT_CREATION_SCREEN, () => AccountCreationScreen )
@@ -35,6 +38,7 @@ Navigation.registerComponent( SCREENS.PROFILE_SCREEN, () => ProfileScreen )
 Navigation.registerComponent( SCREENS.BUDS_SCREEN, () => BudsScreen )
 //Navigation.registerComponent( SCREENS.EXPLORE_SCREEN, () => ExploreScreen )
 Navigation.registerComponent( SCREENS.SETTINGS_SCREEN, () => SettingsScreen )
+Navigation.registerComponent( SCREENS.DISCLAIMER_SCREEN, () => DisclaimerScreen )
 
 //import firebase from 'react-native-firebase'
 
@@ -43,7 +47,13 @@ Navigation.events().registerAppLaunchedListener(() => {
 
     UserService.refresh()
     .then( currentUser => {
-        if ( !currentUser ) return initialLayout( SCREENS.START_SCREEN )
+        if ( !currentUser ) {
+            return AsyncStorage.getItem( SKIP_DISCLAIMER )
+            .then( skipDisclaimer => {
+                if ( skipDisclaimer ) return initialLayout( SCREENS.START_SCREEN )
+                else return initialLayout( SCREENS.DISCLAIMER_SCREEN )
+            })
+        }
 
         NotificationService.cancelNotifications()
         .then(() => {
