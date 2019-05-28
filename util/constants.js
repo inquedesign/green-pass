@@ -1,4 +1,5 @@
 export const SCREENS = {
+    ROOT_SCREEN             : 'RootScreen',
     START_SCREEN            : 'StartScreen',
     ACCOUNT_CREATION_SCREEN : 'AccountCreationScreen',
     LOGIN_SCREEN            : 'LoginScreen',
@@ -12,7 +13,8 @@ export const SCREENS = {
     BUDS_SCREEN             : 'BudsScreen',
     EXPLORE_SCREEN          : 'ExploreScreen',
     SETTINGS_SCREEN         : 'SettingsScreen',
-    DISCLAIMER_SCREEN       : 'DisclaimerScreen'
+    DISCLAIMER_SCREEN       : 'DisclaimerScreen',
+    PASSWORD_RESET_SCREEN   : 'PasswordResetScreen'
 }
 
 export const SOCIAL_ICONS = {

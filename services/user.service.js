@@ -2,6 +2,7 @@ import React               from 'react'
 import firebase            from 'react-native-firebase'
 import NotificationService from './notification.service'
 
+import { Platform      } from 'react-native'
 import { Navigation    } from 'react-native-navigation'
 import { initialLayout } from '../layouts'
 import { SCREENS       } from '../util/constants'
@@ -12,8 +13,10 @@ const FIRESTORE = firebase.firestore()
 const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
 const FUNCTIONS = firebase.functions()
+const LINKS     = firebase.links()
 
 let authListener = null
+let linkListener = null
 
 function login( credentials ) {
 //    authListener = AUTH.onUserChanged( something => {
@@ -116,6 +119,24 @@ function getAge( birthDateString ) {
     }
 
     return age
+}
+
+function processLink( url ) {
+    if ( !url ) return;
+    if ( !/mode=resetPassword/.test( url ) ) return;
+
+    const email = url.replace( /.*https:\/\/greenpass.page.link\/reset\/([^&]+).*/, '$1' )
+    const code  = url.replace( /.*oobCode=([^&]+).*/, '$1' )
+
+    Navigation.push( SCREENS.ROOT_SCREEN, {
+        component: {
+            name: SCREENS.PASSWORD_RESET_SCREEN,
+            passProps: {
+                email: email,
+                verificationCode: code
+            }
+        }
+    })
 }
 
 
@@ -410,6 +431,28 @@ class UserServiceClass {
         .commit()
     }
     
+    sendPasswordResetEmail( email ) {
+        return AUTH.sendPasswordResetEmail( email, {
+            url: `https://greenpass.page.link/reset/${email}`,
+            android: { packageName: 'com.alopexinteractiondesign.greenpass', installApp: true },
+            iOS: { bundleId: 'com.alopexinteractiondesign.greenpass' },
+            handleCodeInApp: true
+        })
+    }
+    
+    resetPassword( verificationCode, password ) {
+        return AUTH.confirmPasswordReset( verificationCode, password )
+    }
+    
+    handleDeepLinking() {
+        if ( linkListener ) return
+
+        if ( Platform.OS === 'android' ) {
+            LINKS.getInitialLink().then( processLink )
+        }
+
+        linkListener = LINKS.onLink( processLink )
+    }
     // facebookLogin() {
     //    return LoginManager.logInWithReadPermissions(['public_profile', 'email'])
     //    .then( result => {

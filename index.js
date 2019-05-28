@@ -12,6 +12,7 @@ import BudsScreen            from './screens/buds.screen'
 //import ExploreScreen         from './screens/explore.screen'
 import SettingsScreen        from './screens/settings.screen'
 import DisclaimerScreen      from './screens/disclaimer.screen'
+import PasswordResetScreen   from './screens/passwordReset.screen'
 import UserService           from './services/user.service'
 import NotificationService   from './services/notification.service'
 
@@ -39,10 +40,13 @@ Navigation.registerComponent( SCREENS.BUDS_SCREEN, () => BudsScreen )
 //Navigation.registerComponent( SCREENS.EXPLORE_SCREEN, () => ExploreScreen )
 Navigation.registerComponent( SCREENS.SETTINGS_SCREEN, () => SettingsScreen )
 Navigation.registerComponent( SCREENS.DISCLAIMER_SCREEN, () => DisclaimerScreen )
+Navigation.registerComponent( SCREENS.PASSWORD_RESET_SCREEN, () => PasswordResetScreen )
 
 //import firebase from 'react-native-firebase'
 
 Navigation.events().registerAppLaunchedListener(() => {
+    UserService.handleDeepLinking()
+
     NotificationService.onNotificationLaunchedApp()
 
     UserService.refresh()

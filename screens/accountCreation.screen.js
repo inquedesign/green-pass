@@ -12,6 +12,7 @@ import { STYLES,
          COLORS,
          COMPONENT_HEIGHT } from '../styles'
 import { SCREENS          } from '../util/constants'
+import { validatePassword } from '../util/validatePassword'
 
 
 export default class AccountCreationScreen extends React.PureComponent {
@@ -61,23 +62,25 @@ export default class AccountCreationScreen extends React.PureComponent {
         return /^.+@.+(\..+)+$/.test( this.state.email )
     }
 
-    passwordIsValid() {
-        return ((this.state.password === this.state.pconfirm) && (this.state.password.length > 5))
-    }
-
     onSubmit() {
-        if ( this.emailIsValid() && this.passwordIsValid() ) {
-            UserService.createAccount(this.state.email, this.state.password)
-            .then( credentials => {
-                Navigation.push(this.props.componentId, {
-                    component: { name: SCREENS.GENDER_SCREEN }
-                })
-            })
-            .catch( error => {
-                alert( "Error: " + error.message )
-            })
+        if ( !this.emailIsValid() ) {
+            alert( 'Invalid email' )
+            return
         }
-        else alert( 'Invalid email or password' )
+
+        validatePassword( this.state.password, this.state.pconfirm )
+        .then(() => {
+            return UserService.createAccount(this.state.email, this.state.password)
+        })
+        .then( credentials => {
+            Navigation.push(this.props.componentId, {
+                component: { name: SCREENS.GENDER_SCREEN }
+            })
+        })
+        .catch( error => {
+            if ( error.message ) alert( error.message )
+            else alert( error )
+        })
     }
 
     render() {
