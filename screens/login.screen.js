@@ -23,15 +23,38 @@ export default class LoginScreen extends React.PureComponent {
             password: ''
         }
     }
+
     componentDidMount() {
         SplashScreen.hide()
     }
 
     onSubmit() {
+        if ( this.state.email === '' || this.state.password === '' ) {
+            alert( "Email and password are required." )
+            return
+        }
+
         UserService.login(this.state.email, this.state.password)
         .then( this.goToProfile )
         .catch( error => {
             alert( "Error: " + error.message )
+        })
+    }
+    
+    onSendResetEmail() {
+        UserService.sendPasswordResetEmail( this.state.email )
+        .then(() => {
+            alert( 'Reset email was sent. Check you inbox for a password reset link.' )
+        })
+        .catch( error => {
+            switch ( error.code ) {
+                case 'auth/invalid-email':
+                    alert( 'You need to enter a valid email to reset password' )
+                    break
+                case 'auth/user-not-found':
+                    alert( 'Cannot find user associated with that email' )
+                    break
+            }
         })
     }
     
@@ -79,6 +102,11 @@ export default class LoginScreen extends React.PureComponent {
                     label="Go"
                     accessibilityLabel="Submit e-mail and password"
                     onPress={ this.onSubmit.bind(this) } />
+
+                <Button style={ STYLES.spaceAfter }
+                    label="Reset Password"
+                    accessibilityLabel="Reset your password"
+                    onPress={ this.onSendResetEmail.bind(this) } />
 
                 { false && // Not currently implemented
                 <Text style={ STYLES.header }>

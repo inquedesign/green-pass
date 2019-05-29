@@ -104,7 +104,7 @@ export default class NotificationService {
                         }
                     })
                     .then(() => {
-                        Navigation.mergeOptions( 'bottomtabs', {
+                        Navigation.mergeOptions( SCREENS.ROOT_SCREEN, {
                             bottomTabs: {
                                 currentTabIndex: 1
                             }

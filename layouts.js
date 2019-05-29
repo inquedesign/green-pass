@@ -3,6 +3,7 @@ import { SCREENS } from './util/constants'
 export function initialLayout( startingScreen ) {
     return {
         stack: {
+            id: SCREENS.ROOT_SCREEN,
             children: [
                 { component: { name: startingScreen } }
             ]
@@ -12,7 +13,7 @@ export function initialLayout( startingScreen ) {
 
 export const MAIN_LAYOUT = {
     bottomTabs: {
-        id: 'bottomtabs',
+        id: SCREENS.ROOT_SCREEN,
         children: [
             {
                 stack: {
