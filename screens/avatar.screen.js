@@ -14,9 +14,15 @@ import { SCREENS      } from '../util/constants'
 export default class AvatarScreen extends React.PureComponent {
     constructor( props ) {
         super( props )
+        
+        this.state = { gender: 'person' }
     }
 
     componentDidMount() {
+        UserService.getProfile().then( profile => {
+            this.setState({ gender: profile.gender })
+        })
+
         splash.hide()
     }
 
@@ -39,7 +45,7 @@ export default class AvatarScreen extends React.PureComponent {
                     Choose someone who represents you.
                 </Text>
                 <AvatarPicker style={ STYLES.spaceAfter }
-                    gender={ UserService.profile.gender }
+                    gender={ this.state.gender }
                     onChangeAvatar={( avatar ) => { this.avatar = avatar }}/>
                 <Button
                     label="Continue"

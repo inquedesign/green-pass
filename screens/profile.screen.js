@@ -24,7 +24,7 @@ import { AVATARS      } from '../util/avatars'
 import SplashScreen from 'react-native-splash-screen'
 
 
-export default class ProfileScreen extends React.PureComponent {
+export default class ProfileScreen extends React.Component {
 
     constructor( props ) {
         super( props )
@@ -37,69 +37,47 @@ export default class ProfileScreen extends React.PureComponent {
             age: null,
             gender: null,
             avatar: null,
-            buds: null,
             contactMethods: null,
-            currentUser: null
+            buds: null,
+            budRequest: null,
+            disableButtons: false
         }
+        
+        this.onUpdate = this.onUpdate.bind( this )
     }
 
     componentDidMount() {
-        if ( this.props.userId && ( this.props.userId !== UserService.currentUser.uid ) ) {
-            Promise.all([
-                UserService.getUserById( this.props.userId ),
-                UserService.profile || UserService.getUserById(/* currentUser */)
-            ])
-            .then( results => {
-                this.isOwnProfile = false
-                this.setUserData({ ...results[0], currentUser: results[1] })
-
-                this.profileWatcher = UserService.addProfileListener( null, profile => {
-//                    if ( profile && this.state.currentUser ) {
-//                        newBudListContainsUser = profile.buds && profile.buds.includes( this.state.id )
-//                        oldBudListContainsUser = this.state.currentUser.buds && this.state.currentUser.buds.includes( this.state.id )
-//                        if (( newBudListContainsUser && !oldBudListContainsUser ) || ( !newBudListContainsUser && oldBudListContainsUser )) {
-//                            this.setState({ disableButtons: false })
-//                        }
-//                    }
-                    this.setState({ currentUser: profile, disableButtons: false })
-                })
-
-                this.userWatcher = UserService.addProfileListener( this.props.userId, profile => {
-                    if ( profile ) this.setUserData( profile )
-                    else Navigation.pop( this.props.componentId )
-                })
-                
-                if (
-                    results[1].buds && results[1].buds.includes( results[0].id ) &&
-                    results[0].buds && results[0].buds.includes( results[1].id )
-                ) {
-                    this.contactMethodsWatcher = UserService.getContactMethods(
-                        this.props.userId,
-                        contactMethods => {
-                            this.setState({ contactMethods: contactMethods })
-                        }
-                    )
-                }
+        if ( this.props.user && ( this.props.user.id !== UserService.currentUser.uid ) ) {
+            this.isOwnProfile = false
+            this.setUserData( this.props.user )
+            this.setState({
+                contactMethods: this.props.contactMethods,
+                budRequest    : this.props.request,
+                buds          : this.props.buds
             })
+
+            this.profileWatcher = UserService.addProfileListener( this.props.user.id, this.onUpdate )
         }
         else { // Get current user's profile
-            if ( UserService.profile ) {
-                this.setUserData( UserService.profile )
-            }
-            else {
-                UserService.getUserById(/* current user */)
-                .then( profile => {
-                    this.setUserData( profile )
-                })
-            }
+            this.isOwnProfile = true
 
-            this.profileWatcher = UserService.addProfileListener( null, profile => {
+            UserService.getProfile()
+            .then( profile => {
                 this.setUserData( profile )
             })
+            .catch( error => {
+                console.error( JSON.stringify( error, null, 4 ) )
+            })
 
-            this.contactMethodsWatcher = UserService.getContactMethods( null, contactMethods => {
+            UserService.getContactMethods(/* Current User */)
+            .then( contactMethods => {
                 this.setState({ contactMethods: contactMethods })
             })
+            .catch( error => {
+                console.error( JSON.stringify( error, null, 4 ) )
+            })
+
+            this.profileWatcher = UserService.addProfileListener( null, this.onUpdate )
 
             Navigation.mergeOptions( this.props.componentId, {
                 topBar: {
@@ -118,9 +96,27 @@ export default class ProfileScreen extends React.PureComponent {
     }
     
     componentWillUnmount() {
-        if ( this.profileWatcher        ) UserService.unsubscribe( this.profileWatcher )
-        if ( this.userWatcher           ) UserService.unsubscribe( this.userWatcher )
-        if ( this.contactMethodsWatcher ) UserService.unsubscribe( this.contactMethodsWatcher )
+        if ( this.profileWatcher ) UserService.unsubscribe( this.profileWatcher )
+    }
+
+    onUpdate( profile, contactMethods, buds, request ) {
+        if ( profile ) this.setUserData( profile )
+        if ( contactMethods ) this.setState({
+            contactMethods: Object.assign( {}, this.state.contactMethods, contactMethods )
+        })
+        if ( buds ) {
+            this.setState({
+                budRequest: null,
+                buds: buds,
+                disableButtons: false
+            })
+        }
+        if ( request ) {
+            this.setState({
+                budRequest: request,
+                disableButtons: false
+            })
+        }
     }
 
     navigationButtonPressed({ buttonId }) {
@@ -132,14 +128,11 @@ export default class ProfileScreen extends React.PureComponent {
 
     setUserData( data ) {
         this.setState({
-            id: data.id,
-            username: data.username,
-            age: data.age,
-            gender: data.gender,
-            avatar: data.avatar,
-            buds: data.buds,
-            currentUser: data.currentUser ? data.currentUser : this.state.currentUser,
-            disableButtons: false
+            id      : data.id       || this.state.id,
+            username: data.username || this.state.username,
+            age     : data.age      || this.state.age,
+            gender  : data.gender   || this.state.gender,
+            avatar  : data.avatar   || this.state.avatar,
         })
     }
 
@@ -147,6 +140,9 @@ export default class ProfileScreen extends React.PureComponent {
         if ( !this.isOwnProfile ) {
             this.setState({ disableButtons: true })
             UserService.addBud( this.state.id )
+            //.then(() => {
+            //    this.setState({ disableButtons: false})
+            //})
         }
     }
 
@@ -154,6 +150,9 @@ export default class ProfileScreen extends React.PureComponent {
         if ( !this.isOwnProfile ) {
             this.setState({ disableButtons: true })
             UserService.removeBud( this.state.id )
+            //.then(() => {
+            //    this.setState({ disableButtons: false})
+            //})
         }
     }
 
@@ -193,13 +192,13 @@ export default class ProfileScreen extends React.PureComponent {
     }
 
     render() {
-        let budRequestSent = false
+        let budRequestSent     = false
         let budRequestReceived = false
+        let buds = false
         if ( !this.isOwnProfile ) {
-            budRequestSent     = this.state.currentUser.buds &&
-                                 this.state.currentUser.buds.includes( this.state.id )
-            budRequestReceived = this.state.buds &&
-                                 this.state.buds.includes( this.state.currentUser.id )
+            buds = !!( this.state.buds && this.state.buds.has( this.state.id ) )
+            budRequestSent     = !!( this.state.budRequest && this.state.budRequest.requester !== this.state.id )
+            budRequestReceived = !!( this.state.budRequest && this.state.budRequest.requester === this.state.id )
         }
 
         return (
@@ -226,7 +225,7 @@ export default class ProfileScreen extends React.PureComponent {
                     { this.state.age } year old { this.state.gender }
                 </Text>
 
-                { ( this.isOwnProfile || (budRequestSent && budRequestReceived) ) ?
+                { ( this.isOwnProfile || buds ) ?
                     this.state.contactMethods &&
                     <View style={ LOCAL_STYLES.socialContainer }>
                         {
@@ -274,7 +273,7 @@ export default class ProfileScreen extends React.PureComponent {
                 }
 
                 { !this.isOwnProfile && [
-                    !budRequestSent &&
+                    (!buds && !budRequestSent) &&
                     <Button style={ STYLES.spaceBefore }
                         key='budbutton1'
                         label={
@@ -286,18 +285,18 @@ export default class ProfileScreen extends React.PureComponent {
                         onPress={ () => {
                             this.addBud()
                         }} />,
-                    !budRequestSent && budRequestReceived &&
+                    budRequestReceived &&
                     <Button style={ STYLES.spaceBefore }
                         key='budbutton2'
                         label='Decline Bud Request'
                         disabled={ this.state.disableButtons }
                         accessibilityLabel="Don't become buds with this user"
                         onPress={ this.removeBud.bind(this) } />,
-                    budRequestSent &&
+                    (buds || budRequestSent) &&
                     <Button style={ STYLES.spaceBefore }
                         key='budbutton3'
                         label={
-                            budRequestReceived ?
+                            buds ?
                             'Stop Being Buds' : 'Cancel Bud Request'
                         }
                         disabled={ this.state.disableButtons }

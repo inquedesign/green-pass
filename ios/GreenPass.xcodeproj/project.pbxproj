@@ -36,6 +36,8 @@
 		C20FE901225ADE18007A409A /* launch_image.png in Resources */ = {isa = PBXBuildFile; fileRef = C20FE8FE225ADE18007A409A /* launch_image.png */; };
 		C20FE903225B3154007A409A /* Mega Background.png in Resources */ = {isa = PBXBuildFile; fileRef = C20FE902225B3153007A409A /* Mega Background.png */; };
 		C2106D5622580F3C00ED8867 /* bonghit.wav in Resources */ = {isa = PBXBuildFile; fileRef = C2106D5522580F3C00ED8867 /* bonghit.wav */; };
+		C23D899122B832DA00C7CCDF /* libRNDeviceInfo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C23D898C22B8328D00C7CCDF /* libRNDeviceInfo.a */; };
+		C23D899922BC147100C7CCDF /* libRCTBackgroundGeolocation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C23D899822BC145800C7CCDF /* libRCTBackgroundGeolocation.a */; };
 		C297BD912238BD6600215B03 /* libSplashScreen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C297BD902238BD4900215B03 /* libSplashScreen.a */; };
 		D8683175DA054BC1A87CF5DB /* HWTArtz.otf in Resources */ = {isa = PBXBuildFile; fileRef = F6A7828CE62848C298383476 /* HWTArtz.otf */; };
 		E8644EFDA1C341B0B11D6679 /* Open Sans SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AB8CA5B437B04E8499728B23 /* Open Sans SemiBold.ttf */; };
@@ -301,6 +303,27 @@
 			remoteGlobalIDString = 358F4ED71D1E81A9004DF814;
 			remoteInfo = RCTBlob;
 		};
+		C23D898B22B8328D00C7CCDF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C23D896022B8328C00C7CCDF /* RNDeviceInfo.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = DA5891D81BA9A9FC002B4DB2;
+			remoteInfo = RNDeviceInfo;
+		};
+		C23D898D22B8328D00C7CCDF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C23D896022B8328C00C7CCDF /* RNDeviceInfo.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = E72EC1401F7ABB5A0001BC90;
+			remoteInfo = "RNDeviceInfo-tvOS";
+		};
+		C23D899722BC145800C7CCDF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C23D899222BC145600C7CCDF /* RCTBackgroundGeolocation.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 418F75461D02DC3D0045FEA0;
+			remoteInfo = RCTBackgroundGeolocation;
+		};
 		C297BD8F2238BD4900215B03 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = C297BD632238BD4800215B03 /* SplashScreen.xcodeproj */;
@@ -378,6 +401,8 @@
 		C20FE8FE225ADE18007A409A /* launch_image.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = launch_image.png; path = ../assets/launchScreen/launch_image.png; sourceTree = "<group>"; };
 		C20FE902225B3153007A409A /* Mega Background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Mega Background.png"; path = "../assets/launchScreen/Mega Background.png"; sourceTree = "<group>"; };
 		C2106D5522580F3C00ED8867 /* bonghit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = bonghit.wav; path = ../assets/sounds/bonghit.wav; sourceTree = "<group>"; };
+		C23D896022B8328C00C7CCDF /* RNDeviceInfo.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNDeviceInfo.xcodeproj; path = "../node_modules/react-native-device-info/ios/RNDeviceInfo.xcodeproj"; sourceTree = "<group>"; };
+		C23D899222BC145600C7CCDF /* RCTBackgroundGeolocation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTBackgroundGeolocation.xcodeproj; path = "../node_modules/@mauron85/react-native-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj"; sourceTree = "<group>"; };
 		C297BD632238BD4800215B03 /* SplashScreen.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SplashScreen.xcodeproj; path = "../node_modules/react-native-splash-screen/ios/SplashScreen.xcodeproj"; sourceTree = "<group>"; };
 		F6A7828CE62848C298383476 /* HWTArtz.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = HWTArtz.otf; path = ../assets/fonts/HWTArtz.otf; sourceTree = "<group>"; };
 		FBC8C743C046423C960F2237 /* libRNFirebase.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNFirebase.a; sourceTree = "<group>"; };
@@ -388,6 +413,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C23D899922BC147100C7CCDF /* libRCTBackgroundGeolocation.a in Frameworks */,
+				C23D899122B832DA00C7CCDF /* libRNDeviceInfo.a in Frameworks */,
 				8B738A75225F07800012B43B /* libReactNativeNavigation.a in Frameworks */,
 				8B738A35225EFD340012B43B /* JavaScriptCore.framework in Frameworks */,
 				C297BD912238BD6600215B03 /* libSplashScreen.a in Frameworks */,
@@ -558,6 +585,8 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				C23D899222BC145600C7CCDF /* RCTBackgroundGeolocation.xcodeproj */,
+				C23D896022B8328C00C7CCDF /* RNDeviceInfo.xcodeproj */,
 				8B738A45225F07730012B43B /* ReactNativeNavigation.xcodeproj */,
 				C297BD632238BD4800215B03 /* SplashScreen.xcodeproj */,
 				5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */,
@@ -672,6 +701,23 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		C23D896122B8328C00C7CCDF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C23D898C22B8328D00C7CCDF /* libRNDeviceInfo.a */,
+				C23D898E22B8328D00C7CCDF /* libRNDeviceInfo-tvOS.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C23D899322BC145600C7CCDF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C23D899822BC145800C7CCDF /* libRCTBackgroundGeolocation.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		C297BD642238BD4800215B03 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -715,7 +761,7 @@
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
 						DevelopmentTeam = C8BXK6ZV22;
-						ProvisioningStyle = Manual;
+						ProvisioningStyle = Automatic;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
 								enabled = 1;
@@ -750,6 +796,10 @@
 				{
 					ProductGroup = 5E91572E1DD0AC6500FF2AA8 /* Products */;
 					ProjectRef = 5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */;
+				},
+				{
+					ProductGroup = C23D899322BC145600C7CCDF /* Products */;
+					ProjectRef = C23D899222BC145600C7CCDF /* RCTBackgroundGeolocation.xcodeproj */;
 				},
 				{
 					ProductGroup = ADBDB9201DFEBF0600ED6528 /* Products */;
@@ -794,6 +844,10 @@
 				{
 					ProductGroup = 8B738A46225F07730012B43B /* Products */;
 					ProjectRef = 8B738A45225F07730012B43B /* ReactNativeNavigation.xcodeproj */;
+				},
+				{
+					ProductGroup = C23D896122B8328C00C7CCDF /* Products */;
+					ProjectRef = C23D896022B8328C00C7CCDF /* RNDeviceInfo.xcodeproj */;
 				},
 				{
 					ProductGroup = 8E7D4B111F8AFD6F00699FE4 /* Products */;
@@ -1064,6 +1118,27 @@
 			remoteRef = ADBDB9261DFEBF0700ED6528 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		C23D898C22B8328D00C7CCDF /* libRNDeviceInfo.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRNDeviceInfo.a;
+			remoteRef = C23D898B22B8328D00C7CCDF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		C23D898E22B8328D00C7CCDF /* libRNDeviceInfo-tvOS.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libRNDeviceInfo-tvOS.a";
+			remoteRef = C23D898D22B8328D00C7CCDF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		C23D899822BC145800C7CCDF /* libRCTBackgroundGeolocation.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRCTBackgroundGeolocation.a;
+			remoteRef = C23D899722BC145800C7CCDF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		C297BD902238BD4900215B03 /* libSplashScreen.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -1204,11 +1279,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = GreenPass/GreenPass.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Shaun Bond (K6Y293974W)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
-				DEVELOPMENT_TEAM = C8BXK6ZV22;
+				DEVELOPMENT_TEAM = "";
 				DISPLAY_NAME = GreenPass;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1225,7 +1301,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.alopexinteractiondesign.greenpass;
 				PRODUCT_NAME = GreenPass;
-				PROVISIONING_PROFILE_SPECIFIER = "GreenPass Development";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REACT_HEADERS_PATH = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -1238,11 +1314,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = GreenPass/GreenPass.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Alopex Interaction Design LLC (C8BXK6ZV22)";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = C8BXK6ZV22;
+				DEVELOPMENT_TEAM = "";
 				DISPLAY_NAME = GreenPass;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1259,7 +1336,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.alopexinteractiondesign.greenpass;
 				PRODUCT_NAME = GreenPass;
-				PROVISIONING_PROFILE_SPECIFIER = "GreenPass App Store Distribution";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				REACT_HEADERS_PATH = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";

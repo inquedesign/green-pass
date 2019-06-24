@@ -1,29 +1,48 @@
 import React               from 'react'
 import firebase            from 'react-native-firebase'
+import DeviceInfo          from 'react-native-device-info'
+import BGLocation          from '@mauron85/react-native-background-geolocation'
 import NotificationService from './notification.service'
 
-import { Platform      } from 'react-native'
+import { Platform,
+         AppState      } from 'react-native'
 import { Navigation    } from 'react-native-navigation'
 import { initialLayout } from '../layouts'
 import { SCREENS       } from '../util/constants'
 //import { AccessToken,
 //         LoginManager } from 'react-native-fbsdk';
 
+const uuidv4 = require( 'uuid/v4' )
+
 const FIRESTORE = firebase.firestore()
 const USERS     = FIRESTORE.collection( 'Users' )
 const AUTH      = firebase.auth()
-const FUNCTIONS = firebase.functions()
 const LINKS     = firebase.links()
+const FUNCTIONS = firebase.functions()
+const functions = {
+    registerProfileListener  : FUNCTIONS.httpsCallable( 'registerProfileListener' ),
+    unregisterProfileListener: FUNCTIONS.httpsCallable( 'unregisterProfileListener' ),
+    registerBudListener      : FUNCTIONS.httpsCallable( 'registerBudListener' ),
+    unregisterBudListener    : FUNCTIONS.httpsCallable( 'unregisterBudListener' ),
+    deleteAccount            : FUNCTIONS.httpsCallable( 'deleteAccount' ),
+    getProfile               : FUNCTIONS.httpsCallable( 'getProfile' ),
+    updateProfile            : FUNCTIONS.httpsCallable( 'updateProfile' ),
+    getContactMethods        : FUNCTIONS.httpsCallable( 'getContactMethods' ),
+    updateContactMethods     : FUNCTIONS.httpsCallable( 'updateContactMethods' ),
+    findByUserName           : FUNCTIONS.httpsCallable( 'findByUserName' ),
+    getBuds                  : FUNCTIONS.httpsCallable( 'getBuds' ),
+    getBudRequesters         : FUNCTIONS.httpsCallable( 'getBudRequesters' ),
+    getBudRequest            : FUNCTIONS.httpsCallable( 'getBudRequest' ),
+    addBud                   : FUNCTIONS.httpsCallable( 'addBud' ),
+    removeBud                : FUNCTIONS.httpsCallable( 'removeBud' ),
+    updateLocation           : FUNCTIONS.httpsCallable( 'updateLocation' )
+}
 
 let authListener = null
 let linkListener = null
 
 function login( credentials ) {
-//    authListener = AUTH.onUserChanged( something => {
-//        console.error( JSON.stringify( something, null, 4) )
-//    })
     NotificationService.configureNotifications()
-    watchProfile.call(this)
     return credentials
 }
 
@@ -33,74 +52,43 @@ function logout() {
     NotificationService.cancelNotifications()
     NotificationService.unsubscribePushNotifications()
 
-    clearProfile.call(this)
-    clearBuds.call(this)
-    clearSocials.call(this)
+    clearProfile.call( this )
+    clearBuds.call( this )
+    this._contactMethods = null
+    this._requests       = null
 
     return AUTH.signOut()
 }
 
+// TODO: listeners may change when mechanism for watching database changes
 function clearProfile() {
-    if ( this._profileUnsubscribe ) { 
-        this._profileUnsubscribe()
-        this._profileUnsubscribe = null
-    }
+    this._profileListeners.forEach(( user, userid ) => {
+        unregisterProfileListener( userid )
+    })
     this._profileListeners.clear()
-    this._userListeners.forEach( unsubscribe => unsubscribe() )
-    this._userListeners.clear()
     this._profile = null
 }
 
+// TODO: listeners may change when mechanism for watching database changes
 function clearBuds() {
-    if ( this._budsUnsubscribe ) {
-        this._budsUnsubscribe()
-        this._budsUnsubscribe = null
-    }
+    unregisterBudListener()
     this._budsListeners.clear()
     this._buds = null
 }
 
-function clearSocials() {
-    this._socialListeners.forEach( unsubscribe => unsubscribe() )
-    this._socialListeners.clear()
-}
+function getProfileData( document ) {
+    if ( !document ) return {}
 
-function watchProfile() {
-    if ( !AUTH.currentUser ) {
-        clearProfile.call(this)
-        const error = new Error( 'Not logged in.' )
-        error.name = "NOAUTH"
-        return Promise.reject( error )
-    }
+    if ( document._id ) document.id = document._id
 
-    if ( !this._profileUnsubscribe ) {
-        this._profileUnsubscribe = USERS.doc( AUTH.currentUser.uid ).onSnapshot(
-            docref => {
-                if ( !docref.exists ) return this.logout()
+    if ( document.birthDate ) document.age = getAge( document.birthDate )
 
-                this._profile = getProfileData( docref )
-
-                this._profileListeners.forEach( callback => {
-                    callback( this._profile )
-                })
-            }
-        )
-    }
-}
-
-function getProfileData( docref ) {
-    let age = null
-
-    if ( docref.data() && docref.data().birthDate ) {
-        age = getAge( docref.data().birthDate )
-    }
-
-    return { id: docref.id, age: age, ...docref.data() }
+    return document
 }
 
 function userDataFrom( queryResults ) {
-    return queryResults.docs.map( (docref) => {
-        return getProfileData( docref )
+    return queryResults.map( document => {
+        return getProfileData( document )
     })
 }
 
@@ -139,55 +127,337 @@ function processLink( url ) {
     })
 }
 
+function registerProfileListener( userid ) {
+    FUNCTIONS.httpsCallable( 'registerProfileListener' )({
+        user    : userid,
+        deviceId: DeviceInfo.getUniqueID()
+    })
+    .catch( error => {
+        console.error( JSON.stringify( error, null, 4 ) )
+    })
+}
+
+function unregisterProfileListener( userid ) {
+    FUNCTIONS.httpsCallable( 'unregisterProfileListener' )({
+        user    : userid,
+        deviceId: DeviceInfo.getUniqueID()
+    })
+    .catch( error => {
+        console.error( JSON.stringify( error, null, 4 ) )
+    })
+}
+
+function registerBudListener() {
+    FUNCTIONS.httpsCallable( 'registerBudListener' )({
+        deviceId: DeviceInfo.getUniqueID()
+    })
+    .catch( error => {
+        console.error( JSON.stringify( error, null, 4 ) )
+    })
+}
+
+function unregisterBudListener() {
+    FUNCTIONS.httpsCallable( 'unregisterBudListener' )({
+        deviceId: DeviceInfo.getUniqueID()
+    })
+    .catch( error => {
+        console.error( JSON.stringify( error, null, 4 ) )
+    })
+}
+
+function updateLocation( location, message ) {
+    console.warn( message )
+    if ( !AUTH.currentUser ) return
+    if ( !location.longitude || !location.latitude ) return
+
+    BGLocation.startTask( taskKey => {
+        functions.updateLocation({ lat: location.latitude, lon: location.longitude })
+        .then(() => {
+            console.warn( 'location updated' )
+            BGLocation.endTask( taskKey )
+        })
+    })
+}
+
+const State = {
+    active    : 'active',
+    background: 'background'
+}
 
 class UserServiceClass {
     constructor() {
-        this._profile = null
-        this._buds    = null
-        this._profileUnsubscribe = null
-        this._budsUnsubscribe    = null
-        this._profileListeners   = new Set()
-        this._budsListeners      = new Set()
-        this._userListeners      = new Set()
-        this._socialListeners    = new Set()
+        this.currentState             = null
+        this._profile                 = null
+        this._buds                    = null
+        this._requests                = null
+        this._contactMethods          = null
+        this._profileListeners        = new Map()
+        this._budsListeners           = new Set()
+
+        // Because component unmount hooks never get called when app is killed,
+        // listeners have to be deregistered everytime the app goes into background
+        // in order to prevent database accumulation of orphaned listeners.
+        AppState.addEventListener('change', newState => {
+            let oldState = this.currentState
+            this.currentState = newState
+
+            switch( newState ) {
+            case State.active:
+                if ( oldState !== State.background ) return
+
+                this.refreshData()
+
+                this._profileListeners.forEach(( user, userid ) => {
+                    registerProfileListener( userid )
+                })
+                
+                if ( this._budsListeners.size > 0 ) {
+                    registerBudListener()
+                }
+
+                return
+            case State.background:
+                if ( oldState !== State.active ) return
+
+                this._profileListeners.forEach(( user, userid ) => {
+                    unregisterProfileListener( userid )
+                })
+                
+                if ( this._budsListeners.size > 0 ) {
+                    unregisterBudListener()
+                }
+
+                return
+            }
+        })
+
+        BGLocation.configure({
+            locationProvider       : BGLocation.DISTANCE_FILTER_PROVIDER,
+            desiredAccuracy        : BGLocation.PASSIVE_ACCURACY,
+            stationaryRadius       : 50,
+            distanceFilter         : 500,
+            interval               : 5 * 60 * 1000,
+            notificationsEnabled   : false,
+            saveBatteryOnBackground: true,
+            activityType           : BGLocation.Other,
+            maxLocations           : 10,
+            debug: true
+        })
+
+        BGLocation.on( 'location',   location => updateLocation( location, 'location' ) )
+        BGLocation.on( 'stationary', location => updateLocation( location, 'stationary' ) )
+        BGLocation.on( 'start', () => console.warn( 'geolocation started' ) )
+        BGLocation.on( 'stop', () => console.warn( 'geolocation stopped' ) )
+        BGLocation.on( 'error', error => console.error( JSON.stringify( error, null, 4 ) ) )
+        BGLocation.start()
+
+        firebase.messaging().hasPermission()
+        .then( enabled => {
+            if ( enabled ) return
+            else return firebase.messaging().requestPermission()
+        })
+        .then(() => {
+            firebase.messaging().onMessage( update => {
+                const type   = update.data.type
+                const data   = update.data.data ? JSON.parse( update.data.data ) : null
+                const userid = update.data.user
+
+                switch( type ) {
+                case 'profile-update': {
+                    const profileChanges = getProfileData( data )
+
+                    Promise.resolve( userid === this.currentUser.uid ?
+                        this.getProfile()
+                        .then( profile => {
+                            Object.assign( this._profile, profileChanges )
+                            return this._profile
+                        })
+                        :
+                        Promise.all([
+                            this.getBuds(),
+                            this.getBudRequesters()
+                        ])
+                        .then( results => {
+                            let bud = null
+
+                            if ( results[0].has( userid ) ) bud = results[0].get( userid )
+                            else if ( results[1].has( userid ) ) bud = results[1].get( userid )
+
+                            if ( bud ) {
+                                Object.assign( bud, profileChanges )
+
+                                this._budsListeners.forEach( callback => {
+                                    callback()
+                                })
+                            }
+
+                            return profileChanges
+                        })
+                    )
+                    .then( profile => {
+                        const listeners = this._profileListeners.get( userid )
+                        if ( listeners ) {
+                            listeners.forEach( callback => {
+                                callback( profile, null )
+                            })
+                        }
+                    })
+                } break
+                case 'contact-methods-update': {
+                    if ( userid === this.currentUser.uid ) {
+                        this.getContactMethods()
+                        .then( contactMethods => {
+                            Object.assign( this._contactMethods, data )
+                        })
+                    }
+
+                    const listeners = this._profileListeners.get( userid )
+                    if ( listeners ) {
+                        listeners.forEach( callback => {
+                            callback( null, data )
+                        })
+                    }
+                } break
+                case 'bud-added': {
+                    return Promise.all([
+                        this.getBudRequesters(),
+                        this.getBuds()
+                    ])
+                    .then( results => {
+                        const user = getProfileData( data )
+
+                        results[0].delete( user.id )
+                        results[1].set( user.id, user )
+
+                        this.getContactMethods( user.id )
+                        .then( contactMethods => {
+                            const listeners = this._profileListeners.get( user.id )
+                            if ( listeners ) {
+                                listeners.forEach( callback => {
+                                    callback( null, contactMethods, results[1] )
+                                })
+                            }
+                        })
+
+                        this._budsListeners.forEach( callback => {
+                            callback()
+                        })
+                    })
+                } break
+                case 'bud-request': {
+                    const user = getProfileData( data.user )
+
+                    if ( data.request.requester !== this.currentUser.uid ) this.getBudRequesters()
+                    .then( requests => {
+                        requests.set( user.id, user )
+
+                        this._budsListeners.forEach( callback => {
+                            callback()
+                        })
+                    })
+
+                    const listeners = this._profileListeners.get( user.id )
+                    if ( listeners ) {
+                        listeners.forEach( callback => {
+                            callback( null, null, null, data.request )
+                        })
+                    }
+                } break
+                case 'bud-removed': {
+                    Promise.all([ this.getBudRequesters(), this.getBuds() ])
+                    .then( results => {
+                        results[0].delete( userid )
+                        results[1].delete( userid )
+
+                        const listeners = this._profileListeners.get( userid )
+                        if ( listeners ) {
+                            listeners.forEach( callback => {
+                                callback( null, null, results[1] )
+                            })
+                        }
+
+                        this._budsListeners.forEach( callback => {
+                            callback()
+                        })
+                    })
+                } break
+                }
+            })
+        })
     }
 
     get currentUser() {
         return AUTH.currentUser
     }
 
-    get profile() {
-        return this._profile
-    }
-    
-    get buds() {
-        return this._buds
-    }
-
     refresh() {
-        if ( AUTH.currentUser ) {
-            return AUTH.currentUser.reload()
+        if ( this.currentUser ) {
+            return this.currentUser.reload()
             .then(() => {
-                watchProfile.call( this )
-                return AUTH.currentUser
+                this.refreshData()
+                return this.currentUser
             })
             .catch( error => { return null })
         }
-        return Promise.resolve( AUTH.currentUser )
+        return Promise.resolve( this.currentUser )
+    }
+    
+    refreshData() {
+        if ( !this.currentUser ) {
+            const error = new Error( 'Not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+
+        this._profile        = null
+        this._buds           = null
+        this._requests       = null
+        this._contactMethods = null
+
+        Promise.all([
+            this.getProfile(),
+            this.getBuds(),
+            this.getContactMethods(),
+            this.getBudRequesters()
+        ])
+        .then(() => {
+            this._profileListeners.forEach(( user, userid ) => {
+                if ( userid !== this.currentUser.uid ) {
+                    Promise.all([
+                        this.getUserById( userid ),
+                        this.getContactMethods( userid ),
+                        this.getBuds(),
+                        this.getBudRequest( userid )
+                    ])
+                    .then( results => {
+                        user.forEach( callback => {
+                            callback( results[0], results[1], results[2], results[3] )
+                        })
+                    })
+                }
+                else {
+                    user.forEach( callback => {
+                        callback( this._profile, this._contactMethods, this._buds )
+                    })
+                }
+            })
+            this._budsListeners.forEach( callback => {
+                callback()
+            })
+        })
     }
 
     createAccount( email, password ) {
         return logout.call(this)
-        .then(()=> {
+        .then(() => {
             return AUTH.createUserWithEmailAndPassword(
                 email,
                 password
             )
         })
         .then( credentials => {
-            return USERS
-            .doc( AUTH.currentUser.uid )
-            .set( this.profile, { merge: true } ) // Due to age verification gateway, profile should always have a birthDate at least
+            // Due to age verification gateway, profile should always have a birthDate at least
+            return this.updateUser( this._profile )
             .then(() => {
                 return credentials
             })
@@ -196,7 +466,7 @@ class UserServiceClass {
     }
 
     deleteAccount() {
-        if ( !AUTH.currentUser ) {
+        if ( !this.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
@@ -211,6 +481,7 @@ class UserServiceClass {
         })
     }
 
+    // TODO: make sure profile is being refreshed with logout/login/create account
     login( email, password ) {
         return logout.call(this)
         .then(() => {
@@ -229,208 +500,284 @@ class UserServiceClass {
         })
     }
 
+    // Returns current user's profile as Promise< Profile >
+    getProfile() {
+        if ( !this._profile ) {
+            this._profile = this.getUserById()
+            .then( result => {
+                if ( result ) {
+                    this._profile = result
+                }
+                else {
+                    this._profile = {}
+                }
+
+                return this._profile
+            })
+        }
+
+        return Promise.resolve( this._profile )
+    }
+    
+    // Returns Promise< Profile >
     getUserById( userid ) {
-        if ( !AUTH.currentUser ) {
+        if ( !this.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
         
         if ( !userid ) {
-            userid = AUTH.currentUser.uid
+            userid = this.currentUser.uid
         }
     
-        return USERS.doc( userid ).get()
-        .then(( docref ) => {
-            return getProfileData( docref )
+        return FUNCTIONS.httpsCallable( 'getProfile' )({ user: userid })
+        .then(response => {
+            return getProfileData( response.data )
         })
     }
 
+    // Returns Profile[]
     getUserByUsername( searchString, callback ) {
-        if ( !AUTH.currentUser ) {
+        if ( !this.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
-        return USERS.where( 'username', '==', searchString )
-        .onSnapshot( results => {
-            callback( userDataFrom( results ) )
+        return FUNCTIONS.httpsCallable( 'findByUserName' )({ searchString: searchString })
+        .then( response => {
+            return userDataFrom( response.data )
         })
     }
 
     updateUser( dataToUpdate ) {
-        if ( !AUTH.currentUser ) {
+        if ( !this.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
-        USERS
-        .doc( AUTH.currentUser.uid )
-        .set( dataToUpdate, { merge: true } )
+        return FUNCTIONS.httpsCallable( 'updateProfile' )( dataToUpdate )
+        .then(() => {
+            return this.getProfile()
+        })
+        .then( profile => {
+            Object.assign( this._profile, dataToUpdate )
+        })
     }
     
-    updateContactMethods( contactMethods ) {
-        if ( !AUTH.currentUser ) {
+    // Returns Promise< ContactMethods >
+    getContactMethods( userid ) {
+        if ( !this.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
-        const supportedMethods = [
-            'facebook',
-            'twitter',
-            'whatsapp',
-            'snapchat',
-            'reddit',
-            'instagram',
-            'text' 
-        ]
+        if ( !userid ) {
+            userid = this.currentUser.uid
 
-        let batch = FIRESTORE.batch()
-        supportedMethods.forEach( key => {
-            if ( contactMethods[key] ) {
-                const doc = USERS.doc( AUTH.currentUser.uid ).collection('ContactMethods').doc( key )
-                batch = batch.set( doc, contactMethods[key], { merge: true } )
+            if ( !this._contactMethods ) {
+                this._contactMethods = FUNCTIONS.httpsCallable( 'getContactMethods' )({ user: userid })
+                .then( response => {
+                    this._contactMethods = response.data ? response.data : {}
+                    
+                    return this._contactMethods
+                })
             }
-        })
-        return batch.commit()
-    }
 
-    getContactMethods( userid, callback ) {
-        if ( !AUTH.currentUser ) return null
-        if ( !userid ) userid = AUTH.currentUser.uid
-
-        const contactMethods = USERS.doc( userid ).collection( 'ContactMethods' )
-
-        if ( callback ) {
-            // NOTE: If there are more than 10 documents in 1 query, it will fail.
-            // Right now, there are at most 7, so it's ok.
-            const unsubsribe = contactMethods.onSnapshot(
-                queryResults => {
-                    // queryResults.docs() == [{id, data() => document, ...}]
-                    let contactMethods = {}
-                    queryResults.docs.forEach( docref => {
-                        contactMethods[ docref.id ] = docref.data()
-                    })
-                    callback( contactMethods )
-                },
-                error => {
-                    callback( {} )
-                }
-            )
-
-            this._socialListeners.add( unsubsribe )
-            return unsubsribe
+            return Promise.resolve( this._contactMethods )
         }
         else {
-            return contactMethods.get()
-            .then( queryResults => {
-                // queryResults.docs() == [{id, data() => document, ...}]
-                let contactMethods = {}
-                queryResults.docs.forEach( docref => {
-                    contactMethods[ docref.id ] = docref.data()
+            return this.getBuds()
+            .then( buds => {
+                if ( !buds.has( userid ) ) return null
+
+                return FUNCTIONS.httpsCallable( 'getContactMethods' )({ user: userid })
+                .then( response => {
+                    return response.data ? response.data : {}
                 })
-                return contactMethods
+            })
+            .catch( error => {
+                return null
             })
         }
     }
     
-    addProfileListener( user, callback ) {
-        if ( user ) {
-            const unsubscribe = USERS.doc( user ).onSnapshot(
-                docref => {
-                    if ( docref.exists ) callback( getProfileData( docref ) )
-                    else callback( null )
-                }
-            )
-            this._userListeners.add( unsubscribe )
-            return unsubscribe
-        }
-
-        this._profileListeners.add( callback )
-
-        return callback
-    }
-
-    addBudsListener( callback ) {
-        if ( !AUTH.currentUser ) return
-        
-        this._budsListeners.add( callback )
-
-        return callback
-    }
-
-    unsubscribe( unsubscribeFunction ) {
-        if ( this._userListeners.has( unsubscribeFunction ) ) {
-            unsubscribeFunction()
-            this._userListeners.delete( unsubscribeFunction )
-        }
-        else if ( this._profileListeners.has( unsubscribeFunction ) ) {
-            this._profileListeners.delete( unsubscribeFunction )
-        }
-        else if ( this._budsListeners.has( unsubscribeFunction ) ) {
-            this._budsListeners.delete( unsubscribeFunction )
-        }
-        else if ( this._socialListeners.has( unsubscribeFunction ) ) {
-            unsubscribeFunction()
-            this._socialListeners.delete( unsubscribeFunction )
-        }
-    }
-
-    getBuds() {
-        if ( !AUTH.currentUser ) {
-            clearBuds.call(this)
+    updateContactMethods( methodsToUpdate ) {
+        if ( !this.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
-        if ( !this._budsUnsubscribe ) {
-            return new Promise(( resolve, reject ) => {
-                this._budsUnsubscribe = USERS.where( 'buds', 'array-contains', AUTH.currentUser.uid ).onSnapshot(
-                    queryResults => {
-                        this._buds = userDataFrom( queryResults )
-                        this._budsListeners.forEach( callback => {
-                            callback( this._buds )
-                        })
-                        resolve( this._buds )
-                    },
-                    error => {
-                        reject( error )
-                    }
-                )
+        return FUNCTIONS.httpsCallable( 'updateContactMethods' )( methodsToUpdate )
+        .then(() => {
+            return this.getContactMethods()
+        })
+        .then( contactMethods => {
+            Object.assign( this._contactMethods, methodsToUpdate )
+        })
+    }
+
+    // TODO: handle update messages
+
+    // Returns Promise< Profile[] >
+    getBuds() {
+        if ( !this.currentUser ) {
+            // TODO: determine if needed
+            //clearBuds.call(this)
+            const error = new Error( 'Not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+
+        if ( !this._buds ) {
+            this._buds = FUNCTIONS.httpsCallable( 'getBuds' )()
+            .then( response => {
+                const buds = userDataFrom( response.data )
+                this._buds = new Map()
+
+                buds.forEach( bud => {
+                    this._buds.set( bud.id, bud )
+                })
+                
+                return this._buds
             })
         }
 
         return Promise.resolve( this._buds )
     }
-    
-    addBud( uid ) {
-        if ( !AUTH.currentUser ) {
+
+    // Returns Promise< Profile[] >
+    getBudRequesters() {
+        if ( !this.currentUser ) {
+            // TODO: determine if needed
+            //clearBuds.call(this)
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
-        return USERS.doc( AUTH.currentUser.uid ).collection( 'ContactList' ).doc( uid )
-        .set({ id: uid })
+        if ( !this._requests ) {
+            this._requests = FUNCTIONS.httpsCallable( 'getBudRequesters' )()
+            .then( response => {
+                const budRequesters = userDataFrom( response.data )
+                this._requests      = new Map()
+
+                budRequesters.forEach( bud => {
+                    this._requests.set( bud.id, bud )
+                })
+
+                return this._requests
+            })
+        }
+
+        return Promise.resolve( this._requests )
     }
     
-    removeBud( uid ) {
-        if ( !AUTH.currentUser ) {
+    // Returns { _id: ObjectId, requester: userid, requestee: userid }
+    getBudRequest( userid ) {
+        if ( !this.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
-        return FIRESTORE.batch()
-        .delete( USERS.doc( AUTH.currentUser.uid ).collection( 'ContactList' ).doc( uid ) )
-        .delete( USERS.doc( uid ).collection( 'ContactList' ).doc( AUTH.currentUser.uid ) )
-        .commit()
+        return FUNCTIONS.httpsCallable( 'getBudRequest' )({ user: this.currentUser.uid, bud: userid })
+        .then( response => {
+            return response.data
+        })
+    }
+
+    addBud( userid ) {
+        if ( !this.currentUser ) {
+            const error = new Error( 'Not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+
+        return FUNCTIONS.httpsCallable( 'addBud' )({ user: userid })
     }
     
+    removeBud( userid ) {
+        if ( !this.currentUser ) {
+            const error = new Error( 'Not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+
+        return FUNCTIONS.httpsCallable( 'removeBud' )({ user: userid })
+    }
+    
+    // TODO: mongo-ize
+    // callback is ( profile, contactMethods ) => {}
+    addProfileListener( user, callback ) {
+        if ( !this.currentUser ) return
+
+        if ( !user ) {
+            user = this.currentUser.uid
+        }
+
+        const uuid = uuidv4()
+
+        if ( this._profileListeners.has( user ) ) {
+            this._profileListeners.get( user ).set( uuid, callback )
+        }
+        else {
+            this._profileListeners.set( user, new Map([[ uuid, callback ]]) )
+            registerProfileListener( user )
+        }
+
+        return uuid
+    }
+
+    // callback is ({ buds: profile[], requests: profile[], budlist: Set<userid> }) => {}
+    addBudsListener( callback ) {
+        if ( !this.currentUser ) return
+        
+        if ( this._budsListeners.size === 0 ) {
+            registerBudListener()
+        }
+
+        this._budsListeners.add( callback )
+
+        return callback
+    }
+
+    unsubscribe( handle ) {
+        this._profileListeners.forEach(( user, userid ) => {
+            if ( user.has( handle ) ) {
+                user.delete( handle )
+                if ( user.size === 0 ) {
+                    unregisterProfileListener( userid )
+                    this._profileListeners.delete( userid )
+                }
+            }
+        })
+
+        if ( this._budsListeners.has( handle ) ) {
+            this._budsListeners.delete( handle )
+
+            if ( this._budsListeners.size === 0 ) {
+                unregisterBudListener()
+            }
+        }
+    }
+    
+    unsubscribeAll() {
+        this._profileListeners.forEach(( user, userid ) => {
+            unregisterProfileListener( userid )
+        })
+        unregisterBudListener()
+
+        this._profileListeners.clear()
+        this._budsListeners.clear()
+    }
+
+    // TODO: implement listener for remote changes to buds, requests, budList
+
     sendPasswordResetEmail( email ) {
         return AUTH.sendPasswordResetEmail( email, {
             url: `https://greenpass.page.link/reset/${email}`,
@@ -485,19 +832,3 @@ class UserServiceClass {
 const UserService = new UserServiceClass()
 
 export default UserService
-
-//      {firebase.admob.nativeModuleExists && <Text style={styles.module}>admob()</Text>}
-//      {firebase.analytics.nativeModuleExists && <Text style={styles.module}>analytics()</Text>}
-//      {firebase.auth.nativeModuleExists && <Text style={styles.module}>auth()</Text>}
-//      {firebase.config.nativeModuleExists && <Text style={styles.module}>config()</Text>}
-//      {firebase.crashlytics.nativeModuleExists && <Text style={styles.module}>crashlytics()</Text>}
-//      {firebase.database.nativeModuleExists && <Text style={styles.module}>database()</Text>}
-//      {firebase.firestore.nativeModuleExists && <Text style={styles.module}>firestore()</Text>}
-//      {firebase.functions.nativeModuleExists && <Text style={styles.module}>functions()</Text>}
-//      {firebase.iid.nativeModuleExists && <Text style={styles.module}>iid()</Text>}
-//      {firebase.invites.nativeModuleExists && <Text style={styles.module}>invites()</Text>}
-//      {firebase.links.nativeModuleExists && <Text style={styles.module}>links()</Text>}
-//      {firebase.messaging.nativeModuleExists && <Text style={styles.module}>messaging()</Text>}
-//      {firebase.notifications.nativeModuleExists && <Text style={styles.module}>notifications()</Text>}
-//      {firebase.perf.nativeModuleExists && <Text style={styles.module}>perf()</Text>}
-//      {firebase.storage.nativeModuleExists && <Text style={styles.module}>storage()</Text>}

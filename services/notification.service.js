@@ -1,4 +1,6 @@
-import firebase from 'react-native-firebase'
+import firebase    from 'react-native-firebase'
+import DeviceInfo  from 'react-native-device-info'
+import UserService from './user.service'
 
 import { Platform   } from 'react-native'
 import { Navigation } from 'react-native-navigation'
@@ -6,7 +8,7 @@ import { SCREENS    } from '../util/constants'
 
 const notifications = firebase.notifications
 const messaging     = firebase.messaging
-const pushTokens    = firebase.firestore().collection( 'PushTokens' )
+const functions     = firebase.functions()
 const auth          = firebase.auth()
 const BONG_HIT      = 'bonghit.wav'
 
@@ -17,10 +19,10 @@ const ICON = 'launcher_icon'
 
 function setToken( token ) {
     if ( !auth.currentUser.uid ) return
-    pushTokens.doc( auth.currentUser.uid ).set({
+
+    functions.httpsCallable( 'updatePushToken' )({
+        deviceId: DeviceInfo.getUniqueID(),
         token: token
-    }, {
-        merge: true
     })
 }
 
@@ -42,7 +44,9 @@ export default class NotificationService {
     static unsubscribePushNotifications() {
         if ( unsubscribeTokenListener ) unsubscribeTokenListener()
         
-        if ( auth.currentUser.uid ) pushTokens.doc( auth.currentUser.uid ).delete()
+        if ( auth.currentUser.uid ) functions.httpsCallable( 'removePushToken' )({
+            deviceId: DeviceInfo.getUniqueID()
+        })
     }
 
     static cancelNotifications() {
@@ -86,29 +90,44 @@ export default class NotificationService {
                 else {
                     if ( Platform.OS === 'android' ) {
                         notification.android.setChannelId( BUD )
+                        notification.android.setLargeIcon( ICON )
                         notification.android.setSmallIcon( ICON )
                     }
+                    notification.setNotificationId( notification.data.userid )
                     notification.setSound( 'default' )
                 }
                 notifications().displayNotification( notification )
             })
 
             notifications().onNotificationOpened( context => {
-                notifications().removeDeliveredNotification( context.notification.notificationId )
-                .then(() => {
-                    if ( context.notification.notificationId === '420' ) return
+                notifications().removeAllDeliveredNotifications()
+
+                if ( context.notification.notificationId === '420' ) return
+
+                Promise.all([
+                    UserService.getUserById( context.notification.data.userid ),
+                    UserService.getContactMethods( context.notification.data.userid ),
+                    UserService.getBudRequest( context.notification.data.userid ),
+                    UserService.getBuds()
+                ])
+                .then( results => {
                     Navigation.push( SCREENS.BUDS_SCREEN, {
                         component: {
                             name: SCREENS.PROFILE_SCREEN,
-                            passProps: { userId: context.notification.data.userid },
+                            passProps: {
+                                user          : results[0],
+                                contactMethods: results[1],
+                                request       : results[2],
+                                buds          : results[3]
+                            },
                         }
                     })
-                    .then(() => {
-                        Navigation.mergeOptions( SCREENS.ROOT_SCREEN, {
-                            bottomTabs: {
-                                currentTabIndex: 1
-                            }
-                        })
+                })
+                .then(() => {
+                    Navigation.mergeOptions( SCREENS.ROOT_SCREEN, {
+                        bottomTabs: {
+                            currentTabIndex: 1
+                        }
                     })
                 })
             })

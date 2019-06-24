@@ -25,71 +25,90 @@ export default class BudsScreen extends React.Component {
         
         this.state = {
             searchMode   : false,
+            searching    : false,
             buds         : [],
-            sortedBuds   : [],
             searchResults: []
         }
+        
+        this.setBudsAndRequests = this.setBudsAndRequests.bind(this)
     }
 
     componentDidMount() {
-        Promise.all([
-            UserService.getBuds(),
-            UserService.profile || UserService.getUserById(/* currentUser */)
-        ])
-        .then( results => {
-            this.sortBudsAndRequests( results[0], results[1] )
-        })
+        this.setBudsAndRequests()
 
-        this.budsListener = UserService.addBudsListener( results => {
-            this.setState({ buds: results })
-            if ( UserService.profile ) this.sortBudsAndRequests( results, UserService.profile )
-        })
-
-        this.profileListener = UserService.addProfileListener( null, profile => {
-            if ( this.state.buds ) this.sortBudsAndRequests( this.state.buds, profile )
-        })
+        this.budsListener = UserService.addBudsListener( this.setBudsAndRequests )
     }
 
     componenWillUnmount() {
         if ( this.budsListener    ) UserService.unsubscribe( this.budsListener )
-        if ( this.profileListener ) UserService.unsubscribe( this.profileListener )
-        if ( this.searchListener  ) this.searchListener()
+        //if ( this.searchListener  ) this.searchListener()
     }
 
-    sortBudsAndRequests( results, profile ) {
-        const budList     = profile.buds
-        const budRequests = results.filter( bud => !(budList && budList.includes( bud.id )) )
-        const buds        = results.filter( bud => budList && budList.includes( bud.id ) )
-        const array = []
-        if ( budRequests.length > 0 ) array.push({ title: 'Bud Requests', data: budRequests })
-        if ( buds.length > 0 ) array.push({ title: 'Buds', data: buds })
-        this.setState({ sortedBuds: array })
+    setBudsAndRequests() {
+        Promise.all([
+            UserService.getBuds(),
+            UserService.getBudRequesters()
+        ])
+        .then( results => {
+            const buds       = Array.from( results[0].values() )
+            const requests   = Array.from( results[1].values() )
+            const categories = []
+
+            if ( requests.length > 0 ) categories.push({ title: 'Bud Requests', data: requests })
+            if ( buds.length > 0 ) categories.push({ title: 'Buds', data: buds })
+            this.setState({ buds: categories })
+        })
+        .catch( error => {
+            console.error( JSON.stringify( error, null, 4 ) )
+        })
     }
 
     search( searchString ) {
-        if ( this.searchListener ) this.searchListener()
+        //if ( this.searchListener ) this.searchListener()
 
         if ( searchString.length > 0 ) {
-            this.setState({ searchMode: true })
+            this.setState({ searchMode: true, searching: true })
 
-            this.searchListener = UserService.getUserByUsername( searchString, results => {
+            UserService.getUserByUsername( searchString )
+            .then( results => {
                 this.setState({
                     searchResults: results.length > 0 ? [{
                         title: 'Results',
                         data: results
-                    }] : []
+                    }] : [],
+                    searching: false
                 })
             })
+
+            //this.searchListener = UserService.getUserByUsername( searchString, results => {
+            //    this.setState({
+            //        searchResults: results.length > 0 ? [{
+            //            title: 'Results',
+            //            data: results
+            //        }] : []
+            //    })
+            //})
         }
     }
 
-    showProfile( userId ) {
-        Navigation.push( this.props.componentId, {
-            component: {
-                name: SCREENS.PROFILE_SCREEN,
-                // NOTE: We have the profile and it should be up to date, we should pass it instead
-                passProps: { userId: userId }
-            }
+    showProfile( user ) {
+        Promise.all([
+            UserService.getContactMethods( user.id ),
+            UserService.getBudRequest( user.id ),
+            UserService.getBuds()
+        ])
+        .then( results => {
+            Navigation.push( this.props.componentId, {
+                component: {
+                    name: SCREENS.PROFILE_SCREEN,
+                    passProps: {
+                        user          : user,
+                        contactMethods: results[0],
+                        request       : results[1],
+                        buds          : results[2]
+                    }
+                }
+            })
         })
     }
 
@@ -99,7 +118,7 @@ export default class BudsScreen extends React.Component {
         return (
             <TouchableOpacity
                 style={[ LOCAL_STYLES.row, { backgroundColor: background } ]}
-                onPress={ () => { this.showProfile(data.id) } }>
+                onPress={ () => { this.showProfile( data ) } }>
 
                 <View>
                     <Image style={ LOCAL_STYLES.thumbnail }
@@ -161,13 +180,15 @@ export default class BudsScreen extends React.Component {
                         return (
                             <Text style={{ paddingVertical: 11 * VH }}> {
                                 this.state.searchMode
-                                ? 'There are no results for that username.'
+                                ? this.state.searching
+                                    ? 'Searching...'
+                                    : 'There are no results for that username.'
                                 : 'You have no buds, yet. Why not find some?'
                             } </Text>
                         )
                     }}
                     sections={
-                        this.state.searchMode ? this.state.searchResults : this.state.sortedBuds
+                        this.state.searchMode ? this.state.searchResults : this.state.buds
                     }
                     />
 

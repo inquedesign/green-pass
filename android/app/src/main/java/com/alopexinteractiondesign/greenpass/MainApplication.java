@@ -8,6 +8,10 @@ import com.reactnativenavigation.NavigationApplication;
 import com.reactnativenavigation.react.NavigationReactNativeHost;
 import com.reactnativenavigation.react.ReactGateway;
 
+import com.learnium.RNDeviceInfo.RNDeviceInfo;
+
+import com.marianhello.bgloc.react.BackgroundGeolocationPackage;
+
 import io.invertase.firebase.RNFirebasePackage;
 // optional packages - add/remove as appropriate
 //import io.invertase.firebase.admob.RNFirebaseAdMobPackage;
@@ -51,7 +55,9 @@ public class MainApplication extends NavigationApplication {
         // Add additional packages you require here
         // No need to add RnnPackage and MainReactPackage
         return Arrays.asList(
+            new RNDeviceInfo(),
             new SplashScreenReactPackage(),
+            new BackgroundGeolocationPackage(),
             new RNFirebasePackage(),
             // add/remove these packages as appropriate
 //            new RNFirebaseAdMobPackage(),

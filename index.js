@@ -66,7 +66,7 @@ Navigation.events().registerAppLaunchedListener(() => {
 
         // Verify profile and determine redirect screen
         return Promise.all([
-            UserService.getUserById(/* currentUser */),
+            UserService.getProfile(/* currentUser */),
             UserService.getContactMethods(/* currentUser */)
         ])
         .then( results => {
