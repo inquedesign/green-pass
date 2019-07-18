@@ -25,25 +25,41 @@ import SplashScreen from 'react-native-splash-screen'
 
 
 export default class ProfileScreen extends React.Component {
+    static options( props ) {
+        if ( props.user && ( props.user.id !== UserService.currentUser.uid ) ) return {}
+
+        return {
+            topBar: {
+                rightButtons: [{
+                    id: 'SettingsButton',
+                    icon: require('../assets/icons/Settings.png'),
+                    color: COLORS.SECONDARY
+                }]
+            }
+        }
+    }
 
     constructor( props ) {
         super( props )
 
-        this.isOwnProfile = true
-
         this.state = {
-            id: null,
-            username: null,
-            age: null,
-            gender: null,
-            avatar: null,
+            id            : null,
+            username      : null,
+            age           : null,
+            gender        : null,
+            avatar        : null,
+            location      : null,
+            distance      : null,
             contactMethods: null,
-            buds: null,
-            budRequest: null,
+            buds          : null,
+            budRequest    : null,
             disableButtons: false
         }
         
-        this.onUpdate = this.onUpdate.bind( this )
+        this.isOwnProfile = true
+        this.onUpdate     = this.onUpdate.bind( this )
+
+        Navigation.events().bindComponent( this )
     }
 
     componentDidMount() {
@@ -78,18 +94,6 @@ export default class ProfileScreen extends React.Component {
             })
 
             this.profileWatcher = UserService.addProfileListener( null, this.onUpdate )
-
-            Navigation.mergeOptions( this.props.componentId, {
-                topBar: {
-                    rightButtons: [{
-                        id: 'SettingsButton',
-                        icon: require('../assets/icons/Settings.png'),
-                        color: COLORS.SECONDARY
-                    }]
-                }
-            })
-
-            Navigation.events().bindComponent( this )
         }
 
         SplashScreen.hide()
@@ -99,7 +103,7 @@ export default class ProfileScreen extends React.Component {
         if ( this.profileWatcher ) UserService.unsubscribe( this.profileWatcher )
     }
 
-    onUpdate( profile, contactMethods, buds, request ) {
+    onUpdate( profile, contactMethods, buds, request, location, deleted ) {
         if ( profile ) this.setUserData( profile )
         if ( contactMethods ) this.setState({
             contactMethods: Object.assign( {}, this.state.contactMethods, contactMethods )
@@ -117,6 +121,12 @@ export default class ProfileScreen extends React.Component {
                 disableButtons: false
             })
         }
+        if ( location && this.state.location ) {
+            this.setState({ distance: UserService.getDistance( this.state.location ) })
+        }
+        if ( deleted ) {
+            Navigation.pop( this.props.componentId )
+        }
     }
 
     navigationButtonPressed({ buttonId }) {
@@ -133,6 +143,7 @@ export default class ProfileScreen extends React.Component {
             age     : data.age      || this.state.age,
             gender  : data.gender   || this.state.gender,
             avatar  : data.avatar   || this.state.avatar,
+            distance: data.distance !== undefined ? data.distance : this.state.distance
         })
     }
 
@@ -140,9 +151,6 @@ export default class ProfileScreen extends React.Component {
         if ( !this.isOwnProfile ) {
             this.setState({ disableButtons: true })
             UserService.addBud( this.state.id )
-            //.then(() => {
-            //    this.setState({ disableButtons: false})
-            //})
         }
     }
 
@@ -150,9 +158,6 @@ export default class ProfileScreen extends React.Component {
         if ( !this.isOwnProfile ) {
             this.setState({ disableButtons: true })
             UserService.removeBud( this.state.id )
-            //.then(() => {
-            //    this.setState({ disableButtons: false})
-            //})
         }
     }
 
@@ -188,6 +193,7 @@ export default class ProfileScreen extends React.Component {
     }
 
     onChangeAvatar( avatar ) {
+        if ( this.state.avatar === avatar ) return
         UserService.updateUser({ avatar: avatar })
     }
 
@@ -221,15 +227,24 @@ export default class ProfileScreen extends React.Component {
                     { this.state.username }
                 </Text>
 
-                <Text style={ STYLES.spaceAfter }>
+                <Text>
                     { this.state.age } year old { this.state.gender }
                 </Text>
+
+                { this.state.distance != null &&
+                <Text>
+                    { this.state.distance } miles
+                </Text>
+                }
+                
+                <View style={ STYLES.spaceAfter }></View>
 
                 { ( this.isOwnProfile || buds ) ?
                     this.state.contactMethods &&
                     <View style={ LOCAL_STYLES.socialContainer }>
                         {
                         Object.keys( this.state.contactMethods ).map( method => (
+                            this.state.contactMethods[method] ?
                             <Button style={ LOCAL_STYLES.socialButton }
                                 key={ method }
                                 color={ COLORS.SECONDARY }
@@ -238,6 +253,7 @@ export default class ProfileScreen extends React.Component {
                                 accessibilityLabel="Contact this user"
                                 onPress={() => { this.activateLink( method ) }}>
                             </Button>
+                            : null
                         ))
                         }
                     </View> 

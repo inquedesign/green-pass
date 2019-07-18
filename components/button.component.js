@@ -3,6 +3,7 @@
 import React from 'react'
 
 import { StyleSheet,
+         View,
          Text,
          ImageBackground,
          TouchableOpacity } from 'react-native'
@@ -67,6 +68,17 @@ export default class Button extends React.PureComponent {
                 <ImageBackground style={ buttonStyles }
                     resizeMode={ this.props.resizeMode || 'repeat' }
                     source={ backgroundImage }>
+
+                    { this.props.overlayColor &&
+                    <View style={{
+                        position: 'absolute',
+                        height  : '100%',
+                        width   : '100%',
+                        opacity : .5,
+                        backgroundColor: this.props.overlayColor,
+                    }}>
+                    </View>
+                    }
 
                     { label &&
                     <Text style={[ textStyles, fontStyle ]}>

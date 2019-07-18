@@ -111,7 +111,7 @@ export default class NotificationService {
                     UserService.getBuds()
                 ])
                 .then( results => {
-                    Navigation.push( SCREENS.BUDS_SCREEN, {
+                    return Navigation.push( SCREENS.BUDS_SCREEN, {
                         component: {
                             name: SCREENS.PROFILE_SCREEN,
                             passProps: {
@@ -124,7 +124,7 @@ export default class NotificationService {
                     })
                 })
                 .then(() => {
-                    Navigation.mergeOptions( SCREENS.ROOT_SCREEN, {
+                    Navigation.mergeOptions( SCREENS.MAIN_LAYOUT, {
                         bottomTabs: {
                             currentTabIndex: 1
                         }
@@ -146,8 +146,9 @@ export default class NotificationService {
             getToken()
         })
         .catch( error => {
-            // Don't notify
-            console.error( 'Error setting up:\n' + error.message )
+            if ( error.code === 'messaging/permission_error' ) return // Don't notify
+
+            console.error( 'Error setting up:\n' + JSON.stringify( error, null, 4 ) )
         })
     }
 }

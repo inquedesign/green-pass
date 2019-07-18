@@ -2,9 +2,11 @@ const Mongodb  = require( 'mongodb' ).MongoClient
 const mongoUrl = 'mongodb://GreenPass:uspexOZxIHR0XHYz@cluster0-shard-00-00-z4dj4.gcp.mongodb.net:27017,cluster0-shard-00-01-z4dj4.gcp.mongodb.net:27017,cluster0-shard-00-02-z4dj4.gcp.mongodb.net:27017/greenpass?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority'
 let mongoClient = null
 
-const functions = require('firebase-functions')
-const admin     = require('firebase-admin')
-const tools     = require('firebase-tools')
+const functions  = require('firebase-functions').runWith({ timeoutSeconds: 120 })
+const config     = require('firebase-functions').config()
+const HttpsError = require('firebase-functions').https.HttpsError
+const admin      = require('firebase-admin')
+const tools      = require('firebase-tools')
 admin.initializeApp()
 
 // Since this code will be running in the Cloud Functions environment
@@ -23,6 +25,8 @@ const PROFILE_LISTENERS_COLLECTION  = 'ProfileListeners'
 const BUD_LISTENERS_COLLECTION      = 'BudListeners'
 const LOCATION_LISTENERS_COLLECTION = 'LocationListeners'
 
+const MAX_SEARCH_DISTANCE = 32000
+
 /***** TODO: Deprecated code *****/
 
 exports.syncContactList = functions.firestore.document('Users/{user}/ContactList/{contact}')
@@ -37,27 +41,52 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
         tasks.push(
             Promise.all([
                 firestore.doc( `Users/${context.params.contact}/ContactList/${context.params.user}` ).get(),
+                firestore.doc( `Users/${context.params.user}` ).get(),
                 firestore.doc( `PushTokens/${context.params.contact}` ).get(),
-                firestore.collection( 'PushTokens' )
-                .where( 'user', '==', context.params.contact ).get(),
-                firestore.doc( `Users/${context.params.user}` ).get()
+                getPushTokensForUsers([ context.params.contact ]),
             ])
             .then( results => {
-                const requestIsMutual   = results[0].exists
-                const user              = results[3].data().username
+                const requestIsMutual = results[0].exists
+                const user            = results[1].data()
+                const notifToken      = results[2].data()
+                const dataToken       = results[3][0]
 
-                let payload =  null
+                let messages =  []
                 if ( requestIsMutual ) {
-                    payload =  {
-                        notification: {
-                            tag: 'request',
-                            title: `A new Bud.`,
-                            body : `Congratulations! You are now buds with ${user}`,
-                            sound: 'default'
-                        },
-                        data: {
-                            userid: context.params.user
-                        }
+                    if ( notifToken ) {
+                        messages.push({
+                            token: notifToken.token,
+                            android: {
+                                notification: {
+                                    tag: 'request',
+                                    sound: 'default'
+                                }
+                            },
+                            apns: {
+                                payload: {
+                                    aps: {
+                                        sound: 'default'
+                                    }
+                                }
+                            },
+                            notification: {
+                                title: `A new Bud.`,
+                                body : `Congratulations! You are now buds with ${user.username}`,
+                            },
+                            data: {
+                                userid: context.params.user
+                            }
+                        })
+                    }
+
+                    if ( dataToken ) {
+                        messages.push({
+                            token: dataToken.token,
+                            data: {
+                                type: 'bud-added',
+                                data: JSON.stringify({ _id: context.params.user, ...user }) // Profile
+                            }
+                        })
                     }
 
                     // add buds in mongodb
@@ -87,44 +116,102 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
                     )
                 }
                 else {
-                    payload =  {
-                        notification: {
-                            tag: 'request',
-                            title: 'Bud Request',
-                            body : `${user} wants to be your bud! Check them out!`,
-                            sound: 'default'
-                        },
-                        data: {
-                            userid: context.params.user
-                        }
+                    let request = {
+                        requester: context.params.user,
+                        requestee: context.params.contact
+                    }
+
+                    if ( notifToken ) {
+                        messages.push({
+                            token: notifToken.token,
+                            android: {
+                                notification: {
+                                    tag: 'request',
+                                    sound: 'default'
+                                }
+                            },
+                            apns: {
+                                payload: {
+                                    aps: {
+                                        sound: 'default'
+                                    }
+                                }
+                            },
+                            notification: {
+                                title: 'Bud Request',
+                                body : `${user.username} wants to be your bud! Check them out!`,
+                            },
+                            data: {
+                                userid: context.params.user
+                            }
+                        })
+                    }
+
+                    if ( dataToken ) {
+                        messages.push({
+                            token: dataToken.token,
+                            data: {
+                                type: 'bud-request',
+                                data: JSON.stringify({
+                                    user   : { _id: context.params.user, ...user },
+                                    request: request
+                                })
+                            }
+                        })
                     }
 
                     tasks.push(
                         getDatabase()
                         .then( client => {
-                            let budRequests = client.collection( BUD_REQUESTS_COLLECTION )
-
-                            return budRequests.insertOne({
-                                requester: context.params.user,
-                                requestee: context.params.contact
-                            })
+                            return client.collection( BUD_REQUESTS_COLLECTION )
+                            .insertOne( request )
                         })
                     )
                 }
 
-                if ( results[1].exists ) {
-                    const registrationToken = results[1].data().token
-                    return messaging.sendToDevice( registrationToken, payload )
-                }
-                if ( results[2].docs.length > 0 ) {
-                    const registrationTokens = results[2].docs.map( doc => doc.data().token )
-                    return messaging.sendToDevice( registrationTokens, payload )
-                }
+                if ( messages.length === 0 ) return;
+
+                return messaging.sendAll( messages )
+                .then( response =>
+                    handleMessagingErrors( response, messages.map( message => message.token ) )
+                )
             })
         )
     }
     else { // Removed
         data = { buds: admin.firestore.FieldValue.arrayRemove( context.params.contact ) }
+
+        // Notify user
+        tasks.push(
+            getPushTokensForUsers([ context.params.contact ])
+            .then( response => {
+                let token = response[0]
+
+                if ( !token ) return;
+
+                let message = {
+                    token: token.token,
+                    data: {
+                        type: 'bud-removed',
+                        user: context.params.user // userid
+                    }
+                }
+
+                return messaging.send( message )
+                .catch( error => {
+                    if (
+                        error.code === 'messaging/invalid-registration-token' ||
+                        error.code === 'messaging/registration-token-not-registered'
+                    ) {
+                        return removeInvalidToken( token.token )
+                    }
+                    else {
+                        console.error( JSON.stringify( error, null, 4 ) )
+                        throw error
+                    }
+                })
+            })
+        )
 
         // remove from mongo
         tasks.push(
@@ -163,7 +250,7 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
     
     return Promise.all( tasks )
     .catch( error => {
-        console.log('Error sending message:', error);
+        console.error('Error sending message:', error);
     })
 
 })
@@ -197,8 +284,8 @@ exports.onDeleteProfile = functions.firestore.document( 'Users/{user}' )
 function deleteCollection( path ) {
     return tools.firestore
     .delete( path, {
-        project  : functions.config().auth.project,
-        token    : functions.config().auth.token,
+        project  : config.auth.project,
+        token    : config.auth.token,
         recursive: true,
         yes      : true
     })
@@ -222,40 +309,56 @@ exports.mongoSyncProfile = functions.firestore.document( 'Users/{user}' )
     return getDatabase()
     .then( client => {
         let users = client.collection( USERS_COLLECTION )
+        let update
 
-        if ( change.after.exists && !change.before.exists ) { // Added
+        if ( change.after.exists ) { // Created or updated
             let user = change.after.data()
-
-            // Add to mongo
-            return users.insertOne({
-                _id      : context.params.user,
-                username : user.username,
-                birthDate: user.birthDate,
-                gender   : user.gender,
-                avatar   : user.avatar
-            })
-        }
-        else if ( change.after.exists && change.before.exists ) { // Updated
-            let user = change.after.data()
-            let prev = change.before.data()
-
-            if (
-                user.username === prev.username &&
-                user.birthDate === prev.birthDate &&
-                user.gender === prev.gender &&
-                user.avatar === prev.avatar
-            ) return
+            delete user.buds
 
             // Update record in mongo, create if necessary
-            return users.updateOne(
-                { _id: context.params.user },
-                { $set: {
-                    username : user.username,
-                    birthDate: user.birthDate,
-                    gender   : user.gender,
-                    avatar   : user.avatar
-                }},
-                { upsert: true })
+
+            return Promise.all([
+                users.updateOne(
+                    { _id: context.params.user },
+                    { $set: user },
+                    { upsert: true }
+                ),
+                getProfileListenerTokens( context.params.user ),
+                getBudTokens( context.params.user ),
+                getRequestTokens( context.params.user ),
+                getLocationListenerTokens( context.params.user )
+            ])
+            .then( results => {
+                const tokens1 = results[1].map( token => token.token )
+                const tokens2 = results[2].map( token => token.token )
+                const tokens3 = results[3].map( token => token.token )
+                const tokens4 = results[4].map( token => token.token )
+
+                // Ensure unique entries with 2 lines of code
+                let pushTokens = new Set( tokens1.concat( tokens2 ).concat( tokens3 ).concat( tokens4 ) )
+                pushTokens = Array.from( pushTokens )
+
+                let messages = []
+
+                for( let i = 0; i < pushTokens.length; i += 100 ) {
+                    let tokens = pushTokens.slice( i, i + 100 )
+                    let message = {
+                        tokens: tokens,
+                        data: {
+                            type: 'profile-update',
+                            user: context.params.user,
+                            data: JSON.stringify( user )
+                        }
+                    }
+
+                    messages.push(
+                        messaging.sendMulticast( message )
+                        .then( response => { handleMessagingErrors( response, tokens ) } )
+                    )
+                }
+
+                return Promise.all( messages )
+            })
         }
         else { // Removed
             // Remove from mongo
@@ -271,26 +374,64 @@ exports.mongoSyncProfile = functions.firestore.document( 'Users/{user}' )
 exports.mongoSyncContactMethods = functions.firestore.document( 'Users/{user}/ContactMethods/{method}' )
 .onWrite(( change, context ) => {
     return getDatabase()
-    .then( client => {
-        let contactMethods = client.collection( CONTACT_METHODS_COLLECTION )
+    .then( db => {
+        let contactMethods = db.collection( CONTACT_METHODS_COLLECTION )
+        let update
+        let data
 
         if ( change.after.exists ) { // Added or updated
-            return contactMethods.updateOne(
+            data = change.after.data()
+            update = contactMethods.updateOne(
                 { _id: context.params.user },
                 { $set: {
-                    [context.params.method]: change.after.data()
+                    [context.params.method]: data
                 }},
                 { upsert: true }
             )
         }
         else { // Removed
-            return contactMethods.updateOne(
+            data = null
+            update = contactMethods.updateOne(
                 { _id: context.params.user },
                 { $unset: {
-                    [context.params.method]: null
+                    [context.params.method]: data
                 }}
             )
         }
+
+        return Promise.all([
+            update,
+            getProfileListenerTokens( context.params.user ),
+            db.collection( BUD_LISTS_COLLECTION ).findOne({ _id: context.params.user }),
+        ])
+        .then( results => {
+            const buds       = results[2] ? new Set( results[2].buds ) : new Set()
+            const pushTokens = results[1].filter(
+                token => { return buds.has( token._id ) }
+            )
+            .map( token => token.token )
+            
+            let messages = []
+
+            for( let i = 0; i < pushTokens.length; i += 100 ) {
+                let tokens = pushTokens.slice( i, i + 100 )
+                let message = {
+                    tokens: tokens,
+                    data: {
+                        type: 'contact-methods-update',
+                        user: context.params.user,
+                        data: JSON.stringify({ [context.params.method]: data })
+                    }
+                }
+
+                messages.push(
+                    messaging.sendMulticast( message )
+                    .then( response => { handleMessagingErrors( response, tokens ) } )
+                )
+            }
+
+            return Promise.all( messages )
+        })
     })
     .catch( error => {
         console.log( error )
@@ -305,20 +446,18 @@ exports.mongoSyncPushTokens = functions.firestore.document( 'PushTokens/{user}' 
         let pushTokens = client.collection( PUSH_TOKENS_COLLECTION )
 
         if ( change.after.exists ) { // Added or updated
-            if ( !change.after.data().user ) return null
+            let data = change.after.data()
 
             return pushTokens.updateOne(
                 { _id: change.after.id },
                 { $set: {
-                    user : change.after.data().user,
-                    token: change.after.data().token
+                    token     : data.token,
+                    foreground: data.foreground !== undefined ? data.foreground : true
                 }},
                 { upsert: true }
             )
         }
         else { // Removed
-            if ( !change.before.data().user ) return null
-
             return pushTokens.deleteOne({ _id: change.before.id })
         }
     })
@@ -445,22 +584,54 @@ exports.mongoSync = functions.https.onRequest(( req, res ) => {
 
 
 exports.deleteAccount = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
+    if ( !context.auth ) throw new HttpsError(
+        'unauthenticated',
+        'User not authenticated.',
+        'unauthenticated'
+    )
     
     return auth.deleteUser( context.auth.uid )
 })
 
 exports.onDeleteAccount = functions.auth.user()
 .onDelete(( user, context ) => {
-
-    // TODO: New code for mongo backend
-    //return deleteUser( user.uid )
-    
-    // TODO: Deprecate this code
     return Promise.all([
-        firestore.doc( `Users/${user.uid}` ).delete(),
-        firestore.doc( `PushTokens/${user.uid}` ).delete(),
+        firestore.doc( `Users/${user.uid}` ).delete(), // TODO: Deprecate this code
+        firestore.doc( `PushTokens/${user.uid}` ).delete(), // TODO: Deprecate this code
+        getProfileListenerTokens( user.uid ),
+        getBudTokens( user.uid ),
+        getRequestTokens( user.uid ),
+        getLocationListenerTokens( user.uid )
     ])
+    .then( results => {
+        let tokens1 = results[2].map( token => token.token )
+        let tokens2 = results[3].map( token => token.token )
+        let tokens3 = results[4].map( token => token.token )
+        let tokens4 = results[5].map( token => token.token )
+        let pushTokens = new Set( tokens1.concat(tokens2).concat(tokens3).concat(tokens4) )
+        pushTokens = Array.from( pushTokens )
+        
+        let tasks = [ deleteUser( user.uid ) ] // Remove from Mongo
+
+        // Notify Users
+        for( let i = 0; i < pushTokens.length; i += 100 ) {
+            let tokens = pushTokens.slice( i, i + 100 )
+            let message = {
+                tokens: tokens,
+                data: {
+                    type: 'account-deleted',
+                    user: user.uid
+                }
+            }
+
+            tasks.push(
+                messaging.sendMulticast( message )
+                .then( response => { handleMessagingErrors( response, tokens ) } )
+            )
+        }
+        
+        return Promise.all( tasks )
+    })
 })
 
 /***********************************
@@ -469,7 +640,7 @@ exports.onDeleteAccount = functions.auth.user()
 
 // Returns profile[] of every user in bud list
 exports.getBuds = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
 
     return getDatabase()
     .then( db => {
@@ -492,7 +663,7 @@ exports.getBuds = functions.https.onCall(( data, context ) => {
 
 // Returns profile[] of every user requesting to be buds
 exports.getBudRequesters = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
 
     return getDatabase()
     .then( db => {
@@ -514,7 +685,7 @@ exports.getBudRequesters = functions.https.onCall(( data, context ) => {
 
 // Returns the bud request record associated with these users, if it exists
 exports.getBudRequest = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
 
     return getDatabase()
     .then( db => {
@@ -524,27 +695,12 @@ exports.getBudRequest = functions.https.onCall(( data, context ) => {
                 { requester: data.bud,  requestee: data.user }
             ]
         })
-        .then( response => {
-            return response
-        })
     })
 })
 
-// Returns the bud list for the active user as { buds: userid[] }
-//exports.getBudList = functions.https.onCall(( data, context ) => {
-//    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-//
-//    return getDatabase()
-//    .then( db => {
-//        return db.collection( BUD_LISTS_COLLECTION ).findOne({
-//            _id: context.auth.uid
-//        }, { projection: { _id: 0 } })
-//    })
-//})
-
 // Returns a single requested user profile, by user id
 exports.getProfile = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
 
     return getDatabase()
     .then( db => {
@@ -554,25 +710,155 @@ exports.getProfile = functions.https.onCall(( data, context ) => {
 
 // Performs a prefix search of usernames, returning all profiles with a match.
 exports.findByUserName = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
 
     return getDatabase()
     .then( db => {
         return db.collection( USERS_COLLECTION )
-            .find({ username: {
-                $regex: `^${data.searchString}.*$`
-            }})
-            .toArray()
+        .find({ username: {
+            $regex: `^${data.searchString}.*$`
+        }})
+        .toArray()
     })
 })
 
+exports.findByLocation = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) throw new HttpsError(
+        'unauthenticated',
+        'User not authenticated.',
+        'unauthenticated'
+    )
 
-// TODO: exports.findByLocation = functions.https.onCall(( data, context ) => {
-//})
+    if ( !data.lon || data.lon < -180 || data.lon > 180 ||
+         !data.lat || data.lat < -90  || data.lat > 90 ) {
+        throw new HttpsError(
+            'invalid-argument',
+            'Lat/Lon are malformed or non-existant',
+            'data: ' + JSON.stringify( data, null, 4 )
+        )
+    }
+
+    return findNearbyUsers( data )
+    .then( nearbyUsers => {
+        return updateLocationListeners( context.auth.uid, nearbyUsers )
+        .then(() => {
+            return nearbyUsers
+        })
+    })
+})
+
+exports.updateLocation = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) throw new HttpsError(
+        'unauthenticated',
+        'User not authenticated.',
+        'unauthenticated'
+    )
+
+    if ( !data.lon || data.lon < -180 || data.lon > 180 ||
+         !data.lat || data.lat < -90  || data.lat > 90 ) {
+        throw new HttpsError(
+            'invalid-argument',
+            'Lat/Lon are malformed or non-existant',
+            'data: ' + JSON.stringify( data, null, 4 )
+        )
+    }
+
+    return Promise.all([
+        getDatabase()
+        .then( db => {
+            return db.collection( USERS_COLLECTION )
+            .findOneAndUpdate(
+                { _id: context.auth.uid },
+                { $set: {
+                    location: {
+                        type       : 'Point',
+                        coordinates: [ data.lon, data.lat ]
+                    }
+                }},
+                { upsert: true, returnOriginal: false }
+            )
+        }),
+        getDatabase()
+        .then( db => {
+            return db.collection( USERS_COLLECTION )
+            .aggregate([
+                { $geoNear: {
+                    query: { _id: { $ne: context.auth.uid } },
+                    spherical: true,
+                    maxDistance: MAX_SEARCH_DISTANCE,
+                    distanceField: 'distance',
+                    distanceMultiplier: 3958.76, // Convert distance to miles
+                    near: {
+                        type       : 'Point',
+                        coordinates: [ data.lon, data.lat ]
+                    },
+                    key: 'location'
+                }},
+                { $lookup: {
+                    from: PUSH_TOKENS_COLLECTION,
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'token' // Stored as array
+                }},
+                { $group: {
+                    _id: null,
+                    users: { $push: {
+                        _id: '$_id',
+                        username: '$username',
+                        birthDate: '$birthDate',
+                        gender: '$gender',
+                        avatar: '$avatar',
+                        location: '$location',
+                        distance: '$distance'
+                    }},
+                    tokens: { $push: { $arrayElemAt: ['$token', 0] } }
+                }}
+            ],
+            { allowDiskUse: true })
+            .toArray()
+        }),
+        getLocationListenerTokens( context.auth.uid )
+    ])
+    .then( results => {
+        let user             = results[0].value
+        let users            = results[1][0]
+        let nearbyUsers      = users ? users.users.slice( 0, 99 ) : []
+        let nearbyUserTokens = users ? users.tokens.filter( token => token && token.foreground ) : []
+        nearbyUserTokens = nearbyUserTokens.map( token => token.token )
+        let listenerTokens = results[2].map( token => token.token )
+        let pushTokens       = new Set( nearbyUserTokens.concat( listenerTokens ) )
+
+        pushTokens = Array.from( pushTokens )
+        nearbyUsers.unshift( user )
+        
+        let tasks = [ updateLocationListeners( context.auth.uid, nearbyUsers ) ]
+
+        for( let i = 0; i < pushTokens.length; i += 100 ) {
+            let tokens = pushTokens.slice( i, i + 100 )
+            let message = {
+                tokens: tokens,
+                data: {
+                    type: 'location-update',
+                    data: JSON.stringify( user )
+                }
+            }
+
+            tasks.push(
+                messaging.sendMulticast( message )
+                .then( response => { handleMessagingErrors( response, tokens ) } )
+            )
+        }
+
+        return Promise.all( tasks )
+        .then(() => {
+            return nearbyUsers    
+        })
+    })
+})
 
 // Returns contact methods for requested user, if they are authorized to view them
 exports.getContactMethods = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
 
     return getDatabase()
     .then( db => {
@@ -593,7 +879,7 @@ exports.getContactMethods = functions.https.onCall(( data, context ) => {
                 ]
             })
             .then( count => {
-                if ( count < 2 ) throw new functions.https.HttpsError( 'permission-denied', 'Must be buds to view contact info.', 'permission-denied' )
+                if ( count < 2 ) throw new HttpsError( 'permission-denied', 'Must be buds to view contact info.', 'permission-denied' )
                 return db
             })
     })
@@ -605,7 +891,7 @@ exports.getContactMethods = functions.https.onCall(( data, context ) => {
 
 // Updates user profile, creating if necessary
 exports.updateProfile = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
 
     // Limit submitted fields to those supported
     const fields = [
@@ -617,62 +903,63 @@ exports.updateProfile = functions.https.onCall(( data, context ) => {
 
     data = Object.subset( data, fields )
 
-    // TODO: update firestore, too
-    //firestore.doc( `Users/${context.auth.uid}` )
-    //    .set( data, { merge: true } )
+    // TODO: switch to mongo
+    firestore.doc( `Users/${context.auth.uid}` )
+    .set( data, { merge: true } )
 
-    return getDatabase()
-    .then( db => {
-        return Promise.all([
-            db.collection( USERS_COLLECTION )
-            .updateOne(
-                { _id: context.auth.uid },
-                { $set: data },
-                { upsert: true }
-            ),
-            getProfileListenerTokens( context.auth.uid ),
-            getBudTokens( context.auth.uid ),
-            getRequestTokens( context.auth.uid )
-        ])
-        .then( results => {
-            const profileListeners = results[1].map( token => token.token )
-            const buds             = results[2].map( token => token.token )
-            const requests         = results[3].map( token => token.token )
-
-            // Ensure unique entries with 2 lines of code
-            let pushTokens = new Set( profileListeners.concat( buds ).concat( requests ) )
-            pushTokens = Array.from( pushTokens )
-
-            let messages = []
-
-            for( let i = 0; i < pushTokens.length; i += 100 ) {
-                let tokens = pushTokens.slice( i, i + 100 )
-                let message = {
-                    tokens: tokens,
-                    data: {
-                        type: 'profile-update',
-                        user: context.auth.uid,
-                        data: JSON.stringify( data )
-                    }
-                }
-
-                messages.push(
-                    messaging.sendMulticast( message )
-                    .then( response => { handleMessagingErrors( response, tokens ) } )
-                )
-            }
-
-            return Promise.all( messages )
-        })
-    })
-    .then(() => {
-        return null
-    })
+    // TODO: uncomment this code to write directly to mongo
+    //return getDatabase()
+    //.then( db => {
+    //    return Promise.all([
+    //        db.collection( USERS_COLLECTION )
+    //        .updateOne(
+    //            { _id: context.auth.uid },
+    //            { $set: data },
+    //            { upsert: true }
+    //        ),
+    //        getProfileListenerTokens( context.auth.uid ),
+    //        getBudTokens( context.auth.uid ),
+    //        getRequestTokens( context.auth.uid )
+    //    ])
+    //    .then( results => {
+    //        const profileListeners = results[1].map( token => token.token )
+    //        const buds             = results[2].map( token => token.token )
+    //        const requests         = results[3].map( token => token.token )
+//
+    //        // Ensure unique entries with 2 lines of code
+    //        let pushTokens = new Set( profileListeners.concat( buds ).concat( requests ) )
+    //        pushTokens = Array.from( pushTokens )
+//
+    //        let messages = []
+//
+    //        for( let i = 0; i < pushTokens.length; i += 100 ) {
+    //            let tokens = pushTokens.slice( i, i + 100 )
+    //            let message = {
+    //                tokens: tokens,
+    //                data: {
+    //                    type: 'profile-update',
+    //                    user: context.auth.uid,
+    //                    data: JSON.stringify( data )
+    //                }
+    //            }
+//
+    //            messages.push(
+    //                messaging.sendMulticast( message )
+    //                .then( response => { handleMessagingErrors( response, tokens ) } )
+    //            )
+    //        }
+//
+    //        return Promise.all( messages )
+    //    })
+    //})
+    //.then(() => {
+    //    return null
+    //})
 })
 
 // Adds contact method to user's list of contact methods
 exports.updateContactMethods = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
 
     const supportedMethods = [
         'facebook',
@@ -684,486 +971,535 @@ exports.updateContactMethods = functions.https.onCall(( data, context ) => {
         'text' 
     ]
 
-    // TODO: update firebase
-    //let batch = firestore.batch()
-    //supportedMethods.forEach( key => {
-    //    if ( data[key] ) {
-    //        const doc = firestore.doc( `Users/${context.auth.uid}` ).collection('ContactMethods').doc( key )
-    //        batch = batch.set( doc, data[key], { merge: true } )
-    //    }
+    // TODO: switch writes to mongo
+    let batch = firestore.batch()
+    supportedMethods.forEach( key => {
+        if ( data[key] ) {
+            const doc = firestore.doc( `Users/${context.auth.uid}` ).collection('ContactMethods').doc( key )
+            batch = batch.set( doc, data[key], { merge: true } )
+        }
+    })
+    return batch.commit()
+
+    // TODO: uncomment to write directly to mongo
+    //data = Object.subset( data, supportedMethods )
+//
+    //return getDatabase()
+    //.then( db => {
+    //    return Promise.all([
+    //        db.collection( CONTACT_METHODS_COLLECTION )
+    //        .updateOne(
+    //            { _id: context.auth.uid },
+    //            { $set: data },
+    //            { upsert: true }
+    //        ),
+    //        getProfileListenerTokens( context.auth.uid ),
+    //        db.collection( BUD_LISTS_COLLECTION ).findOne({ _id: context.auth.uid }),
+    //    ])
+    //    .then( results => {
+    //        const buds       = results[2] ? new Set( results[2].buds ) : new Set()
+    //        const pushTokens = results[1].filter(
+    //            token => { return buds.has( token._id ) }
+    //        )
+    //        .map( token => token.token )
+    //        
+    //        let messages = []
+//
+    //        for( let i = 0; i < pushTokens.length; i += 100 ) {
+    //            let tokens = pushTokens.slice( i, i + 100 )
+    //            let message = {
+    //                tokens: tokens,
+    //                data: {
+    //                    type: 'contact-methods-update',
+    //                    user: context.auth.uid,
+    //                    data: JSON.stringify( data )
+    //                }
+    //            }
+//
+    //            messages.push(
+    //                messaging.sendMulticast( message )
+    //                .then( response => { handleMessagingErrors( response, tokens ) } )
+    //            )
+    //        }
+//
+    //        return Promise.all( messages )
+    //    })
     //})
-    //return batch.commit()
-
-    data = Object.subset( data, supportedMethods )
-
-    return getDatabase()
-    .then( db => {
-        return Promise.all([
-            db.collection( CONTACT_METHODS_COLLECTION )
-            .updateOne(
-                { _id: context.auth.uid },
-                { $set: data },
-                { upsert: true }
-            ),
-            getProfileListenerTokens( context.auth.uid ),
-            db.collection( BUD_LISTS_COLLECTION ).findOne({ _id: context.auth.uid }),
-        ])
-        .then( results => {
-            const buds       = new Set( results[2].buds )
-            const pushTokens = results[1]
-            .filter(
-                listener => { return buds.has( listener.user ) || listener.user === context.auth.uid }
-            )
-            .map( token => token.token )
-            
-            let messages = []
-
-            for( let i = 0; i < pushTokens.length; i += 100 ) {
-                let tokens = pushTokens.slice( i, i + 100 )
-                let message = {
-                    tokens: tokens,
-                    data: {
-                        type: 'contact-methods-update',
-                        user: context.auth.uid,
-                        data: JSON.stringify( data )
-                    }
-                }
-
-                messages.push(
-                    messaging.sendMulticast( message )
-                    .then( response => { handleMessagingErrors( response, tokens ) } )
-                )
-            }
-
-            return Promise.all( messages )
-        })
-    })
-    .then(() => {
-        return null
-    })
+    //.then(() => {
+    //    return null
+    //})
 })
 
 // If a bud request requests exists from target, then both users will be added to each other's lists
 // Otherwise, a bud request will be created
 // Target user will receive a notification
 exports.addBud = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-    if ( context.auth.uid === data.user ) throw new functions.https.HttpsError( 'invalid-argument' )
+    if ( !context.auth ) throw new HttpsError(
+        'unauthenticated',
+        'User not authenticated.',
+        'unauthenticated'
+    )
+    if ( context.auth.uid === data.user ) throw new HttpsError(
+        'invalid-argument',
+        'Cannot add self as bud.',
+        'invalid-argument'
+    )
 
-    return getDatabase()
-    .then( db => {
-        return Promise.all([
-            db.collection( BUD_REQUESTS_COLLECTION )
-            .findOne({
-                requester: data.user,
-                requestee: context.auth.uid
-            }),
-            db.collection( USERS_COLLECTION ).find({ _id: { $in: [ context.auth.uid, data.user ] } }).toArray(),
-            db.collection( BUD_LISTS_COLLECTION ).findOne({ _id: context.auth.uid }),
-            db.collection( PUSH_TOKENS_COLLECTION ).find({ user:  data.user }).toArray(),
-            getBudTokensForUsers([ context.auth.uid, data.user ])
-        ])
-        .then( results => {
-            let request    = results[0]
-            let budList    = results[2]
-            let userTokens = results[3]
-            let listeners  = results[4]
-            let user1
-            let user2
+    // TODO: switch to mongo
+    return firestore.doc( `Users/${context.auth.uid}` ).collection( 'ContactList' ).doc( data.user )
+    .set({ id: data.user })
 
-            results[1].forEach( user => {
-                if ( user._id === context.auth.uid ) user1 = user
-                else user2 = user
-            })
-            
-            // Already buds
-            if ( budList.buds.includes( data.user ) ) throw new functions.https.HttpsError( 'invalid-argument' )
-
-            // TODO: update firebase, too
-            //return firestore.doc( `Users/${context.auth.uid}` ).collection( 'ContactList' ).doc( data.user )
-            //.set({ id: data.user })
-            if ( request ) { // remove request and add users to budlists
-                return Promise.all([
-                    db.collection( BUD_REQUESTS_COLLECTION ).deleteOne( request ),
-                    db.collection( BUD_LISTS_COLLECTION ).bulkWrite(
-                        [{
-                            updateOne: {
-                                filter: { _id: request.requester },
-                                update: { $addToSet: { buds: request.requestee } },
-                                upsert: true
-                            }
-                        },
-                        {
-                            updateOne: {
-                                filter: { _id: request.requestee },
-                                update: { $addToSet: { buds: request.requester } },
-                                upsert: true
-                            }
-                        }],
-                        { ordered: false }
-                    )
-                ])
-                .then(() => {
-                    const messages = []
-
-                    userTokens.forEach( token => {
-                        messages.push({
-                            token: token.token,
-                            android: {
-                                notification: {
-                                    tag: 'request',
-                                    sound: 'default'
-                                }
-                            },
-                            apns: {
-                                payload: {
-                                    aps: {
-                                        sound: 'default'
-                                    }
-                                }
-                            },
-                            notification: {
-                                title: `A new Bud.`,
-                                body : `Congratulations! You are now buds with ${user1.username}`,
-                            },
-                            data: {
-                                userid: user1._id
-                            }
-                        })
-                    })
-                    
-                    listeners.forEach( token => {
-                        messages.push({
-                            token: token.token,
-                            data: {
-                                type: 'bud-added',
-                                data: JSON.stringify( token.user === user1._id ? user2 : user1 ) // Profile
-                            }
-                        })
-                    })
-
-                    if ( messages.length > 0 ) {
-                        return messaging.sendAll( messages )
-                        .then( response =>
-                            handleMessagingErrors(
-                                response,
-                                userTokens.concat( listeners ).map( token => token.token )
-                            )
-                         )
-                    }
-                })
-                .then(() => {
-                    //return { type: 'added', user: user2 }
-                    return null
-                })
-            }
-            else if ( user2 ) { // Add a bud request
-                const request = { requester: context.auth.uid, requestee: data.user }
-                return db.collection( BUD_REQUESTS_COLLECTION )
-                .insertOne( request )
-                .then(() => {
-                    const messages = []
-
-                    userTokens.forEach( token => {
-                        messages.push({
-                            token: token.token,
-                            android: {
-                                notification: {
-                                    tag: 'request',
-                                    sound: 'default'
-                                }
-                            },
-                            apns: {
-                                payload: {
-                                    aps: {
-                                        sound: 'default'
-                                    }
-                                }
-                            },
-                            notification: {
-                                title: 'Bud Request',
-                                body : `${user1.username} wants to be your bud! Check them out!`,
-                            },
-                            data: {
-                                userid: user1._id
-                            }
-                        })
-                    })
-                    
-                    listeners.forEach( token => {
-                        messages.push({
-                            token: token.token,
-                            data: {
-                                type: 'bud-request',
-                                data: JSON.stringify({
-                                    user   : token.user === user1._id ? user2 : user1,
-                                    request: request
-                                })
-                            }
-                        })
-                    })
-
-                    if ( messages.length > 0 ) {
-                        return messaging.sendAll( messages )
-                        .then( response =>
-                            handleMessagingErrors(
-                                response,
-                                userTokens.concat( listeners ).map( token => token.token )
-                            )
-                        )
-                    }
-                })
-                .then(() => {
-                    return null
-                })
-            }
-            else {
-                throw new functions.https.HttpsError( 'invalid-argument' )
-            }
-        })
-    })
+    // TODO: uncomment to write directly to mongo
+    //return getDatabase()
+    //.then( db => {
+    //    return Promise.all([
+    //        db.collection( BUD_REQUESTS_COLLECTION )
+    //        .findOne({
+    //            requester: data.user,
+    //            requestee: context.auth.uid
+    //        }),
+    //        db.collection( USERS_COLLECTION ).find({ _id: { $in: [context.auth.uid, data.user] } }).toArray(),
+    //        db.collection( BUD_LISTS_COLLECTION ).findOne({ _id: context.auth.uid }),
+    //        db.collection( PUSH_TOKENS_COLLECTION ).findOne({ _id: data.user }),
+    //        getPushTokensForUsers([ data.user ])
+    //    ])
+    //    .then( results => {
+    //        let request    = results[0]
+    //        let user       = results[1][0]._id == context.auth.uid ? results[1][0] : results[1][1]
+    //        let requestee  = results[1][0]._id == context.auth.uid ? results[1][1] : results[1][0]
+    //        let budList    = results[2]
+    //        let notifToken = results[3]
+    //        let dataToken  = results[4][0]
+//
+    //        // Already buds
+    //        if ( budList && budList.buds.includes( data.user ) ) {
+    //            throw new HttpsError(
+    //                'invalid-argument',
+    //                'User has already been added as a bud.',
+    //                'invalid-argument'
+    //            )
+    //        }
+//
+    //        if ( request ) { // remove request and add users to budlists
+    //            return Promise.all([
+    //                db.collection( BUD_REQUESTS_COLLECTION ).deleteOne( request ),
+    //                db.collection( BUD_LISTS_COLLECTION ).bulkWrite(
+    //                    [{
+    //                        updateOne: {
+    //                            filter: { _id: request.requester },
+    //                            update: { $addToSet: { buds: request.requestee } },
+    //                            upsert: true
+    //                        }
+    //                    },
+    //                    {
+    //                        updateOne: {
+    //                            filter: { _id: request.requestee },
+    //                            update: { $addToSet: { buds: request.requester } },
+    //                            upsert: true
+    //                        }
+    //                    }],
+    //                    { ordered: false }
+    //                )
+    //            ])
+    //            .then(() => {
+    //                let messages = []
+    //                if ( notifToken ) {
+    //                    messages.push({
+    //                        token: notifToken.token,
+    //                        android: {
+    //                            notification: {
+    //                                tag: 'request',
+    //                                sound: 'default'
+    //                            }
+    //                        },
+    //                        apns: {
+    //                            payload: {
+    //                                aps: {
+    //                                    sound: 'default'
+    //                                }
+    //                            }
+    //                        },
+    //                        notification: {
+    //                            title: `A new Bud.`,
+    //                            body : `Congratulations! You are now buds with ${user.username}`,
+    //                        },
+    //                        data: {
+    //                            userid: user._id
+    //                        }
+    //                    })
+    //                }
+//
+    //                if ( dataToken ) {
+    //                    messages.push({
+    //                        token: dataToken.token,
+    //                        data: {
+    //                            type: 'bud-added',
+    //                            data: JSON.stringify( user ) // Profile
+    //                        }
+    //                    })
+    //                }
+//
+    //                return messages
+    //            })
+    //        }
+    //        else if ( requestee ) { // Add a bud request
+    //            const request = { requester: context.auth.uid, requestee: data.user }
+    //            return db.collection( BUD_REQUESTS_COLLECTION )
+    //            .insertOne( request )
+    //            .then(() => {
+    //                let messages = []
+//
+    //                if ( notifToken ) {
+    //                    messages.push({
+    //                        token: notifToken.token,
+    //                        android: {
+    //                            notification: {
+    //                                tag: 'request',
+    //                                sound: 'default'
+    //                            }
+    //                        },
+    //                        apns: {
+    //                            payload: {
+    //                                aps: {
+    //                                    sound: 'default'
+    //                                }
+    //                            }
+    //                        },
+    //                        notification: {
+    //                            title: 'Bud Request',
+    //                            body : `${user.username} wants to be your bud! Check them out!`,
+    //                        },
+    //                        data: {
+    //                            userid: user._id
+    //                        }
+    //                    })
+    //                }
+//
+    //                if ( dataToken ) {
+    //                    messages.push({
+    //                        token: dataToken.token,
+    //                        data: {
+    //                            type: 'bud-request',
+    //                            data: JSON.stringify({
+    //                                user   : user,
+    //                                request: request
+    //                            })
+    //                        }
+    //                    })
+    //                }
+//
+    //                return messages
+    //            })
+    //        }
+    //        else {
+    //            throw new HttpsError(
+    //                'invalid-argument',
+    //                'User does not exist.',
+    //                'invalid-argument'
+    //            )
+    //        }
+    //    })
+    //    .then( messages => {
+    //        if ( messages.length === 0 ) return;
+//
+    //        return messaging.sendAll( messages )
+    //        .then( response =>
+    //            handleMessagingErrors( response, messages.map( message => message.token ) )
+    //         )
+    //    })
+    //})
 })
 
 // Removes users from each other's lists, and removes any associated bud requests
 exports.removeBud = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
 
-    // TODO: update firebase, too
-    //return firestore.batch()
-    //.delete( firestore.doc( `Users/${context.auth.uid}` ).collection( 'ContactList' ).doc( data.user ) )
-    //.delete( firestore.doc( `Users/${data.user}` ).collection( 'ContactList' ).doc( context.auth.uid ) )
-    //.commit()
+    // TODO: switch to mongo
+    return firestore.batch()
+    .delete( firestore.doc( `Users/${context.auth.uid}` ).collection( 'ContactList' ).doc( data.user ) )
+    .delete( firestore.doc( `Users/${data.user}` ).collection( 'ContactList' ).doc( context.auth.uid ) )
+    .commit()
+
+    // TODO: uncomment to write directly to mongo
+    //return getDatabase()
+    //.then( db => {
+    //    return Promise.all([
+    //        db.collection( BUD_LISTS_COLLECTION ).bulkWrite(
+    //            [{
+    //                updateOne: {
+    //                    filter: { _id: context.auth.uid },
+    //                    update: { $pull: { buds: data.user } }
+    //                }
+    //            },
+    //            {
+    //                updateOne: {
+    //                    filter: { _id: data.user },
+    //                    update: { $pull: { buds: context.auth.uid } }
+    //                }
+    //            }],
+    //            { ordered: false }
+    //        ),
+    //        db.collection( BUD_REQUESTS_COLLECTION ).bulkWrite(
+    //            [{
+    //                deleteOne: {
+    //                    filter: {
+    //                        requester: context.auth.uid,
+    //                        requestee: data.user
+    //                    }
+    //                }
+    //            },
+    //            {
+    //                deleteOne: {
+    //                    filter: {
+    //                        requester: data.user,
+    //                        requestee: context.auth.uid
+    //                    }
+    //                }
+    //            }],
+    //            { ordered: false }
+    //        ),
+    //        getPushTokensForUsers([ data.user ])
+    //    ])
+    //    .then( results => {
+    //        let token = results[2][0]
+//
+    //        if ( !token ) return;
+//
+    //        let message = {
+    //            token: token.token,
+    //            data: {
+    //                type: 'bud-removed',
+    //                user: context.auth.uid // userid
+    //            }
+    //        }
+//
+    //        return messaging.send( message )
+    //        .catch( error => {
+    //            if (
+    //                error.code === 'messaging/invalid-registration-token' ||
+    //                error.code === 'messaging/registration-token-not-registered'
+    //            ) {
+    //                return removeInvalidToken( token.token )
+    //            }
+    //            else {
+    //                console.error( JSON.stringify( error, null, 4 ) )
+    //                throw error
+    //            }
+    //        })
+    //    })
+    //})
+    //.then(() => {
+    //    return null
+    //})
+})
+
+exports.updateAppState = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) throw new HttpsError(
+        'unauthenticated',
+        'User not authenticated.',
+        'In firebase-functions:updateAppState\nUser: ' + JSON.stringify( context.auth, null, 4 )
+    )
+
+    if ( data.foreground === undefined ) return null
+
+    // TODO: switch to mongo
+    return firestore.doc( `PushTokens/${context.auth.uid}` )
+    .set( { foreground: data.foreground }, { merge: true } )
+
+    // TODO: uncomment to write directly to mongo
+    //return getDatabase()
+    //.then( db => {
+    //    return db.collection( PUSH_TOKENS_COLLECTION )
+    //    .updateOne(
+    //        { _id: context.auth.uid },
+    //        { $set: {
+    //            foreground: data.foreground
+    //        }}
+    //    )
+    //})
+    //.then(() => {
+    //    return null
+    //})
+})
+
+exports.updatePushToken = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) throw new HttpsError(
+        'unauthenticated',
+        'User not authenticated.',
+        'In firebase-functions:updatePushToken\nUser: ' + JSON.stringify( context.auth, null, 4 )
+    )
+
+    // TODO: switch to mongo
+    return firestore.doc( `PushTokens/${context.auth.uid}` )
+    .set( { token: data.token }, { merge: true } )
+
+    // TODO: uncomment to write directly to mongo
+    //return getDatabase()
+    //.then( db => {
+    //    return db.collection( PUSH_TOKENS_COLLECTION )
+    //    .updateOne(
+    //        { _id: context.auth.uid },
+    //        {
+    //            $set: {
+    //                token: data.token
+    //            },
+    //            $setOnInsert: {
+    //                foreground: true
+    //            }
+    //        },
+    //        { upsert: true }
+    //    )
+    //})
+    //.then(() => {
+    //    return null
+    //})
+})
+
+exports.removePushToken = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
+
+    // TODO: switch to mongo
+    firestore.doc( `PushTokens/${context.auth.uid}` ).delete()
+
+    // TODO: uncomment to write directly to mongo
+    //return getDatabase()
+    //.then( db => {
+    //    return db.collection( PUSH_TOKENS_COLLECTION )
+    //    .deleteOne({ _id: context.auth.uid })
+    //})
+    //.then(() => {
+    //    return null
+    //})
+})
+
+exports.registerProfileListeners = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
+
+    return getDatabase()
+    .then( db => {
+        return db.collection( PROFILE_LISTENERS_COLLECTION )
+        .updateMany(
+            { _id: { $in: data.users } },
+            { $addToSet: { listeners: context.auth.uid } },
+            { upsert: true }
+        )
+    })
+    .then(() => {
+        return null
+    })
+})
+
+exports.unregisterProfileListeners = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) throw new HttpsError(
+        'unauthenticated',
+        'User not authenticated.',
+        'In firebase-functions:unregisterProfileListener\nUser: ' + JSON.stringify( context.auth, null, 4 )
+    )
+
+    return getDatabase()
+    .then( db => {
+        return db.collection( PROFILE_LISTENERS_COLLECTION )
+        .updateMany(
+            { _id: { $in: data.users } },
+            { $pull: { listeners: context.auth.uid } }
+        )
+    })
+    .then(() => {
+        return null
+    })
+})
+
+//exports.registerBudListener = functions.https.onCall(( data, context ) => {
+//    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
+//
+//    return getDatabase()
+//    .then( db => {
+//        return db.collection( BUD_LISTENERS_COLLECTION )
+//        .updateOne(
+//            { _id: context.auth.uid },
+//            { $addToSet: { listeners: data.deviceId } },
+//            { upsert: true }
+//        )
+//    })
+//    .then(() => {
+//        return null
+//    })
+//})
+
+//exports.unregisterBudListener = functions.https.onCall(( data, context ) => {
+//    if ( !context.auth ) throw new HttpsError(
+//        'unauthenticated',
+//        'User not authenticated.',
+//        'In firebase-functions:unregisterBudListener\nUser: ' + JSON.stringify( context.auth, null, 4 )
+//    )
+//
+//    return getDatabase()
+//    .then( db => {
+//        return db.collection( BUD_LISTENERS_COLLECTION )
+//        .updateOne(
+//            { _id: context.auth.uid },
+//            { $pull: { listeners: data.deviceId } }
+//        )
+//    })
+//    .then(() => {
+//        return null
+//    })
+//})
+
+exports.registerLocationListeners = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
+
+    return getDatabase()
+    .then( db => {
+        return db.collection( LOCATION_LISTENERS_COLLECTION )
+        .updateMany(
+            { _id: { $in: data.users } },
+            { $addToSet: { listeners: context.auth.uid } },
+            { upsert: true }
+        )
+    })
+    .then(() => {
+        return null
+    })
+})
+
+exports.unregisterLocationListeners = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
+
+    return getDatabase()
+    .then( db => {
+        return db.collection( LOCATION_LISTENERS_COLLECTION )
+        .updateMany(
+            { _id: { $in: data.users } },
+            { $pull: { listeners: context.auth.uid } }
+        )
+    })
+    .then(() => {
+        return null
+    })
+})
+
+exports.unregisterAllListeners = functions.https.onCall(( data, context ) => {
+    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
 
     return getDatabase()
     .then( db => {
         return Promise.all([
-            db.collection( BUD_LISTS_COLLECTION ).bulkWrite(
-                [{
-                    updateOne: {
-                        filter: { _id: context.auth.uid },
-                        update: { $pull: { buds: data.user } }
-                    }
-                },
-                {
-                    updateOne: {
-                        filter: { _id: data.user },
-                        update: { $pull: { buds: context.auth.uid } }
-                    }
-                }],
-                { ordered: false }
+            db.collection( LOCATION_LISTENERS_COLLECTION )
+            .updateMany(
+                { listeners: context.auth.uid },
+                { $pull: { listeners: context.auth.uid } }
             ),
-            db.collection( BUD_REQUESTS_COLLECTION ).bulkWrite(
-                [{
-                    deleteOne: {
-                        filter: {
-                            requester: context.auth.uid,
-                            requestee: data.user
-                        }
-                    }
-                },
-                {
-                    deleteOne: {
-                        filter: {
-                            requester: data.user,
-                            requestee: context.auth.uid
-                        }
-                    }
-                }],
-                { ordered: false }
-            ),
-            getBudTokensForUsers([ context.auth.uid, data.user ])
+            db.collection( PROFILE_LISTENERS_COLLECTION )
+            .updateMany(
+                { listeners: context.auth.uid },
+                { $pull: { listeners: context.auth.uid } }
+            )
         ])
-        .then( results => {
-            let listeners = results[2]
-            
-            const messages = []
-            
-            listeners.forEach( token => {
-                messages.push({
-                    token: token.token,
-                    data: {
-                        type: 'bud-removed',
-                        user: token.user === context.auth.uid ? data.user : context.auth.uid // userid
-                    }
-                })
-            })
-
-            if ( messages.length > 0 ) {
-                return messaging.sendAll( messages )
-                .then( response => handleMessagingErrors( response, listeners.map( token => token.token ) ) )
-            }
-        })
     })
     .then(() => {
         return null
-    })
-})
-
-exports.updatePushToken = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-
-    // TODO: update firestore, too
-    //firestore.doc( `PushTokens/${context.auth.uid}` )
-    //    .set( { token: data.token }, { merge: true } )
-
-    return getDatabase()
-    .then( db => {
-        return db.collection( PUSH_TOKENS_COLLECTION )
-        .updateOne(
-            { _id: data.deviceId },
-            { $set: {
-                user : context.auth.uid,
-                token: data.token
-            }},
-            { upsert: true }
-        )
-    })
-    .then(() => {
-        return null
-    })
-})
-
-exports.removePushToken = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-
-    // TODO: update firestore, too
-    //firestore.doc( `PushTokens/${context.auth.uid}` ).delete()
-
-    return getDatabase()
-    .then( db => {
-        return db.collection( PUSH_TOKENS_COLLECTION )
-        .deleteOne({ _id: data.deviceId })
-    })
-    .then(() => {
-        return null
-    })
-})
-
-exports.updateLocation = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-    if ( !data.lon || data.lon < -180 || data.lon > 180 ||
-         !data.lat || data.lat < -90  || data.lat > 90 ) {
-        throw new functions.https.HttpsError( 'invalid-argument' )
-    }
-
-    return getDatabase()
-    .then( db => {
-        return db.collection( USERS_COLLECTION )
-        .updateOne(
-            { _id: context.auth.uid },
-            { $set: {
-                location: {
-                    type       : 'Point',
-                    coordinates: [ data.lon, data.lat ]
-                }
-            }}
-        )
-    })
-    .then(() => {
-        // TODO: notify users
-    })
-    .then(() => {
-        return null
-    })
-})
-
-// Registers at most 1 listener per device
-exports.registerProfileListener = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-
-    return getDatabase()
-    .then( db => {
-        return db.collection( PROFILE_LISTENERS_COLLECTION )
-        .updateOne(
-            { _id: data.user },
-            { $addToSet: { listeners: data.deviceId } },
-            { upsert: true }
-        )
-    })
-    .then(() => {
-        return null
-    })
-})
-
-exports.unregisterProfileListener = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-
-    return getDatabase()
-    .then( db => {
-        return db.collection( PROFILE_LISTENERS_COLLECTION )
-        .updateOne(
-            { _id: data.user },
-            { $pull: { listeners: data.deviceId } }
-        )
-    })
-    .then(() => {
-        return null
-    })
-})
-
-// Registers at most 1 listener per device
-exports.registerBudListener = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-
-    return getDatabase()
-    .then( db => {
-        return db.collection( BUD_LISTENERS_COLLECTION )
-        .updateOne(
-            { _id: context.auth.uid },
-            { $addToSet: { listeners: data.deviceId } },
-            { upsert: true }
-        )
-    })
-    .then(() => {
-        return null
-    })
-})
-
-exports.unregisterBudListener = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-
-    return getDatabase()
-    .then( db => {
-        return db.collection( BUD_LISTENERS_COLLECTION )
-        .updateOne(
-            { _id: context.auth.uid },
-            { $pull: { listeners: data.deviceId } }
-        )
-    })
-    .then(() => {
-        return null
-    })
-})
-
-// Registers at most 1 listener per device
-exports.registerLocationListener = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-
-    return getDatabase()
-    .then( db => {
-        return db.collection( LOCATION_LISTENERS_COLLECTION )
-        .updateOne(
-            { _id: data.deviceId },
-            { user: context.auth.uid },
-            { upsert: true }
-        )
-    })
-    .then(() => {
-        return null
-    })
-})
-
-exports.unregisterLocationListener = functions.https.onCall(( data, context ) => {
-    if ( !context.auth ) throw new functions.https.HttpsError( 'unauthenticated' )
-
-    return getDatabase()
-    .then( db => {
-        return db.collection( LOCATION_LISTENERS_COLLECTION )
-        .deleteOne({ _id: data.deviceId })
-    })
-    .then(() => {
-        return null
-    })
+    })    
 })
 
 function getDatabase() {
@@ -1187,13 +1523,24 @@ function deleteUser( userid ) {
         let budRequests    = db.collection( BUD_REQUESTS_COLLECTION )
         let contactMethods = db.collection( CONTACT_METHODS_COLLECTION )
         let pushTokens     = db.collection( PUSH_TOKENS_COLLECTION )
+        let profileListeners  = db.collection( PROFILE_LISTENERS_COLLECTION )
+        let locationListeners = db.collection( LOCATION_LISTENERS_COLLECTION )
 
         return Promise.all([
             users.deleteOne({ _id: userid }),
-            budLists.deleteOne({ _id: userid }),
-            budLists.updateMany(
-                { buds: userid },           // If bud list contains this user,
-                { $pull: { buds: userid } } // Remove this user from bud list
+            budLists.bulkWrite(
+                [{
+                    deleteOne: {
+                        filter: { _id: userid },
+                    }
+                },
+                {
+                    updateMany: {
+                        filter: { buds: userid },           // If bud list contains this user,
+                        update: { $pull: { buds: userid } } // Remove this user from bud list
+                    }
+                }],
+                { ordered: false }
             ),
             budRequests.deleteMany({ // Remove all requests associated with user
                 $or: [
@@ -1202,7 +1549,35 @@ function deleteUser( userid ) {
                 ]
             }),
             contactMethods.deleteOne({ _id: userid }),
-            pushTokens.deleteMany({ user: userid })
+            pushTokens.deleteOne({ _id: userid }),
+            profileListeners.bulkWrite(
+                [{
+                    deleteOne: {
+                        filter: { _id: userid },
+                    }
+                },
+                {
+                    updateMany: {
+                        filter: { listeners: userid },           // If listeners contains this user,
+                        update: { $pull: { listeners: userid } } // Remove this user from listeners
+                    }
+                }],
+                { ordered: false }
+            ),
+            locationListeners.bulkWrite(
+                [{
+                    deleteOne: {
+                        filter: { _id: userid },
+                    }
+                },
+                {
+                    updateMany: {
+                        filter: { listeners: userid },           // If listeners contains this user,
+                        update: { $pull: { listeners: userid } } // Remove this user from listeners
+                    }
+                }],
+                { ordered: false }
+            )
         ])
     })
 }
@@ -1215,7 +1590,7 @@ function getProfileListenerTokens( userid ) {
         .aggregate([
             { $match: { _id: userid } },
             { $unwind: '$listeners' }, // Create document for each listener
-            { $lookup: { // Find push token for each device
+            { $lookup: { // Find push token for each user
                 from: PUSH_TOKENS_COLLECTION,
                 localField: 'listeners',
                 foreignField: '_id',
@@ -1225,6 +1600,9 @@ function getProfileListenerTokens( userid ) {
             { $replaceRoot: { newRoot: '$token' } } // Return just the token document
         ])
         .toArray()
+    })
+    .then( tokens => {
+        return tokens.filter( token => token.foreground )
     })
 }
 
@@ -1236,18 +1614,9 @@ function getBudTokens( userid ) {
         .aggregate([
             { $match: { _id: userid } },
             { $unwind: '$buds' }, // Create document for each bud in list
-            // TODO: add another lookup phase
-            { $lookup: { // Find registered listeners for each user
-                from: BUD_LISTENERS_COLLECTION,
-                localField: 'buds',
-                foreignField: '_id',
-                as: 'listeners' // Stored as [{ _id, listeners: [deviceId] }]
-            }},
-            { $unwind: '$listeners' },
-            { $unwind: '$listeners.listeners' }, // Create document for each deviceId
-            { $lookup: { // Find push token for each device
+            { $lookup: { // Find push token for each user
                 from: PUSH_TOKENS_COLLECTION,
-                localField: 'listeners.listeners',
+                localField: 'buds',
                 foreignField: '_id',
                 as: 'token' // Stored as single element array
             }},
@@ -1256,26 +1625,20 @@ function getBudTokens( userid ) {
         ])
         .toArray()
     })
+    .then( tokens => {
+        return tokens.filter( token => token.foreground )
+    })
 }
 
-// users is userid[]
 // returns pushToken[]
-function getBudTokensForUsers( users ) {
+function getPushTokensForUsers( users ) {
     return getDatabase()
     .then( db => {
-        return db.collection( BUD_LISTENERS_COLLECTION )
-        .aggregate([
-            { $match: { _id: { $in: users } } },
-            { $unwind: '$listeners' }, // Create document for each bud in list
-            { $lookup: { // Find push token for each device
-                from: PUSH_TOKENS_COLLECTION,
-                localField: 'listeners',
-                foreignField: '_id',
-                as: 'token' // Stored as array
-            }},
-            { $unwind: '$token' }, // Get tokens out of array
-            { $replaceRoot: { newRoot: '$token' } } // Return just the tokens
-        ])
+        return db.collection( PUSH_TOKENS_COLLECTION )
+        .find({ $and: [
+            { _id: { $in: users } },
+            { foreground: true }
+        ]})
         .toArray()
     })
 }
@@ -1287,17 +1650,9 @@ function getRequestTokens( userid ) {
         return db.collection( BUD_REQUESTS_COLLECTION )
         .aggregate([
             { $match: { requester: userid } },
-            { $lookup: { // Find registered listeners for each user
-                from: BUD_LISTENERS_COLLECTION,
-                localField: 'requestee',
-                foreignField: '_id',
-                as: 'listeners' // Stored as [{ _id, listeners: [deviceId] }]
-            }},
-            { $unwind: '$listeners' },
-            { $unwind: '$listeners.listeners' }, // Create document for each deviceId
-            { $lookup: { // Find push token for each device
+            { $lookup: { // Find push token for each user
                 from: PUSH_TOKENS_COLLECTION,
-                localField: 'listeners.listeners',
+                localField: 'requestee',
                 foreignField: '_id',
                 as: 'token' // Stored as single element array
             }},
@@ -1306,19 +1661,23 @@ function getRequestTokens( userid ) {
         ])
         .toArray()
     })
+    .then( tokens => {
+        return tokens.filter( token => token.foreground )
+    })
 }
 
 // users is userid[]
 // Returns PushToken[]
-function getLocationListenerTokensForUsers( users ) {
+function getLocationListenerTokens( userid ) {
     return getDatabase()
     .then( db => {
         return db.collection( LOCATION_LISTENERS_COLLECTION )
         .aggregate([
-            { $match: { user: { $in: users } } },
-            { $lookup: { // Find push token for user
+            { $match: { _id: userid } },
+            { $unwind: '$listeners' }, // Create document for each listener
+            { $lookup: { // Find push token for each user
                 from: PUSH_TOKENS_COLLECTION,
-                localField: '_id',
+                localField: 'listeners',
                 foreignField: '_id',
                 as: 'token' // Stored as single element array
             }},
@@ -1326,13 +1685,16 @@ function getLocationListenerTokensForUsers( users ) {
             { $replaceRoot: { newRoot: '$token' } } // Return just the token document
         ])
         .toArray()
+    })
+    .then( tokens => {
+        return tokens.filter( token => token.foreground )
     })
 }
 
 function handleMessagingErrors( result, tokens ) {
     if ( result.failureCount == 0 ) return;
 
-    const work = []
+    const tasks = []
 
     result.responses.forEach(( response, index ) => {
         if ( response.error ) {
@@ -1340,18 +1702,66 @@ function handleMessagingErrors( result, tokens ) {
                 response.error.code === 'messaging/invalid-registration-token' ||
                 response.error.code === 'messaging/registration-token-not-registered'
             ) {
-                work.push( getDatabase()
-                    .then( db => {
-                        db.collection( PUSH_TOKENS_COLLECTION )
-                        .deleteOne({ token: tokens[ index ].token })
-                    })
-                )
+                tasks.push( removeInvalidToken( tokens[ index ].token ) )
             }
             else console.error( response.error.message )
         }
     })
 
-    return Promise.all( work )
+    return Promise.all( tasks )
+}
+
+function removeInvalidToken( token ) {
+    return getDatabase()
+    .then( db => {
+        db.collection( PUSH_TOKENS_COLLECTION )
+        .deleteOne({ token: token })
+    })
+}
+
+function findNearbyUsers( location ) {
+    return getDatabase()
+    .then( db => {
+        return db.collection( USERS_COLLECTION )
+        .find({
+            location: {
+                $nearSphere: {
+                    $geometry: {
+                        type: 'Point',
+                        coordinates: [ location.lon, location.lat ]
+                    },
+                    $maxDistance: MAX_SEARCH_DISTANCE
+                }
+            }
+        })
+        .limit( 100 )
+        .toArray()
+    })
+}
+
+function updateLocationListeners( userid, users ) {
+    return getDatabase()
+    .then( db => {
+        let updates = [{
+            updateMany: {
+                filter: { listeners: userid },
+                update: { $pull: { listeners: userid }}
+            }
+        }]
+
+        updates = updates.concat( users.map( user => {
+            return {
+                updateOne: {
+                    filter: { _id: user._id },
+                    update: { $addToSet: { listeners: userid } },
+                    upsert: true
+                }
+            }
+        }))
+
+        return db.collection( LOCATION_LISTENERS_COLLECTION )
+        .bulkWrite( updates )
+    })
 }
 
 // Returns an object wich contains the fields in obj that are in properties
@@ -1366,61 +1776,3 @@ Object.subset = function( obj, properties ) {
     
     return subset
 }
-
-//function sendBudStatusUpdate( user1, user2, updateType, tokens ) {
-//    const messages = []
-//
-//    tokens.forEach( token => {
-//        if ( token.user === user1._id ) {
-//            messages.push({
-//                token: token.token,
-//                data: {
-//                    type: updateType,
-//                    data: JSON.stringify( user2 ) // Profile
-//                }
-//            })
-//        }
-//        else {
-//            if ( updateType === 'bud-added' ) messages.push({
-//                // TODO: userTokens.forEach
-//                token: token.token,
-//                notification: {
-//                    tag: 'request',
-//                    title: `A new Bud.`,
-//                    body : `Congratulations! You are now buds with ${user1.username}`,
-//                    sound: 'default'
-//                },
-//                data: {
-//                    userid: user1._id
-//                }
-//            })
-//
-//            if ( updateType === 'bud-added' ) messages.push({
-//                // TODO: userTokens.forEach
-//                token: token.token,
-//                notification: {
-//                    tag: 'request',
-//                    title: `A new Bud.`,
-//                    body : `Congratulations! You are now buds with ${user1.username}`,
-//                    sound: 'default'
-//                },
-//                data: {
-//                    userid: user1._id
-//                }
-//            })
-//
-//            messages.push({
-//                // TODO: budListeners.forEach
-//                token: token.token,
-//                data: {
-//                    type: updateType,
-//                    data: JSON.stringify( user1 ) // Profile
-//                }
-//            })
-//        }
-//    })
-//
-//
-//    return messaging.sendAll( messages )
-//}
-// TODO: manage multiple registration tokens per user, one per device

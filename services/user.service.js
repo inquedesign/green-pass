@@ -20,60 +20,54 @@ const AUTH      = firebase.auth()
 const LINKS     = firebase.links()
 const FUNCTIONS = firebase.functions()
 const functions = {
-    registerProfileListener  : FUNCTIONS.httpsCallable( 'registerProfileListener' ),
-    unregisterProfileListener: FUNCTIONS.httpsCallable( 'unregisterProfileListener' ),
-    registerBudListener      : FUNCTIONS.httpsCallable( 'registerBudListener' ),
-    unregisterBudListener    : FUNCTIONS.httpsCallable( 'unregisterBudListener' ),
-    deleteAccount            : FUNCTIONS.httpsCallable( 'deleteAccount' ),
-    getProfile               : FUNCTIONS.httpsCallable( 'getProfile' ),
-    updateProfile            : FUNCTIONS.httpsCallable( 'updateProfile' ),
-    getContactMethods        : FUNCTIONS.httpsCallable( 'getContactMethods' ),
-    updateContactMethods     : FUNCTIONS.httpsCallable( 'updateContactMethods' ),
-    findByUserName           : FUNCTIONS.httpsCallable( 'findByUserName' ),
-    getBuds                  : FUNCTIONS.httpsCallable( 'getBuds' ),
-    getBudRequesters         : FUNCTIONS.httpsCallable( 'getBudRequesters' ),
-    getBudRequest            : FUNCTIONS.httpsCallable( 'getBudRequest' ),
-    addBud                   : FUNCTIONS.httpsCallable( 'addBud' ),
-    removeBud                : FUNCTIONS.httpsCallable( 'removeBud' ),
-    updateLocation           : FUNCTIONS.httpsCallable( 'updateLocation' )
+    registerProfileListeners   : FUNCTIONS.httpsCallable( 'registerProfileListeners' ),
+    unregisterProfileListeners : FUNCTIONS.httpsCallable( 'unregisterProfileListeners' ),
+    registerLocationListeners  : FUNCTIONS.httpsCallable( 'registerLocationListeners' ),
+    unregisterLocationListeners: FUNCTIONS.httpsCallable( 'unregisterLocationListeners' ),
+    unregisterAllListeners     : FUNCTIONS.httpsCallable( 'unregisterAllListeners' ),
+    deleteAccount              : FUNCTIONS.httpsCallable( 'deleteAccount' ),
+    getProfile                 : FUNCTIONS.httpsCallable( 'getProfile' ),
+    updateProfile              : FUNCTIONS.httpsCallable( 'updateProfile' ),
+    getContactMethods          : FUNCTIONS.httpsCallable( 'getContactMethods' ),
+    updateContactMethods       : FUNCTIONS.httpsCallable( 'updateContactMethods' ),
+    findByUserName             : FUNCTIONS.httpsCallable( 'findByUserName' ),
+    getBuds                    : FUNCTIONS.httpsCallable( 'getBuds' ),
+    getBudRequesters           : FUNCTIONS.httpsCallable( 'getBudRequesters' ),
+    getBudRequest              : FUNCTIONS.httpsCallable( 'getBudRequest' ),
+    addBud                     : FUNCTIONS.httpsCallable( 'addBud' ),
+    removeBud                  : FUNCTIONS.httpsCallable( 'removeBud' ),
+    findByLocation             : FUNCTIONS.httpsCallable( 'findByLocation' ),
+    updateLocation             : FUNCTIONS.httpsCallable( 'updateLocation' ),
+    updateAppState             : FUNCTIONS.httpsCallable( 'updateAppState' )
 }
 
-let authListener = null
 let linkListener = null
 
 function login( credentials ) {
     NotificationService.configureNotifications()
-    return credentials
+    BGLocation.start()
+    Promise.resolve( credentials )
 }
 
 function logout() {
     if ( !AUTH.currentUser ) return Promise.resolve()
-
-    NotificationService.cancelNotifications()
-    NotificationService.unsubscribePushNotifications()
-
-    clearProfile.call( this )
-    clearBuds.call( this )
-    this._contactMethods = null
+    
+    this._profile        = null
+    this._buds           = null
     this._requests       = null
+    this._nearbyUsers    = null
+    this._contactMethods = null
+    this._location       = null
 
-    return AUTH.signOut()
-}
-
-// TODO: listeners may change when mechanism for watching database changes
-function clearProfile() {
-    this._profileListeners.forEach(( user, userid ) => {
-        unregisterProfileListener( userid )
+    return Promise.all([
+        BGLocation.stop(),
+        NotificationService.cancelNotifications(),
+        NotificationService.unsubscribePushNotifications(),
+        this.unsubscribeAll()
+    ])
+    .then(() => {
+        return AUTH.signOut()
     })
-    this._profileListeners.clear()
-    this._profile = null
-}
-
-// TODO: listeners may change when mechanism for watching database changes
-function clearBuds() {
-    unregisterBudListener()
-    this._budsListeners.clear()
-    this._buds = null
 }
 
 function getProfileData( document ) {
@@ -82,6 +76,8 @@ function getProfileData( document ) {
     if ( document._id ) document.id = document._id
 
     if ( document.birthDate ) document.age = getAge( document.birthDate )
+    
+    if ( !document.distance ) document.distance = UserService.getDistance( document.location )
 
     return document
 }
@@ -109,6 +105,29 @@ function getAge( birthDateString ) {
     return age
 }
 
+function updateDistances() {
+    if ( this.currentLocation ) this._profile.distance = 0
+    else this._profile.distance = null
+
+    return Promise.all([
+        this.getBuds().then(() => {
+            if ( this._buds ) this._buds.forEach( user => {
+                user.distance = this.getDistance( user.location )
+            })
+        }),
+        this.getBudRequesters().then(() => {
+            if ( this._requests ) this._requests.forEach( user => {
+                user.distance = this.getDistance( user.location )
+            })
+        }),
+        this.getUsersNearby().then(() => {
+            if ( this._nearbyUsers ) this._nearbyUsers.forEach( user => {
+                user.distance = this.getDistance( user.location )
+            })
+        })
+    ])
+}
+
 function processLink( url ) {
     if ( !url ) return;
     if ( !/mode=resetPassword/.test( url ) ) return;
@@ -116,7 +135,7 @@ function processLink( url ) {
     const email = url.replace( /.*https:\/\/greenpass.page.link\/reset\/([^&]+).*/, '$1' )
     const code  = url.replace( /.*oobCode=([^&]+).*/, '$1' )
 
-    Navigation.push( SCREENS.ROOT_SCREEN, {
+    Navigation.push( SCREENS.INITIAL_LAYOUT, {
         component: {
             name: SCREENS.PASSWORD_RESET_SCREEN,
             passProps: {
@@ -127,105 +146,143 @@ function processLink( url ) {
     })
 }
 
-function registerProfileListener( userid ) {
-    FUNCTIONS.httpsCallable( 'registerProfileListener' )({
-        user    : userid,
-        deviceId: DeviceInfo.getUniqueID()
+// Takes an array
+function registerProfileListeners( userids ) {
+    return functions.registerProfileListeners({
+        users   : userids,
     })
     .catch( error => {
         console.error( JSON.stringify( error, null, 4 ) )
     })
 }
 
-function unregisterProfileListener( userid ) {
-    FUNCTIONS.httpsCallable( 'unregisterProfileListener' )({
-        user    : userid,
-        deviceId: DeviceInfo.getUniqueID()
+// Takes an array
+function unregisterProfileListeners( userids ) {
+    return functions.unregisterProfileListeners({
+        users   : userids,
     })
     .catch( error => {
         console.error( JSON.stringify( error, null, 4 ) )
     })
 }
 
-function registerBudListener() {
-    FUNCTIONS.httpsCallable( 'registerBudListener' )({
-        deviceId: DeviceInfo.getUniqueID()
+// Takes an array
+function registerLocationListeners( userids ) {
+    return functions.registerLocationListeners({
+        users   : userids,
     })
     .catch( error => {
         console.error( JSON.stringify( error, null, 4 ) )
     })
 }
 
-function unregisterBudListener() {
-    FUNCTIONS.httpsCallable( 'unregisterBudListener' )({
-        deviceId: DeviceInfo.getUniqueID()
+// Takes an array
+function unregisterLocationListeners( userids ) {
+    return functions.unregisterLocationListeners({
+        users   : userids,
     })
     .catch( error => {
         console.error( JSON.stringify( error, null, 4 ) )
     })
 }
 
-function updateLocation( location, message ) {
-    console.warn( message )
-    if ( !AUTH.currentUser ) return
-    if ( !location.longitude || !location.latitude ) return
+function updateLocation( location ) {
+    return new Promise(( resolve, reject ) => {
+        if ( !AUTH.currentUser ) {
+            reject( 'Update Location: user not logged in.' )
+            return
+        }
 
-    BGLocation.startTask( taskKey => {
-        functions.updateLocation({ lat: location.latitude, lon: location.longitude })
-        .then(() => {
-            console.warn( 'location updated' )
-            BGLocation.endTask( taskKey )
+        if ( !location.longitude || !location.latitude ) {
+            reject( 'Update Location: longitude or latitude is missing or malformed.' )
+            return
+        }
+
+        const distanceMoved = this.getDistance({ coordinates: [ location.longitude, location.latitude ] })
+
+        if ( distanceMoved != null && distanceMoved < .025 ) {
+            resolve( this._nearbyUsers )
+            return
+        }
+
+        this.currentLocation = { lat: location.latitude, lon: location.longitude }
+
+        console.warn('location update')
+
+        BGLocation.startTask( taskKey => {
+            functions.updateLocation( Object.assign( {}, this.currentLocation ) )
+            .then( nearbyUsers => {
+                this._nearbyUsers = userDataFrom( nearbyUsers.data )
+                return updateDistances.call( this )
+            })
+            .then(() => {
+                this._profileListeners.forEach(( user, userid ) => {
+                    if ( user == this.currentUser.uid ) return
+                    user.forEach( callback => {
+                        callback( null, null, null, null, this.currentLocation )
+                    })
+                })
+
+                this._locationListeners.forEach( callback => {
+                    callback( this._nearbyUsers )
+                })
+
+                this._budsListeners.forEach( callback => {
+                    callback()
+                })
+
+                console.warn('ending location update task')
+                resolve( this._nearbyUsers )
+                BGLocation.endTask( taskKey )
+            })
+            .catch( error => {
+                console.warn( JSON.stringify( error, null, 4 ) )
+            })
         })
     })
 }
 
-const State = {
-    active    : 'active',
-    background: 'background'
-}
-
 class UserServiceClass {
-    constructor() {
-        this.currentState             = null
-        this._profile                 = null
-        this._buds                    = null
-        this._requests                = null
-        this._contactMethods          = null
-        this._profileListeners        = new Map()
-        this._budsListeners           = new Set()
+    get State() {
+        return {
+            active    : 'active',
+            background: 'background'
+        }
+    }
 
-        // Because component unmount hooks never get called when app is killed,
-        // listeners have to be deregistered everytime the app goes into background
-        // in order to prevent database accumulation of orphaned listeners.
+    constructor() {
+        this.BGLocationIsRunning = false
+        this.currentState      = null
+        this._location         = null
+        this._profile          = null
+        this._buds             = null
+        this._nearbyUsers      = null
+        this._requests         = null
+        this._contactMethods   = null
+        this._profileListeners = new Map()
+        this._budsListeners    = new Map()
+        this._locationListeners= new Map()
+
+        // Refresh Data when entering foreground
         AppState.addEventListener('change', newState => {
             let oldState = this.currentState
             this.currentState = newState
 
-            switch( newState ) {
-            case State.active:
-                if ( oldState !== State.background ) return
+            if ( !this.currentUser ) return // Not logged in
 
+            switch( newState ) {
+            case this.State.active:
+                if ( oldState == this.State.active ) return
+                console.warn('app foreground')
+
+                functions.updateAppState({ foreground: true })
                 this.refreshData()
 
-                this._profileListeners.forEach(( user, userid ) => {
-                    registerProfileListener( userid )
-                })
-                
-                if ( this._budsListeners.size > 0 ) {
-                    registerBudListener()
-                }
-
                 return
-            case State.background:
-                if ( oldState !== State.active ) return
+            case this.State.background:
+                if ( oldState == this.State.background ) return
 
-                this._profileListeners.forEach(( user, userid ) => {
-                    unregisterProfileListener( userid )
-                })
-                
-                if ( this._budsListeners.size > 0 ) {
-                    unregisterBudListener()
-                }
+                functions.updateAppState({ foreground: false })
 
                 return
             }
@@ -241,15 +298,84 @@ class UserServiceClass {
             saveBatteryOnBackground: true,
             activityType           : BGLocation.Other,
             maxLocations           : 10,
-            debug: true
         })
 
-        BGLocation.on( 'location',   location => updateLocation( location, 'location' ) )
-        BGLocation.on( 'stationary', location => updateLocation( location, 'stationary' ) )
-        BGLocation.on( 'start', () => console.warn( 'geolocation started' ) )
-        BGLocation.on( 'stop', () => console.warn( 'geolocation stopped' ) )
-        BGLocation.on( 'error', error => console.error( JSON.stringify( error, null, 4 ) ) )
-        BGLocation.start()
+        BGLocation.on( 'start', () => {
+            console.warn( 'starting bglocation service' )
+            this.BGLocationIsRunning = true
+        })
+        
+        BGLocation.on( 'stop', () => {
+            console.warn( 'stopping bglocation service' )
+            this.BGLocationIsRunning = false
+        })
+
+        this._nearbyUsers = new Promise(( resolve, reject ) => {
+            let onLocation
+            let onStationary
+            let onFail
+
+            const replaceListeners = () => {
+                onLocation.remove()
+                onStationary.remove()
+                onFail.remove()
+                BGLocation.on( 'location',   updateLocation.bind(this) )
+                BGLocation.on( 'stationary', updateLocation.bind(this) )
+                BGLocation.on( 'authorization', status => {
+                    BGLocation.checkStatus( status => {
+                        const enabled       = status.locationServicesEnabled
+                        const authorization = status.authorization
+                        if ( enabled === this.enabled && authorization === this.authorization ) return
+
+                        this.enabled       = enabled    
+                        this.authorization = authorization
+
+                        console.warn('authorization change: ' + status )
+                        if ( enabled && authorization != BGLocation.NOT_AUTHORIZED ) {
+                            BGLocation.start()
+                        }
+                        else {
+                            BGLocation.stop()
+                            this.currentLocation = null
+                            this._nearbyUsers = []
+                        }
+                    })
+                })
+            }
+
+            const locationCallback = ( location ) => {
+                replaceListeners()
+                updateLocation.call( this, location )
+                .then( nearbyUsers => {
+                    resolve( nearbyUsers )
+                })
+            }
+
+            onFail = BGLocation.on( 'authorization', status => {
+                BGLocation.checkStatus( status => {
+                    this.enabled       = status.locationServicesEnabled
+                    this.authorization = status.authorization
+                })
+
+                if ( status != BGLocation.NOT_AUTHORIZED ) return;
+
+                console.warn( 'bgloc not authorized' )
+                BGLocation.stop()
+                replaceListeners()
+                this._nearbyUsers = null
+                resolve( this._nearbyUsers )
+            })
+
+            onLocation = BGLocation.on( 'location',   location => {
+                console.warn('location event')
+                locationCallback( location )
+            })
+
+            onStationary = BGLocation.on( 'stationary', location => {
+                console.warn('stationary event')
+                locationCallback( location )
+            })
+        })
 
         firebase.messaging().hasPermission()
         .then( enabled => {
@@ -301,6 +427,18 @@ class UserServiceClass {
                                 callback( profile, null )
                             })
                         }
+
+                        this.getUsersNearby().then(() => {
+                            if ( this._nearbyUsers ) {
+                                let user = this._nearbyUsers.find( user => user.id == userid )
+                                if ( user ) {
+                                    Object.assign( user, profile )
+                                    this._locationListeners.forEach( callback => {
+                                        callback( this._nearbyUsers )
+                                    })
+                                }
+                            }
+                        })
                     })
                 } break
                 case 'contact-methods-update': {
@@ -342,6 +480,13 @@ class UserServiceClass {
                         this._budsListeners.forEach( callback => {
                             callback()
                         })
+                        
+                        this.getUsersNearby()
+                        .then(() => {
+                            this._locationListeners.forEach( callback => {
+                                callback( this._nearbyUsers )
+                            })
+                        })
                     })
                 } break
                 case 'bud-request': {
@@ -379,6 +524,150 @@ class UserServiceClass {
                         this._budsListeners.forEach( callback => {
                             callback()
                         })
+
+                        this.getUsersNearby()
+                        .then(() => {
+                            this._locationListeners.forEach( callback => {
+                                callback( this._nearbyUsers )
+                            })
+                        })
+                    })
+                } break
+                case 'location-update': {
+                    this.getUsersNearby()
+                    .then( nearbyUsers => {
+                        if ( !nearbyUsers ) return
+                        const user  = getProfileData( data )
+                        const index = nearbyUsers.findIndex( element => element.id === user.id )
+                        if ( index > -1 ) {
+                            if (
+                                nearbyUsers.length >= 100 &&
+                                user.distance > nearbyUsers[nearbyUsers.length-1].distance
+                            ) {
+                                // If user in list && last, refresh list
+                                this._nearbyUsers = null
+                                this.getUsersNearby()
+                                .then( nearbyUsers => {
+                                    if ( this.currentLocation ) {
+                                        this._nearbyUsers.forEach( user => {
+                                            user.distance = this.getDistance( user.location )
+                                        })
+                                    }
+
+                                    this._locationListeners.forEach( callback => {
+                                        callback( this._nearbyUsers )
+                                    })
+                                })
+                            }
+                            else {
+                                // If user in list && !last, update position
+                                let users = this._nearbyUsers
+                                users.splice( index, 1 )
+                                
+                                updatePosition( user, users )
+
+                                this._locationListeners.forEach( callback => {
+                                    callback( this._nearbyUsers )
+                                })
+                            }
+                        }
+                        else if (
+                            nearbyUsers.length < 100 ||
+                            user.distance < nearbyUsers[nearbyUsers.length-1].distance
+                        ) {
+                            // If user !in list && !last, add listener, limit to 100
+                            registerLocationListeners([ user.id ])
+
+                            let users = this._nearbyUsers
+                            if ( users.length >= 100 ) {
+                                let farthest = users.pop()
+                                unregisterLocationListeners([ farthest.id ])
+                            }
+
+                            updatePosition( user, users )
+
+                            this._locationListeners.forEach( callback => {
+                                callback( this._nearbyUsers )
+                            })
+                        }
+                        // If user !in list && last, do nothing
+
+                        function updatePosition( user, users ) {
+                            let first  = 0
+                            let last   = users.length - 1
+
+                            if ( users.length === 0 ) {
+                                users.push( user )
+                            }
+                            else {
+                                while ( first < last ) {
+                                    let middle = Math.floor( ( last + first ) / 2 )
+                                    if ( user.distance > users[middle].distance ) {
+                                        // Search upper half
+                                        first = middle + 1
+                                    }
+                                    else {
+                                        // Search lower half
+                                        last = middle
+                                    }
+                                }
+
+                                if ( user.distance < users[first].distance ) {
+                                    // insert before
+                                    users.splice( first, 0, user )
+                                }
+                                else {
+                                    // insert after
+                                    users.splice( first + 1, 0, user )
+                                }
+                            }
+                        }
+
+                        const profileListeners = this._profileListeners.get( user.id )
+                        if ( profileListeners ) {
+                            profileListeners.forEach( callback => {
+                                callback( user )
+                            })
+                        }
+
+                        if ( this._buds.has( user.id ) ) {
+                            this._buds.set( user.id, user )
+                            this._budsListeners.forEach( callback => {
+                                callback()
+                            })
+                        }
+
+                        if ( this._requests.has( user.id ) ) {
+                            this._requests.set( user.id, user )
+                            this._budsListeners.forEach( callback => {
+                                callback()
+                            })
+                        }
+                    })
+                } break
+                case 'account-deleted': {
+                    Promise.all([ this.getBudRequesters(), this.getBuds(), this.getUsersNearby() ])
+                    .then( results => {
+                        this._buds.delete( userid )
+                        this._requests.delete( userid )
+                        if ( this._nearbyUsers ) {
+                            this._nearbyUsers = this._nearbyUsers.filter( user => user.id !== userid )
+                        }
+
+                        const listeners = this._profileListeners.get( userid )
+                        if ( listeners ) {
+                            listeners.forEach( callback => {
+                                callback( null, null, null, null, null, true )
+                            })
+                        }
+
+                        this._budsListeners.forEach( callback => {
+                            callback()
+                        })
+
+                        this._locationListeners.forEach( callback => {
+                            callback( this._nearbyUsers )
+                        })
                     })
                 } break
                 }
@@ -389,12 +678,56 @@ class UserServiceClass {
     get currentUser() {
         return AUTH.currentUser
     }
+    
+    get currentLocation() {
+        return this._location
+    }
 
-    refresh() {
+    set currentLocation( location ) {
+        this._location = location
+        if ( this.location ) this.getProfile()
+        .then(() => {
+            this._profile.location = { type: 'Point', coordinates: [location.lon, location.lat] }
+        })
+        .catch( error => {
+            if ( error.name != 'NOAUTH' ) console.error( JSON.stringify( error, null, 4 ) )
+        })
+    }
+
+    getLocation() {
+        if ( this.currentLocation ) return Promise.resolve( this.currentLocation )
+        else return new Promise(( resolve, reject ) => BGLocation.getCurrentLocation(
+            location => {
+                updateLocation.call( this, location )
+                .then(() => {
+                    resolve( this.currentLocation )
+                })
+            },
+            error => {
+                reject( error )
+            }
+        ))
+    }
+
+    getDistance( location ) {
+        if ( !location || !this.currentLocation ) return null
+        const lat1 = location.coordinates[1] * Math.PI / 180
+        const lat2 = this.currentLocation.lat * Math.PI / 180
+        const halfDeltaLon = (location.coordinates[0] - this.currentLocation.lon) * Math.PI / 360
+        const halfDeltaLat = ( lat1 - lat2 ) / 2
+
+        const a = Math.sin( halfDeltaLat ) * Math.sin( halfDeltaLat ) +
+                  Math.sin( halfDeltaLon ) * Math.sin( halfDeltaLon ) *
+                  Math.cos( lat1 ) * Math.cos( lat2 )
+        const b = 2 * Math.atan2( Math.sqrt(a), Math.sqrt(1 - a) )
+        const c = b * 3958.76
+        return Math.round( c * 10 ) * .1
+    }
+
+    refreshUser() {
         if ( this.currentUser ) {
             return this.currentUser.reload()
             .then(() => {
-                this.refreshData()
                 return this.currentUser
             })
             .catch( error => { return null })
@@ -409,17 +742,51 @@ class UserServiceClass {
             return Promise.reject( error )
         }
 
+        console.warn( 'refresh data' )
         this._profile        = null
         this._buds           = null
         this._requests       = null
         this._contactMethods = null
 
-        Promise.all([
+        return Promise.all([
             this.getProfile(),
             this.getBuds(),
             this.getContactMethods(),
-            this.getBudRequesters()
+            this.getBudRequesters(),
+            new Promise(( resolve, reject ) => {
+                BGLocation.checkStatus( status => {
+                    this.enabled       = status.locationServicesEnabled
+                    this.authorization = status.authorization
+                    this.BGLocationIsRunning = status.isRunning
+                    if ( this.enabled === false || this.authorization === BGLocation.NOT_AUTHORIZED ) {
+                        resolve()
+                        return
+                    }
+                    if ( !this.BGLocationIsRunning ) {
+                        // App was restarted
+                        BGLocation.start()
+                        resolve( null )
+                    }
+                    else {
+                        // Refresh nearby users
+                        this.getLocation()
+                        .then( location => {
+                            return functions.findByLocation({
+                                lat: location.lat,
+                                lon: location.lon
+                            })
+                        })
+                        .then( nearbyUsers => {
+                            this._nearbyUsers = userDataFrom( nearbyUsers.data )
+                            resolve()
+                        })
+                    }
+                })
+            })
         ])
+        .then(() => {
+            return updateDistances.call( this )
+        })
         .then(() => {
             this._profileListeners.forEach(( user, userid ) => {
                 if ( userid !== this.currentUser.uid ) {
@@ -431,16 +798,27 @@ class UserServiceClass {
                     ])
                     .then( results => {
                         user.forEach( callback => {
-                            callback( results[0], results[1], results[2], results[3] )
+                            callback(
+                                results[0],
+                                results[1],
+                                results[2],
+                                results[3],
+                                this.currentLocation
+                            )
                         })
                     })
                 }
                 else {
                     user.forEach( callback => {
-                        callback( this._profile, this._contactMethods, this._buds )
+                        callback( this._profile, this._contactMethods )
                     })
                 }
             })
+
+            this._locationListeners.forEach( callback => {
+                callback( this._nearbyUsers )
+            })
+
             this._budsListeners.forEach( callback => {
                 callback()
             })
@@ -457,8 +835,9 @@ class UserServiceClass {
         })
         .then( credentials => {
             // Due to age verification gateway, profile should always have a birthDate at least
-            return this.updateUser( this._profile )
+            return this.updateUser( Object.assign( {}, this._profile ) )
             .then(() => {
+                this._profile.id = credentials.user.uid
                 return credentials
             })
         })
@@ -472,7 +851,7 @@ class UserServiceClass {
             return Promise.reject( error )
         }
 
-        return FUNCTIONS.httpsCallable( 'deleteAccount' )()
+        return functions.deleteAccount()
         .then(() => {
             return this.logout()
         })
@@ -481,7 +860,6 @@ class UserServiceClass {
         })
     }
 
-    // TODO: make sure profile is being refreshed with logout/login/create account
     login( email, password ) {
         return logout.call(this)
         .then(() => {
@@ -531,24 +909,35 @@ class UserServiceClass {
             userid = this.currentUser.uid
         }
     
-        return FUNCTIONS.httpsCallable( 'getProfile' )({ user: userid })
+        return functions.getProfile({ user: userid })
         .then(response => {
             return getProfileData( response.data )
         })
     }
 
-    // Returns Profile[]
-    getUserByUsername( searchString, callback ) {
+    // Returns Promise< Profile[] >
+    getUsersByUsername( searchString, callback ) {
         if ( !this.currentUser ) {
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
-        return FUNCTIONS.httpsCallable( 'findByUserName' )({ searchString: searchString })
+        return functions.findByUserName({ searchString: searchString })
         .then( response => {
             return userDataFrom( response.data )
         })
+    }
+
+    // Returns Promise< Profile[] >
+    getUsersNearby() {
+        if ( !this.currentUser ) {
+            const error = new Error( 'Not logged in.' )
+            error.name = "NOAUTH"
+            return Promise.reject( error )
+        }
+        
+        return Promise.resolve( this._nearbyUsers )
     }
 
     updateUser( dataToUpdate ) {
@@ -558,12 +947,29 @@ class UserServiceClass {
             return Promise.reject( error )
         }
 
-        return FUNCTIONS.httpsCallable( 'updateProfile' )( dataToUpdate )
+        return functions.updateProfile( Object.assign( {}, dataToUpdate ) )
         .then(() => {
-            return this.getProfile()
+            return Promise.all([
+                this.getProfile(),
+                this.getUsersNearby()
+            ])
         })
-        .then( profile => {
+        .then(() => {
             Object.assign( this._profile, dataToUpdate )
+
+            const listeners = this._profileListeners.get( this.currentUser.uid )
+            if ( listeners ) {
+                listeners.forEach( callback => {
+                    callback( this._profile )
+                })
+            }
+
+            if ( this._nearbyUsers ) {
+                this._nearbyUsers[0] = this._profile
+                this._locationListeners.forEach( callback => {
+                    callback( this._nearbyUsers )
+                })
+            }
         })
     }
     
@@ -576,10 +982,10 @@ class UserServiceClass {
         }
 
         if ( !userid ) {
-            userid = this.currentUser.uid
-
             if ( !this._contactMethods ) {
-                this._contactMethods = FUNCTIONS.httpsCallable( 'getContactMethods' )({ user: userid })
+                userid = this.currentUser.uid
+
+                this._contactMethods = functions.getContactMethods({ user: userid })
                 .then( response => {
                     this._contactMethods = response.data ? response.data : {}
                     
@@ -594,7 +1000,7 @@ class UserServiceClass {
             .then( buds => {
                 if ( !buds.has( userid ) ) return null
 
-                return FUNCTIONS.httpsCallable( 'getContactMethods' )({ user: userid })
+                return functions.getContactMethods({ user: userid })
                 .then( response => {
                     return response.data ? response.data : {}
                 })
@@ -612,29 +1018,31 @@ class UserServiceClass {
             return Promise.reject( error )
         }
 
-        return FUNCTIONS.httpsCallable( 'updateContactMethods' )( methodsToUpdate )
+        return functions.updateContactMethods( Object.assign( {}, methodsToUpdate ) )
         .then(() => {
             return this.getContactMethods()
         })
         .then( contactMethods => {
             Object.assign( this._contactMethods, methodsToUpdate )
+            const listeners = this._profileListeners.get( this.currentUser.uid )
+            if ( listeners ) {
+                listeners.forEach( callback => {
+                    callback( null, this._contactMethods )
+                })
+            }
         })
     }
-
-    // TODO: handle update messages
 
     // Returns Promise< Profile[] >
     getBuds() {
         if ( !this.currentUser ) {
-            // TODO: determine if needed
-            //clearBuds.call(this)
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
         if ( !this._buds ) {
-            this._buds = FUNCTIONS.httpsCallable( 'getBuds' )()
+            this._buds = functions.getBuds()
             .then( response => {
                 const buds = userDataFrom( response.data )
                 this._buds = new Map()
@@ -653,15 +1061,13 @@ class UserServiceClass {
     // Returns Promise< Profile[] >
     getBudRequesters() {
         if ( !this.currentUser ) {
-            // TODO: determine if needed
-            //clearBuds.call(this)
             const error = new Error( 'Not logged in.' )
             error.name = "NOAUTH"
             return Promise.reject( error )
         }
 
         if ( !this._requests ) {
-            this._requests = FUNCTIONS.httpsCallable( 'getBudRequesters' )()
+            this._requests = functions.getBudRequesters()
             .then( response => {
                 const budRequesters = userDataFrom( response.data )
                 this._requests      = new Map()
@@ -685,7 +1091,7 @@ class UserServiceClass {
             return Promise.reject( error )
         }
 
-        return FUNCTIONS.httpsCallable( 'getBudRequest' )({ user: this.currentUser.uid, bud: userid })
+        return functions.getBudRequest({ user: this.currentUser.uid, bud: userid })
         .then( response => {
             return response.data
         })
@@ -698,7 +1104,36 @@ class UserServiceClass {
             return Promise.reject( error )
         }
 
-        return FUNCTIONS.httpsCallable( 'addBud' )({ user: userid })
+        return functions.addBud({ user: userid })
+        .then(() => {
+            const profileListeners = this._profileListeners.get( userid )
+
+            // Add to budlist if we are now buds
+            if ( this._requests.has( userid ) ) {
+                this._buds.set( userid, this._requests.get( userid ) )
+                this._requests.delete( userid )
+
+                this._budsListeners.forEach( callback => {
+                    callback()
+                })
+
+                if ( profileListeners ) profileListeners.forEach( callback => {
+                    callback( null, null, this._buds )
+                })
+            }
+            else {
+                if ( profileListeners ) profileListeners.forEach( callback => {
+                    callback( null, null, null, { requester: this.currentUser.uid, requestee: userid })
+                })
+            }
+
+            this.getUsersNearby()
+            .then(() => {
+                this._locationListeners.forEach( callback => {
+                    callback( this._nearbyUsers )
+                })
+            })
+        })
     }
     
     removeBud( userid ) {
@@ -708,10 +1143,29 @@ class UserServiceClass {
             return Promise.reject( error )
         }
 
-        return FUNCTIONS.httpsCallable( 'removeBud' )({ user: userid })
+        return functions.removeBud({ user: userid })
+        .then(() => {
+            this._requests.delete( userid )
+            this._buds.delete( userid )
+
+            this._budsListeners.forEach( callback => {
+                callback()
+            })
+
+            const profileListeners = this._profileListeners.get( userid )
+            if ( profileListeners ) profileListeners.forEach( callback => {
+                callback( null, null, this._buds )
+            })
+
+            this.getUsersNearby()
+            .then(() => {
+                this._locationListeners.forEach( callback => {
+                    callback( this._nearbyUsers )
+                })
+            })
+        })
     }
     
-    // TODO: mongo-ize
     // callback is ( profile, contactMethods ) => {}
     addProfileListener( user, callback ) {
         if ( !this.currentUser ) return
@@ -727,23 +1181,32 @@ class UserServiceClass {
         }
         else {
             this._profileListeners.set( user, new Map([[ uuid, callback ]]) )
-            registerProfileListener( user )
+
+            if ( user != this.currentUser.uid ) registerProfileListeners([ user ])
         }
 
         return uuid
     }
 
-    // callback is ({ buds: profile[], requests: profile[], budlist: Set<userid> }) => {}
+    // callback is () => {}
     addBudsListener( callback ) {
         if ( !this.currentUser ) return
         
-        if ( this._budsListeners.size === 0 ) {
-            registerBudListener()
-        }
+        const uuid = uuidv4()
 
-        this._budsListeners.add( callback )
+        this._budsListeners.set( uuid, callback )
 
-        return callback
+        return uuid
+    }
+
+    addLocationsListener( callback ) {
+        if ( !this.currentUser ) return
+        
+        const uuid = uuidv4()
+
+        this._locationListeners.set( uuid, callback )
+
+        return uuid
     }
 
     unsubscribe( handle ) {
@@ -751,7 +1214,7 @@ class UserServiceClass {
             if ( user.has( handle ) ) {
                 user.delete( handle )
                 if ( user.size === 0 ) {
-                    unregisterProfileListener( userid )
+                    if ( userid != this.currentUser.uid ) unregisterProfileListeners([ userid ])
                     this._profileListeners.delete( userid )
                 }
             }
@@ -759,24 +1222,19 @@ class UserServiceClass {
 
         if ( this._budsListeners.has( handle ) ) {
             this._budsListeners.delete( handle )
+        }
 
-            if ( this._budsListeners.size === 0 ) {
-                unregisterBudListener()
-            }
+        if ( this._locationListeners.has( handle ) ) {
+            this._locationListeners.delete( handle )
         }
     }
     
     unsubscribeAll() {
-        this._profileListeners.forEach(( user, userid ) => {
-            unregisterProfileListener( userid )
-        })
-        unregisterBudListener()
-
         this._profileListeners.clear()
         this._budsListeners.clear()
-    }
 
-    // TODO: implement listener for remote changes to buds, requests, budList
+        return functions.unregisterAllListeners()
+    }
 
     sendPasswordResetEmail( email ) {
         return AUTH.sendPasswordResetEmail( email, {

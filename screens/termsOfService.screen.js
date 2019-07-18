@@ -33,7 +33,22 @@ export default class TermsOfServiceScreen extends React.PureComponent {
                     Terms of Service
                 </Text>
                 <Text style={ STYLES.spaceAfter }>
-            {`This privacy policy discloses the privacy practices for the Greenpass app (“Greenpass”, “us”, “we”) with regards to collecting information from our users (“you”). This privacy policy applies solely to information collected by this app (“the app”, “the Service”). It will notify you of the following:
+                    { termsOfService }
+                </Text>
+                <Button style={ STYLES.spaceAfter }
+                    label="Accept"
+                    accessibilityLabel="Accept the terms of serice"
+                    onPress={ this.goToCreateAccount.bind(this) } />
+                <Button
+                    label="Decline"
+                    accessibilityLabel="Decline the terms of service"
+                    onPress={ this.goToStart.bind(this) } />
+            </Container>
+        )
+    }
+}
+
+const termsOfService = `This privacy policy discloses the privacy practices for the Greenpass app (“Greenpass”, “us”, “we”) with regards to collecting information from our users (“you”). This privacy policy applies solely to information collected by this app (“the app”, “the Service”). It will notify you of the following:
 
 What personally identifiable information is collected from you through the app, how it is used and with whom it may be shared.
 
@@ -179,17 +194,4 @@ Contact Information. Greenpass welcomes your comments or questions regarding thi
 
 Changes To This Privacy Policy. This Privacy Policy is subject to occasional revision, and if we make any material changes in the way we use your Personal Data, we will notify you by sending you an e-mail to the last e-mail address you provided to us (if any) and/or by prominently posting notice of the changes on the Greenpass Service. Any changes to this Privacy Policy will be effective upon the earlier of thirty (30) calendar days following our dispatch of an e-mail notice to you or thirty (30) calendar days following our posting of notice of the changes on the Greenpass Service. These changes will be effective immediately for new users of the Greenpass Service. If the last e-mail address that you provided us is not valid, or for any reason is not capable of delivering to you the notice described above, our dispatch of the e-mail containing such notice will nonetheless constitute effective notice of the changes described in the notice. In any event, changes to this Privacy Policy may affect our use of Personal Data that you provided us prior to our notification to you of the changes. If you do not wish to permit changes in our use of your Personal Data, you must notify us prior to the effective date of the changes that you wish to cease using the Greenpass Service. Continued use of the Greenpass Service, following notice of such changes shall indicate your acknowledgement of such changes and agreement to be bound by the terms and conditions of such changes.
 
-No Rights of Third Parties. This Privacy Policy does not create rights enforceable by third parties or require disclosure of any personal information relating to users of the website.`}
-                </Text>
-                <Button style={ STYLES.spaceAfter }
-                    label="Accept"
-                    accessibilityLabel="Accept the terms of serice"
-                    onPress={ this.goToCreateAccount.bind(this) } />
-                <Button
-                    label="Decline"
-                    accessibilityLabel="Decline the terms of service"
-                    onPress={ this.goToStart.bind(this) } />
-            </Container>
-        )
-    }
-}
+No Rights of Third Parties. This Privacy Policy does not create rights enforceable by third parties or require disclosure of any personal information relating to users of the website.`

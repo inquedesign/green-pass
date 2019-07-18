@@ -29,7 +29,7 @@ export default class AvatarPicker extends React.PureComponent {
                 : avatars[0]
         }
 
-        //if ( props.onChangeAvatar ) props.onChangeAvatar( this.state.selection )
+        if ( props.onChangeAvatar ) props.onChangeAvatar( this.state.selection )
     }
 
     componentWillReceiveProps( newProps ) {

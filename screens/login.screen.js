@@ -9,8 +9,10 @@ import { Text,
          Container        } from '../components'
 import { STYLES,
          COMPONENT_HEIGHT } from '../styles'
-import { SOCIAL_ICONS     } from '../util/constants'
+import { SOCIAL_ICONS,
+         SCREENS          } from '../util/constants'
 import { MAIN_LAYOUT      } from '../layouts'
+import { AVATARS          } from '../util/avatars'
 
 import SplashScreen from 'react-native-splash-screen'
 
@@ -42,6 +44,11 @@ export default class LoginScreen extends React.PureComponent {
     }
     
     onSendResetEmail() {
+        if ( this.state.email === '' ) {
+            alert( "Email is required to reset password." )
+            return
+        }
+
         UserService.sendPasswordResetEmail( this.state.email )
         .then(() => {
             alert( 'Reset email was sent. Check you inbox for a password reset link.' )
@@ -69,8 +76,39 @@ export default class LoginScreen extends React.PureComponent {
     //}
 
     goToProfile() {
-        Navigation.setRoot({
-            root: MAIN_LAYOUT
+        Promise.all([
+            UserService.getProfile(/* currentUser */),
+            UserService.getContactMethods(/* currentUser */)
+        ])
+        .then( results => {
+            const profile        = results[0]
+            const contactMethods = results[1]
+
+            if ( !(profile.gender && ['male', 'female', 'person'].includes( profile.gender )) ) {
+                Navigation.push(this.props.componentId, {
+                    component: { name: SCREENS.GENDER_SCREEN }
+                })
+            }
+            else if ( !profile.username ) {
+                Navigation.push(this.props.componentId, {
+                    component: { name: SCREENS.USERNAME_SCREEN }
+                })
+            }
+            else if ( !(profile.avatar && Object.keys( AVATARS.all ).includes( profile.avatar )) ) {
+                Navigation.push(this.props.componentId, {
+                    component: { name: SCREENS.AVATAR_SCREEN }
+                })
+            }
+            else if ( !(contactMethods && Object.keys( contactMethods ).length > 0) ) {
+                Navigation.push(this.props.componentId, {
+                    component: { name: SCREENS.CONTACT_INFO_SCREEN }
+                })
+            }
+            else {
+                Navigation.setRoot({
+                    root: MAIN_LAYOUT
+                })
+            }
         })
     }
 

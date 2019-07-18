@@ -5,7 +5,7 @@ export const SCREEN_HEIGHT = Dimensions.get('window').height
 export const SCREEN_WIDTH  = Dimensions.get('window').width
 
 export const VH = SCREEN_HEIGHT / 500
-export const VW = SCREEN_WIDTH  / 500
+export const VW = Math.min( SCREEN_WIDTH / 500, .5625 * VH )
 
 export const COMPONENT_HEIGHT = 36 * VH
 export const STANDARD_SPACE   = 15 * VH

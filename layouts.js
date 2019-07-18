@@ -3,7 +3,7 @@ import { SCREENS } from './util/constants'
 export function initialLayout( startingScreen ) {
     return {
         stack: {
-            id: SCREENS.ROOT_SCREEN,
+            id: SCREENS.INITIAL_LAYOUT,
             children: [
                 { component: { name: startingScreen } }
             ]
@@ -13,7 +13,7 @@ export function initialLayout( startingScreen ) {
 
 export const MAIN_LAYOUT = {
     bottomTabs: {
-        id: SCREENS.ROOT_SCREEN,
+        id: SCREENS.MAIN_LAYOUT,
         children: [
             {
                 stack: {
@@ -46,18 +46,22 @@ export const MAIN_LAYOUT = {
                         }
                     }
                 }
-            }//,
-            //{
-            //    component: {
-            //        name: SCREENS.EXPLORE_SCREEN,
-            //        options: {
-            //            bottomTab: {
-            //                icon: require('./assets/icons/Explore.png'),
-            //                text: 'EXPLORE'
-            //            }
-            //        }
-            //    }
-            //}
+            },
+            {
+                stack: {
+                    children: [{
+                        component: {
+                            name: SCREENS.EXPLORE_SCREEN
+                        }
+                    }],
+                    options: {
+                        bottomTab: {
+                            icon: require('./assets/icons/Explore.png'),
+                            text: 'EXPLORE'
+                        }
+                    }
+                }
+            }
         ],
         options: {
             bottomTabs: {

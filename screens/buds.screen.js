@@ -41,7 +41,6 @@ export default class BudsScreen extends React.Component {
 
     componenWillUnmount() {
         if ( this.budsListener    ) UserService.unsubscribe( this.budsListener )
-        //if ( this.searchListener  ) this.searchListener()
     }
 
     setBudsAndRequests() {
@@ -64,12 +63,12 @@ export default class BudsScreen extends React.Component {
     }
 
     search( searchString ) {
-        //if ( this.searchListener ) this.searchListener()
+        this.searchString = searchString
 
         if ( searchString.length > 0 ) {
             this.setState({ searchMode: true, searching: true })
 
-            UserService.getUserByUsername( searchString )
+            UserService.getUsersByUsername( searchString )
             .then( results => {
                 this.setState({
                     searchResults: results.length > 0 ? [{
@@ -79,37 +78,41 @@ export default class BudsScreen extends React.Component {
                     searching: false
                 })
             })
-
-            //this.searchListener = UserService.getUserByUsername( searchString, results => {
-            //    this.setState({
-            //        searchResults: results.length > 0 ? [{
-            //            title: 'Results',
-            //            data: results
-            //        }] : []
-            //    })
-            //})
         }
     }
 
     showProfile( user ) {
-        Promise.all([
-            UserService.getContactMethods( user.id ),
-            UserService.getBudRequest( user.id ),
-            UserService.getBuds()
-        ])
-        .then( results => {
-            Navigation.push( this.props.componentId, {
-                component: {
-                    name: SCREENS.PROFILE_SCREEN,
-                    passProps: {
-                        user          : user,
-                        contactMethods: results[0],
-                        request       : results[1],
-                        buds          : results[2]
-                    }
+        if ( user.id === UserService.currentUser.uid ) {
+            Navigation.mergeOptions( SCREENS.MAIN_LAYOUT, {
+                bottomTabs: {
+                    currentTabIndex: 0
                 }
             })
-        })
+        }
+        else {
+            Promise.all([
+                UserService.getContactMethods( user.id ),
+                UserService.getBudRequest( user.id ),
+                UserService.getBuds()
+            ])
+            .then( results => {
+                Navigation.push( this.props.componentId, {
+                    component: {
+                        name: SCREENS.PROFILE_SCREEN,
+                        passProps: {
+                            user          : user,
+                            contactMethods: results[0],
+                            request       : results[1],
+                            buds          : results[2]
+                        }
+                    }
+                })
+            })
+            .catch( error => {
+                if ( this.state.searchMode ) this.search( this.searchString )
+                else this.setBudsAndRequests()
+            })
+        }
     }
 
     renderItem({ item, index }) {
@@ -126,14 +129,20 @@ export default class BudsScreen extends React.Component {
                     </Image>
                 </View>
 
-                <View>
+                <View style={ LOCAL_STYLES.rowData }>
                     <Text style={ LOCAL_STYLES.rowHeader }>
                         { data.username }
                     </Text>
 
-                    <Text style={ LOCAL_STYLES.rowData }>
+                    <Text style={ LOCAL_STYLES.dataItem }>
                         { `${data.age} ${data.gender}` }
                     </Text>
+
+                    { data.distance &&
+                    <Text style={ LOCAL_STYLES.dataItem }>
+                        { `${data.distance} miles` }
+                    </Text>
+                    }
                 </View>
             </TouchableOpacity>
         )
@@ -222,7 +231,7 @@ const LOCAL_STYLES = StyleSheet.create({
     },
     row: {
         flexDirection  : 'row',
-        height         : 45 * VH,
+        height         : 50 * VH,
         alignItems     : 'center'
     },
     rowHeader: {
@@ -231,12 +240,17 @@ const LOCAL_STYLES = StyleSheet.create({
         textAlign: 'left'
     },
     rowData: {
-        fontSize: FONT_SIZES.MEDIUM * .95,
+        flex: 1,
+        height: '100%',
+        justifyContent: 'center'
+    },
+    dataItem: {
+        fontSize: FONT_SIZES.MEDIUM * .9,
         textAlign: 'left'
     },
     thumbnail: {
-        height     : 36 * VH,
-        width      : 36 * VH,
+        height     : '80%',
+        aspectRatio: 1,
         marginLeft : 22 * VH,
         marginRight: 10 * VH,
         borderWidth: 1,

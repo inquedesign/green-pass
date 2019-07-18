@@ -9,7 +9,7 @@ import ContactInfoScreen     from './screens/contactInfo.screen'
 import TermsOfServiceScreen  from './screens/termsOfService.screen'
 import ProfileScreen         from './screens/profile.screen' 
 import BudsScreen            from './screens/buds.screen'
-//import ExploreScreen         from './screens/explore.screen'
+import ExploreScreen         from './screens/explore.screen'
 import SettingsScreen        from './screens/settings.screen'
 import DisclaimerScreen      from './screens/disclaimer.screen'
 import PasswordResetScreen   from './screens/passwordReset.screen'
@@ -37,35 +37,39 @@ Navigation.registerComponent( SCREENS.CONTACT_INFO_SCREEN, () => ContactInfoScre
 Navigation.registerComponent( SCREENS.TERMS_OF_SERVICE_SCREEN, () => TermsOfServiceScreen )
 Navigation.registerComponent( SCREENS.PROFILE_SCREEN, () => ProfileScreen )
 Navigation.registerComponent( SCREENS.BUDS_SCREEN, () => BudsScreen )
-//Navigation.registerComponent( SCREENS.EXPLORE_SCREEN, () => ExploreScreen )
+Navigation.registerComponent( SCREENS.EXPLORE_SCREEN, () => ExploreScreen )
 Navigation.registerComponent( SCREENS.SETTINGS_SCREEN, () => SettingsScreen )
 Navigation.registerComponent( SCREENS.DISCLAIMER_SCREEN, () => DisclaimerScreen )
 Navigation.registerComponent( SCREENS.PASSWORD_RESET_SCREEN, () => PasswordResetScreen )
 
-//import firebase from 'react-native-firebase'
+import firebase            from 'react-native-firebase'
 
 Navigation.events().registerAppLaunchedListener(() => {
     UserService.handleDeepLinking()
 
     NotificationService.onNotificationLaunchedApp()
 
-    UserService.refresh()
-    .then( currentUser => {
-        if ( !currentUser ) {
-            return AsyncStorage.getItem( SKIP_DISCLAIMER )
-            .then( skipDisclaimer => {
-                if ( skipDisclaimer ) return initialLayout( SCREENS.START_SCREEN )
-                else return initialLayout( SCREENS.DISCLAIMER_SCREEN )
-            })
-        }
-
+    //UserService.refreshUser()
+    //firebase.auth().signInWithEmailAndPassword(
+    //            'mongotest@email.com',
+    //            'aoeuaoeu'
+    //)
+    let startup
+    if ( !UserService.currentUser ) {
+        startup = AsyncStorage.getItem( SKIP_DISCLAIMER )
+        .then( skipDisclaimer => {
+            if ( skipDisclaimer ) return initialLayout( SCREENS.START_SCREEN )
+            else return initialLayout( SCREENS.DISCLAIMER_SCREEN )
+        })
+    }
+    else {
         NotificationService.cancelNotifications()
         .then(() => {
             NotificationService.configureNotifications()
         })
 
         // Verify profile and determine redirect screen
-        return Promise.all([
+        startup = Promise.all([
             UserService.getProfile(/* currentUser */),
             UserService.getContactMethods(/* currentUser */)
         ])
@@ -87,7 +91,8 @@ Navigation.events().registerAppLaunchedListener(() => {
             }
             else return MAIN_LAYOUT
         })
-    })
+    }
+    Promise.resolve( startup )
     .then( startingLayout => {
         Navigation.setDefaultOptions({
             topBar: {

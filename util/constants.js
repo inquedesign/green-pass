@@ -1,5 +1,6 @@
 export const SCREENS = {
-    ROOT_SCREEN             : 'RootScreen',
+    INITIAL_LAYOUT          : 'InitialLayout',
+    MAIN_LAYOUT             : 'MainLayout',
     START_SCREEN            : 'StartScreen',
     ACCOUNT_CREATION_SCREEN : 'AccountCreationScreen',
     LOGIN_SCREEN            : 'LoginScreen',

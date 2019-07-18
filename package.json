@@ -16,7 +16,8 @@
         "bundle:ios": "react-native bundle --entry-file index.js --platform ios --dev false --bundle-output ios/main.jsbundle --assets-dest ios",
         "metro": "react-native start",
         "metro:clear-cache": "watchman watch-del-all && react-native start --reset-cache",
-        "export-avatars": "./build-scripts/export-avatars"
+        "export-avatars": "./build-scripts/export-avatars",
+	"postinstall": "npx jetify"
     },
     "rnpm": {
         "assets": [
@@ -29,8 +30,8 @@
     "dependencies": {
         "@mauron85/react-native-background-geolocation": "^0.5.3",
         "libphonenumber-js": "1.7.15",
-        "react": "16.8.3",
-        "react-native": "0.59.4",
+        "react": "^16.8.3",
+        "react-native": "^0.59.9",
         "react-native-datepicker": "1.7.2",
         "react-native-device-info": "^2.1.2",
         "react-native-firebase": "5.3.1",
@@ -40,6 +41,7 @@
     },
     "devDependencies": {
         "fs-extra": "6.0.1",
+        "jetifier": "^1.5.1",
         "metro-react-native-babel-preset": "0.49.2",
         "react-test-renderer": "16.7.0"
     }
