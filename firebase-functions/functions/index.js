@@ -51,7 +51,9 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
                 const notifToken      = results[2].data()
                 const dataToken       = results[3][0]
 
-                let messages =  []
+                console.log( "data token: " + JSON.stringify( dataToken, null, 4 ) )
+                let messages = []
+                let update   = null
                 if ( requestIsMutual ) {
                     if ( notifToken ) {
                         messages.push({
@@ -80,13 +82,12 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
                     }
 
                     if ( dataToken ) {
-                        messages.push({
-                            token: dataToken.token,
+                        update = {
                             data: {
                                 type: 'bud-added',
                                 data: JSON.stringify({ _id: context.params.user, ...user }) // Profile
                             }
-                        })
+                        }
                     }
 
                     // add buds in mongodb
@@ -121,6 +122,7 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
                         requestee: context.params.contact
                     }
 
+                    console.log( 'token: ' + JSON.stringify( notifToken, null, 4 ))
                     if ( notifToken ) {
                         messages.push({
                             token: notifToken.token,
@@ -148,8 +150,7 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
                     }
 
                     if ( dataToken ) {
-                        messages.push({
-                            token: dataToken.token,
+                        update = {
                             data: {
                                 type: 'bud-request',
                                 data: JSON.stringify({
@@ -157,7 +158,7 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
                                     request: request
                                 })
                             }
-                        })
+                        }
                     }
 
                     tasks.push(
@@ -171,10 +172,17 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
 
                 if ( messages.length === 0 ) return;
 
-                return messaging.sendAll( messages )
-                .then( response =>
-                    handleMessagingErrors( response, messages.map( message => message.token ) )
-                )
+                console.log( "messages: " + JSON.stringify( messages, null, 4 ) )
+                return Promise.all([
+                    messaging.sendAll( messages )
+                    .then( response => {
+                        return handleMessagingErrors( response, messages.map( message => message.token ) )
+                    }),
+                    update ? messaging.sendToDevice( dataToken.token, update )
+                    .then( response => {
+                        return handleMessagingErrors( response, [ dataToken.token ] )
+                    }) : null
+                ])
             })
         )
     }
@@ -187,28 +195,18 @@ exports.syncContactList = functions.firestore.document('Users/{user}/ContactList
             .then( response => {
                 let token = response[0]
 
+                console.log( JSON.stringify( token, null, 4 ))
+
                 if ( !token ) return;
 
-                let message = {
-                    token: token.token,
+                return messaging.sendToDevice( token.token, {
                     data: {
                         type: 'bud-removed',
                         user: context.params.user // userid
                     }
-                }
-
-                return messaging.send( message )
-                .catch( error => {
-                    if (
-                        error.code === 'messaging/invalid-registration-token' ||
-                        error.code === 'messaging/registration-token-not-registered'
-                    ) {
-                        return removeInvalidToken( token.token )
-                    }
-                    else {
-                        console.error( JSON.stringify( error, null, 4 ) )
-                        throw error
-                    }
+                })
+                .then( response => {
+                    return handleMessagingErrors( response, [ token.token ] )
                 })
             })
         )
@@ -338,22 +336,21 @@ exports.mongoSyncProfile = functions.firestore.document( 'Users/{user}' )
                 let pushTokens = new Set( tokens1.concat( tokens2 ).concat( tokens3 ).concat( tokens4 ) )
                 pushTokens = Array.from( pushTokens )
 
+                console.log( "tokens: " + JSON.stringify( pushTokens, null, 4 ) )
                 let messages = []
 
                 for( let i = 0; i < pushTokens.length; i += 100 ) {
                     let tokens = pushTokens.slice( i, i + 100 )
-                    let message = {
-                        tokens: tokens,
-                        data: {
-                            type: 'profile-update',
-                            user: context.params.user,
-                            data: JSON.stringify( user )
-                        }
-                    }
 
                     messages.push(
-                        messaging.sendMulticast( message )
-                        .then( response => { handleMessagingErrors( response, tokens ) } )
+                        messaging.sendToDevice( tokens, {
+                            data: {
+                                type: 'profile-update',
+                                user: context.params.user,
+                                data: JSON.stringify( user )
+                            }
+                        })
+                        .then( response => { return handleMessagingErrors( response, tokens ) } )
                     )
                 }
 
@@ -415,18 +412,16 @@ exports.mongoSyncContactMethods = functions.firestore.document( 'Users/{user}/Co
 
             for( let i = 0; i < pushTokens.length; i += 100 ) {
                 let tokens = pushTokens.slice( i, i + 100 )
-                let message = {
-                    tokens: tokens,
-                    data: {
-                        type: 'contact-methods-update',
-                        user: context.params.user,
-                        data: JSON.stringify({ [context.params.method]: data })
-                    }
-                }
 
                 messages.push(
-                    messaging.sendMulticast( message )
-                    .then( response => { handleMessagingErrors( response, tokens ) } )
+                    messaging.sendToDevice( tokens, {
+                        data: {
+                            type: 'contact-methods-update',
+                            user: context.params.user,
+                            data: JSON.stringify({ [context.params.method]: data })
+                        }
+                    })
+                    .then( response => { return handleMessagingErrors( response, tokens ) } )
                 )
             }
 
@@ -616,17 +611,15 @@ exports.onDeleteAccount = functions.auth.user()
         // Notify Users
         for( let i = 0; i < pushTokens.length; i += 100 ) {
             let tokens = pushTokens.slice( i, i + 100 )
-            let message = {
-                tokens: tokens,
-                data: {
-                    type: 'account-deleted',
-                    user: user.uid
-                }
-            }
 
             tasks.push(
-                messaging.sendMulticast( message )
-                .then( response => { handleMessagingErrors( response, tokens ) } )
+                messaging.sendToDevice( tokens, {
+                    data: {
+                        type: 'account-deleted',
+                        user: user.uid
+                    }
+                })
+                .then( response => { return handleMessagingErrors( response, tokens ) } )
             )
         }
         
@@ -835,17 +828,15 @@ exports.updateLocation = functions.https.onCall(( data, context ) => {
 
         for( let i = 0; i < pushTokens.length; i += 100 ) {
             let tokens = pushTokens.slice( i, i + 100 )
-            let message = {
-                tokens: tokens,
-                data: {
-                    type: 'location-update',
-                    data: JSON.stringify( user )
-                }
-            }
 
             tasks.push(
-                messaging.sendMulticast( message )
-                .then( response => { handleMessagingErrors( response, tokens ) } )
+                messaging.sendToDevice( tokens, {
+                    data: {
+                        type: 'location-update',
+                        data: JSON.stringify( user )
+                    }
+                })
+                .then( response => { return handleMessagingErrors( response, tokens ) } )
             )
         }
 
@@ -1329,6 +1320,7 @@ exports.updatePushToken = functions.https.onCall(( data, context ) => {
         'In firebase-functions:updatePushToken\nUser: ' + JSON.stringify( context.auth, null, 4 )
     )
 
+    console.log( data.token )
     // TODO: switch to mongo
     return firestore.doc( `PushTokens/${context.auth.uid}` )
     .set( { token: data.token }, { merge: true } )
@@ -1408,43 +1400,6 @@ exports.unregisterProfileListeners = functions.https.onCall(( data, context ) =>
         return null
     })
 })
-
-//exports.registerBudListener = functions.https.onCall(( data, context ) => {
-//    if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
-//
-//    return getDatabase()
-//    .then( db => {
-//        return db.collection( BUD_LISTENERS_COLLECTION )
-//        .updateOne(
-//            { _id: context.auth.uid },
-//            { $addToSet: { listeners: data.deviceId } },
-//            { upsert: true }
-//        )
-//    })
-//    .then(() => {
-//        return null
-//    })
-//})
-
-//exports.unregisterBudListener = functions.https.onCall(( data, context ) => {
-//    if ( !context.auth ) throw new HttpsError(
-//        'unauthenticated',
-//        'User not authenticated.',
-//        'In firebase-functions:unregisterBudListener\nUser: ' + JSON.stringify( context.auth, null, 4 )
-//    )
-//
-//    return getDatabase()
-//    .then( db => {
-//        return db.collection( BUD_LISTENERS_COLLECTION )
-//        .updateOne(
-//            { _id: context.auth.uid },
-//            { $pull: { listeners: data.deviceId } }
-//        )
-//    })
-//    .then(() => {
-//        return null
-//    })
-//})
 
 exports.registerLocationListeners = functions.https.onCall(( data, context ) => {
     if ( !context.auth ) throw new HttpsError( 'unauthenticated', 'User not authenticated.', 'unauthenticated' )
@@ -1691,20 +1646,22 @@ function getLocationListenerTokens( userid ) {
     })
 }
 
-function handleMessagingErrors( result, tokens ) {
-    if ( result.failureCount == 0 ) return;
+function handleMessagingErrors( serverResponse, tokens ) {
+    console.log( JSON.stringify( serverResponse, null, 4 ) )
+    if ( serverResponse.failureCount === 0 ) return;
 
-    const tasks = []
+    const responses = serverResponse.responses || serverResponse.results
+    const tasks     = []
 
-    result.responses.forEach(( response, index ) => {
+    responses.forEach(( response, index ) => {
         if ( response.error ) {
             if (
                 response.error.code === 'messaging/invalid-registration-token' ||
                 response.error.code === 'messaging/registration-token-not-registered'
             ) {
-                tasks.push( removeInvalidToken( tokens[ index ].token ) )
+                tasks.push( removeInvalidToken( tokens[ index ] ) )
             }
-            else console.error( response.error.message )
+            else console.error( JSON.stringify( response.error, null, 4 ) )
         }
     })
 
@@ -1712,11 +1669,21 @@ function handleMessagingErrors( result, tokens ) {
 }
 
 function removeInvalidToken( token ) {
-    return getDatabase()
-    .then( db => {
-        db.collection( PUSH_TOKENS_COLLECTION )
-        .deleteOne({ token: token })
+    // TODO: switch to mongo
+    return firestore.collection( 'PushTokens' ).where( 'token', '==', token ).get()
+    .then( querySnapshot => {
+        let tasks = []
+        querySnapshot.forEach( queryDocSnapshot => {
+            tasks.push( queryDocSnapshot.ref.delete() )
+        })
+        return Promise.all( tasks )
     })
+
+//    return getDatabase()
+//    .then( db => {
+//        db.collection( PUSH_TOKENS_COLLECTION )
+//        .deleteOne({ token: token })
+//    })
 }
 
 function findNearbyUsers( location ) {

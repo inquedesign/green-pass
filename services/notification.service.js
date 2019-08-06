@@ -1,5 +1,5 @@
 import firebase    from 'react-native-firebase'
-import DeviceInfo  from 'react-native-device-info'
+//import DeviceInfo  from 'react-native-device-info'
 import UserService from './user.service'
 
 import { Platform   } from 'react-native'
@@ -21,7 +21,6 @@ function setToken( token ) {
     if ( !auth.currentUser.uid ) return
 
     functions.httpsCallable( 'updatePushToken' )({
-        deviceId: DeviceInfo.getUniqueID(),
         token: token
     })
 }
@@ -33,7 +32,7 @@ function getToken() {
             setToken( token )
         }
     })
-    
+
     unsubscribeTokenListener = messaging().onTokenRefresh( token => {
         setToken( token )
     })
@@ -43,10 +42,8 @@ export default class NotificationService {
 
     static unsubscribePushNotifications() {
         if ( unsubscribeTokenListener ) unsubscribeTokenListener()
-        
-        if ( auth.currentUser.uid ) functions.httpsCallable( 'removePushToken' )({
-            deviceId: DeviceInfo.getUniqueID()
-        })
+
+        if ( auth.currentUser.uid ) functions.httpsCallable( 'removePushToken' )()
     }
 
     static cancelNotifications() {

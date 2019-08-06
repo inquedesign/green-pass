@@ -17,8 +17,8 @@ export default class DatePicker extends React.PureComponent {
         const minDate = new Date()
         minDate.setFullYear( currentDate.getFullYear() - 100 )
 
-        this.maxDate = `${maxDate.getMonth()+1}-${maxDate.getDate()+1}-${maxDate.getFullYear()}`
-        this.minDate = `${minDate.getMonth()+1}-${minDate.getDate()+1}-${minDate.getFullYear()}`
+        this.maxDate = `${maxDate.getMonth()+1}-${maxDate.getDate()}-${maxDate.getFullYear()}`
+        this.minDate = `${minDate.getMonth()+1}-${minDate.getDate()}-${minDate.getFullYear()}`
 
         this.state = {
             dateString: ''

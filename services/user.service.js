@@ -207,8 +207,6 @@ function updateLocation( location ) {
 
         this.currentLocation = { lat: location.latitude, lon: location.longitude }
 
-        console.warn('location update')
-
         BGLocation.startTask( taskKey => {
             functions.updateLocation( Object.assign( {}, this.currentLocation ) )
             .then( nearbyUsers => {
@@ -231,7 +229,6 @@ function updateLocation( location ) {
                     callback()
                 })
 
-                console.warn('ending location update task')
                 resolve( this._nearbyUsers )
                 BGLocation.endTask( taskKey )
             })
@@ -273,7 +270,6 @@ class UserServiceClass {
             switch( newState ) {
             case this.State.active:
                 if ( oldState == this.State.active ) return
-                console.warn('app foreground')
 
                 functions.updateAppState({ foreground: true })
                 this.refreshData()
@@ -301,12 +297,10 @@ class UserServiceClass {
         })
 
         BGLocation.on( 'start', () => {
-            console.warn( 'starting bglocation service' )
             this.BGLocationIsRunning = true
         })
         
         BGLocation.on( 'stop', () => {
-            console.warn( 'stopping bglocation service' )
             this.BGLocationIsRunning = false
         })
 
@@ -330,7 +324,6 @@ class UserServiceClass {
                         this.enabled       = enabled    
                         this.authorization = authorization
 
-                        console.warn('authorization change: ' + status )
                         if ( enabled && authorization != BGLocation.NOT_AUTHORIZED ) {
                             BGLocation.start()
                         }
@@ -359,7 +352,6 @@ class UserServiceClass {
 
                 if ( status != BGLocation.NOT_AUTHORIZED ) return;
 
-                console.warn( 'bgloc not authorized' )
                 BGLocation.stop()
                 replaceListeners()
                 this._nearbyUsers = null
@@ -367,12 +359,10 @@ class UserServiceClass {
             })
 
             onLocation = BGLocation.on( 'location',   location => {
-                console.warn('location event')
                 locationCallback( location )
             })
 
             onStationary = BGLocation.on( 'stationary', location => {
-                console.warn('stationary event')
                 locationCallback( location )
             })
         })
@@ -721,7 +711,7 @@ class UserServiceClass {
                   Math.cos( lat1 ) * Math.cos( lat2 )
         const b = 2 * Math.atan2( Math.sqrt(a), Math.sqrt(1 - a) )
         const c = b * 3958.76
-        return Math.round( c * 10 ) * .1
+        return Math.round( c * 10 ) / 10
     }
 
     refreshUser() {
@@ -742,7 +732,6 @@ class UserServiceClass {
             return Promise.reject( error )
         }
 
-        console.warn( 'refresh data' )
         this._profile        = null
         this._buds           = null
         this._requests       = null

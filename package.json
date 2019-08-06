@@ -17,7 +17,7 @@
         "metro": "react-native start",
         "metro:clear-cache": "watchman watch-del-all && react-native start --reset-cache",
         "export-avatars": "./build-scripts/export-avatars",
-	"postinstall": "npx jetify"
+        "postinstall": "npx jetify"
     },
     "rnpm": {
         "assets": [

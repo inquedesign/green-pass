@@ -17,6 +17,8 @@
     "firebase-tools": "^6.6.0",
     "mongodb": "^3.2.6"
   },
-  "engines": { "node": "8" },
+  "engines": {
+    "node": "8"
+  },
   "private": true
 }

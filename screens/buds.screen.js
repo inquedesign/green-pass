@@ -23,6 +23,8 @@ export default class BudsScreen extends React.Component {
     constructor( props ) {
         super( props )
         
+        this.profileIsLoading = false
+
         this.state = {
             searchMode   : false,
             searching    : false,
@@ -82,6 +84,8 @@ export default class BudsScreen extends React.Component {
     }
 
     showProfile( user ) {
+        if ( this.profileIsLoading ) return;
+
         if ( user.id === UserService.currentUser.uid ) {
             Navigation.mergeOptions( SCREENS.MAIN_LAYOUT, {
                 bottomTabs: {
@@ -90,12 +94,15 @@ export default class BudsScreen extends React.Component {
             })
         }
         else {
+            this.profileIsLoading = true
+
             Promise.all([
                 UserService.getContactMethods( user.id ),
                 UserService.getBudRequest( user.id ),
                 UserService.getBuds()
             ])
             .then( results => {
+                this.profileIsLoading = false
                 Navigation.push( this.props.componentId, {
                     component: {
                         name: SCREENS.PROFILE_SCREEN,
@@ -138,7 +145,7 @@ export default class BudsScreen extends React.Component {
                         { `${data.age} ${data.gender}` }
                     </Text>
 
-                    { data.distance &&
+                    { data.distance != undefined &&
                     <Text style={ LOCAL_STYLES.dataItem }>
                         { `${data.distance} miles` }
                     </Text>
