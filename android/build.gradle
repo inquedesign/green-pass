@@ -16,7 +16,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:3.3.2'
+    classpath 'com.android.tools.build:gradle:3.4.2'
     classpath 'com.google.gms:google-services:4.2.0'
     classpath 'com.google.firebase:firebase-plugins:2.0.0'
     classpath 'io.fabric.tools:gradle:1.27.1'
@@ -39,7 +39,7 @@ allprojects {
   }
 }
 
-task wrapper(type: Wrapper) {
+wrapper {
   gradleVersion = '4.6'
   distributionUrl = distributionUrl.replace("bin", "all")
 }
